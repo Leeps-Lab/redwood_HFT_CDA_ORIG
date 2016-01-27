@@ -1,0 +1,35 @@
+<div ng-controller="HFTStartController">
+  <div rw-subject-header time-remaining="timeRemaining" time-total="config.timeLimit"></div>
+  <div time-remaining="timeRemaining" time-total="config.timeLimit"></div>
+  <div class="container">
+    
+    <!--Top two screens-->
+    <div class="row">
+
+      <!--Top left screen-->
+      <div class="col-xs-4" style="height:320px; background-color:blue">
+      </div>
+
+      <!--Top right screen-->
+      <div class="col-xs-8 marketGraph" style="height:320px;">
+        <svg width="100%" height="100%" id="graph1">
+          <circle cx="570" cy="320" r="40" stroke="green" stroke-width="4" fill="yellow" />
+        </svg>
+      </div>
+    </div>
+
+    <!--Bottom two screens-->
+    <div class="row">
+
+      <!--Bottom left screen-->
+      <div class="col-xs-4" style="height:320px; background-color:green">
+      </div>
+
+      <!--Bottom right screen-->
+      <div class="col-xs-8" style="height:320px; background-color:yellow">
+      </div>
+    </div>
+    <!--End Screens-->
+
+  </div>
+</div>
