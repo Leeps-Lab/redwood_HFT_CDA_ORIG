@@ -40,7 +40,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
          var seconds = parseInt(x % 60);
          x /= 60;
          var minutes = parseInt(x % 60);
-         console.log("Minutes: " + minutes);
+         //console.log("Minutes: " + minutes);
          x /= 60;
          var hours = parseInt(x % 24);
          return hours + ":" + minutes + ":" + seconds;
