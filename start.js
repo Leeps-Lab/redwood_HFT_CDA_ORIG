@@ -1,4 +1,4 @@
-RedwoodHighFrequencyTrading.controller("HFTStartController", 
+RedwoodHighFrequencyTrading.controller("HFTStartController",
 ["$scope",
  "RedwoodSubject",
  "SVGGraphing",
@@ -49,7 +49,7 @@ function ($scope, rs, graphing, configManager, stopWatch) {
 
         var userIndex = (parseInt(rs.user_id) - 1) % 2;
         $scope.config = configManager.loadPerSubject(rs, {
-            testValue               : "Hello World Test"
+            testValue: "Hello World Test"
         });
 
         console.log($scope.config.testValue);
@@ -63,6 +63,33 @@ function ($scope, rs, graphing, configManager, stopWatch) {
             .duration(500000);
 
         $scope.clock.start();
+
+        $ ("#slider")
+            .slider ({
+                orientation: "vertical",
+                slide: function (event, ui) {
+                    $ ("#slider-val").val ($ ("#slider").slider ("value"));
+                    console.log ($ ("#slider").slider ("value"));
+                }
+        })
+
+        $ ("#snipe")
+            .button()
+            .click (function (event) {
+                console.log ("Sniped!");
+            })
+
+        $ ("#speed")
+            .button()
+            .click (function (event) {
+                console.log ("Speed!");
+            })
+
+        $ ("#out")
+            .button()
+            .click (function (event) {
+                console.log ("Out!");
+            })
 
         /*
         $scope.endowment = {
@@ -205,7 +232,7 @@ function ($scope, rs, graphing, configManager, stopWatch) {
             rs.set("rp.rounds_under_epsilon", roundsUnder);
 
             // If demand has been under threshold for @roundsUnderEpsilon rounds,
-            // or if the maximum number of rounds have been played, 
+            // or if the maximum number of rounds have been played,
             // or if the all of the weightvector weights have been used, stop tatonnement
             if (roundsUnder            >= $scope.config.roundsUnderEpsilon
                 || $scope.currentRound >= $scope.config.rounds
