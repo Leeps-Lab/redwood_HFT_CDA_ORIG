@@ -1,11 +1,9 @@
-//TESTING
-
 RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
    var api = {};
 
    api.makeTradingGraph = function(svgElementID){
       var graph = {}
-         
+
       graph.elementId = svgElementID
       graph.elementWidth = 0;
       graph.elementHeight = 0;
@@ -22,7 +20,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
          this.elementWidth = $('#'+ this.elementId).width();
          this.elementHeight = $('#'+ this.elementId).height();
       }
-      
+
       graph.getSize = function(){
          return [this.elementWidth, this.elementHeight];
       }
