@@ -1,3 +1,5 @@
+//TESTING
+
 RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
    var api = {};
 
