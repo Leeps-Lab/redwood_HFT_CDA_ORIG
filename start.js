@@ -1,10 +1,11 @@
 RedwoodHighFrequencyTrading.controller("HFTStartController",
 ["$scope",
+ '$interval',
  "RedwoodSubject",
  "SVGGraphing",
  "ConfigManager",
  "SynchronizedStopWatch",
-function ($scope, rs, graphing, configManager, stopWatch) {
+function ($scope, $interval, rs, graphing, configManager, stopWatch) {
 
     // module private variables
     var CLOCK_FREQUENCY = 50;
@@ -37,8 +38,7 @@ function ($scope, rs, graphing, configManager, stopWatch) {
         rs.set("rp.last_limits", {x: larger, y: larger});*/
     }
 
-    var tick = function(tick){
-        console.log("ran tick");
+    $scope.tick = function(tick){
         $scope.tradingGraph.draw(Date.now());
     }
 
@@ -57,12 +57,7 @@ function ($scope, rs, graphing, configManager, stopWatch) {
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init(Date.now());
 
-        $scope.clock = stopWatch.instance()
-            .frequency(CLOCK_FREQUENCY)
-            .onTick(tick)
-            .duration(500000);
-
-        $scope.clock.start();
+        $interval($scope.tick, 50);
 
         $ ("#slider")
             .slider ({

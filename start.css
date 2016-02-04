@@ -50,35 +50,3 @@ body {
   padding: 0px;
   margin: 0px;
 }
-
-.marketGraph{
-   background-color: rgb(230,230,230);
-}
-
-.priceAxisBox{
-   fill: rgb(200,200,200);
-}
-
-/*Style for the lines that visualize incrimental levels of the price axis*/
-.priceGridLine{
-   stroke:rgb(200,200,200);
-   stroke-width:1;
-}
-
-.priceGridLineText{
-   fill: rgb(150,150,150);
-   font-size: 10px;
-}
-
-.timeGridLineText{
-   fill: rgb(150,150,150);
-   font-size: 10px;
-}
-
-.timeGridLight{
-   fill: rgb(230, 230, 230);
-}
-
-.timeGridDark{
-   fill: rgb(215, 215, 215);
-}
