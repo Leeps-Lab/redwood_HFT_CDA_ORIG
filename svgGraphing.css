@@ -1,0 +1,31 @@
+.market-graph{
+   background-color: rgb(230,230,230);
+}
+
+.price-axis-box{
+   fill: rgb(200,200,200);
+}
+
+/*Style for the lines that visualize incrimental levels of the price axis*/
+.price-grid-line{
+   stroke:rgb(200,200,200);
+   stroke-width:1;
+}
+
+.price-grid-line-text{
+   fill: rgb(150,150,150);
+   font-size: 10px;
+}
+
+.time-grid-line-text{
+   fill: rgb(150,150,150);
+   font-size: 10px;
+}
+
+.time-grid-box-light{
+   fill: rgb(230, 230, 230);
+}
+
+.time-grid-box-dark{
+   fill: rgb(215, 215, 215);
+}
