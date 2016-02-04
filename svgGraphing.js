@@ -5,15 +5,13 @@
 *     This will return a new graph object. Call graph.init(timeStamp) to
 *     initialize the graph, call graph.draw(timeStamp) to update the graph.
 */
-
-
 RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
    var api = {};
 
    //Call this function to create a new graph object. Pass in the id
    //    of the svg element that the graph will be tied to.
    api.makeTradingGraph = function(svgElementID){
-      var graph = {}
+      var graph = {};
          
       graph.elementId = svgElementID;  //id of the svg element
       graph.elementWidth = 0;          //Width and Height of svg element
@@ -34,7 +32,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
          this.elementWidth = $('#'+ this.elementId).width();
          this.elementHeight = $('#'+ this.elementId).height();
       }
-      
+
       graph.getSize = function(){
          return [this.elementWidth, this.elementHeight];
       }
