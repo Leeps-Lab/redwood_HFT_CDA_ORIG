@@ -5,7 +5,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
  "SVGGraphing",
  "ConfigManager",
  "SynchronizedStopWatch",
-function ($scope, $interval, rs, graphing, configManager, stopWatch) {
+ "$http",
+ function ($scope, $interval, rs, graphing, configManager, stopWatch, $http) {
 
     // module private variables
     var CLOCK_FREQUENCY = 50;
@@ -49,10 +50,42 @@ function ($scope, $interval, rs, graphing, configManager, stopWatch) {
 
         var userIndex = (parseInt(rs.user_id) - 1) % 2;
         $scope.config = configManager.loadPerSubject(rs, {
-            testValue: "Hello World Test"
+            testValue: "Hello World Test",
+            startingWealth: "100",
+            priceChanges: [[0, 15], [1000, 20], [2500, 22]],
+            buyOffers: [1500, 2500, 3100],
+            sellOffers: [2000, 2500, 3000],
+            marketEvents: null
         });
 
-        console.log($scope.config.testValue);
+        //build marked events array from dropbox csv
+        //mostly stolen from portfolio allocation
+        if ($scope.config.marketEvents) {
+            $http.get($scope.config.marketEvents).then(function(response) {
+                // build market event array (simple csv parsing with String.split)
+                var rows = response.data.split("\n");
+
+                // create series arrays
+                var marketEvents = [];
+                for (var i = 0; i < rows.length; i++) {
+                  marketEvents[i] = [];
+                }
+
+                // fill arrays with csv data
+                for (var i = 0; i < rows.length; i++) {
+                  var cells = rows[i].split(",");
+                  for (var j = 0; j < cells.length; j++) {
+                    marketEvents[i][j] = parseFloat(cells[j]);
+                  }
+                }
+                console.log(marketEvents);
+            });
+        }
+
+        console.log($scope.config.startingWealth);
+        console.log($scope.config.priceChanges);
+        console.log($scope.config.buyOffers);
+        console.log($scope.config.sellOffers);
 
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init(Date.now());
