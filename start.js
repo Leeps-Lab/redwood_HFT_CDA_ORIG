@@ -55,19 +55,19 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             priceChanges: [[0, 15], [1000, 20], [2500, 22]],
             buyOffers: [1500, 2500, 3100],
             sellOffers: [2000, 2500, 3000],
-            marketEvents: null
+            marketEventsURL: null
         });
 
-        //build marked events array from dropbox csv
+        //build market events array from dropbox csv
         //mostly stolen from portfolio allocation
-        if ($scope.config.marketEvents) {
-            $http.get($scope.config.marketEvents).then(function(response) {
-                // build market event array (simple csv parsing with String.split)
+        if ($scope.config.marketEventsURL) {
+            $http.get($scope.config.marketEventsURL).then(function(response) {
+                // build market events (simple csv parsing with String.split)
                 var rows = response.data.split("\n");
 
                 // create series arrays
                 var marketEvents = [];
-                for (var i = 0; i < rows.length; i++) {
+                for (var i = 0; i < rows[0].split(",").length; i++) {
                   marketEvents[i] = [];
                 }
 
@@ -75,7 +75,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 for (var i = 0; i < rows.length; i++) {
                   var cells = rows[i].split(",");
                   for (var j = 0; j < cells.length; j++) {
-                    marketEvents[i][j] = parseFloat(cells[j]);
+                    marketEvents[j][i] = parseFloat(cells[j]);
                   }
                 }
                 console.log(marketEvents);
@@ -97,27 +97,64 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 orientation: "vertical",
                 slide: function (event, ui) {
                     $ ("#slider-val").val ($ ("#slider").slider ("value"));
-                    console.log ($ ("#slider").slider ("value"));
+                    var msg = {"action": $ ("#slider").slider ("value")};
+                    rs.trigger ("slide", msg);
+                    rs.send ("slide", msg);
                 }
         })
 
         $ ("#snipe")
             .button()
             .click (function (event) {
-                console.log ("Sniped!");
+                rs.trigger ("snipe");
+                rs.send ("snipe");
             })
 
         $ ("#speed")
             .button()
             .click (function (event) {
-                console.log ("Speed!");
+                rs.trigger ("speed");
+                rs.send ("speed");
             })
 
         $ ("#out")
             .button()
             .click (function (event) {
-                console.log ("Out!");
+                rs.trigger ("out");
+                rs.send ("out");
             })
+
+        rs.on ("slide", function(msg){
+            console.log ("This player's slider val: " + msg.action);
+        });
+
+        rs.on ("snipe", function(){
+            console.log ("This player sniped!");
+        });
+
+        rs.on ("speed", function(){
+            console.log ("This player speeded!");
+        });
+
+        rs.on ("out", function(){
+            console.log ("This player outed!");
+        });
+
+        rs.recv ("slide", function (uid, msg){
+            console.log ("player " + uid + " updated their slider to: " + msg.action);
+        });
+
+        rs.recv ("snipe", function (uid){
+            console.log ("player " + uid + " sniped!");
+        });
+
+        rs.recv ("speed", function (uid){
+            console.log ("player " + uid + " speeded!");
+        });
+
+        rs.recv ("out", function (uid){
+            console.log ("player " + uid + " outed!");
+        });
 
         /*
         $scope.endowment = {
