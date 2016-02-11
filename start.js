@@ -44,7 +44,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     }
 
     rs.on_load(function () {
-        
+
         //Get info from the config file
         function extractConfigEntry (entry, index) {
             return $.isArray(entry) ? entry[userIndex] : entry
@@ -69,15 +69,16 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 // create series arrays
                 var marketEvents = [];
                 for (var i = 0; i < rows[0].split(",").length; i++) {
-                  marketEvents[i] = [];
+                    marketEvents[i] = [];
                 }
 
                 // fill arrays with csv data
                 for (var i = 0; i < rows.length; i++) {
-                  var cells = rows[i].split(",");
-                  for (var j = 0; j < cells.length; j++) {
-                    marketEvents[j][i] = parseFloat(cells[j]);
-                  }
+                    if (rows[i] == "") continue;
+                    var cells = rows[i].split(",");
+                    for (var j = 0; j < cells.length; j++) {
+                        marketEvents[j][i] = parseFloat(cells[j]);
+                    }
                 }
                 console.log(marketEvents);
             });
@@ -100,68 +101,29 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             .slider ({
                 orientation: "vertical",
                 slide: function (event, ui) {
-                    $ ("#slider-val").val ($ ("#slider").slider ("value"));
                     var msg = {"action": $ ("#slider").slider ("value")};
-                    rs.trigger ("slide", msg);
                     rs.send ("slide", msg);
                 }
-        })
+            })
 
         $ ("#snipe")
             .button()
             .click (function (event) {
-                rs.trigger ("snipe");
                 rs.send ("snipe");
             })
 
         $ ("#speed")
             .button()
             .click (function (event) {
-                rs.trigger ("speed");
                 rs.send ("speed");
             })
 
         $ ("#out")
             .button()
             .click (function (event) {
-                rs.trigger ("out");
                 rs.send ("out");
             })
 
-        rs.on ("slide", function(msg){
-            console.log ("This player's slider val: " + msg.action);
-        });
-
-        rs.on ("snipe", function(){
-            console.log ("This player sniped!");
-        });
-
-        rs.on ("speed", function(){
-            console.log ("This player speeded!");
-        });
-
-        rs.on ("out", function(){
-            console.log ("This player outed!");
-        });
-
-        rs.recv ("slide", function (uid, msg){
-            console.log ("player " + uid + " updated their slider to: " + msg.action);
-        });
-
-        rs.recv ("snipe", function (uid){
-            console.log ("player " + uid + " sniped!");
-        });
-
-        rs.recv ("speed", function (uid){
-            console.log ("player " + uid + " speeded!");
-        });
-
-        rs.recv ("out", function (uid){
-            console.log ("player " + uid + " outed!");
-        });
-
-
-        
         //Set up all the graph stuff here
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         var testPriceArray = [[0, 15], [3000, 14.56], [8854, 15.365], [16548, 16.257], [24516, 18.345785], [40876, 14.2589], [68542, 12.9854], [98745, 11.985], [120548, 11.0254], [135684, 12.3], [165542, 15.68], [172558, 14.523]];
@@ -170,7 +132,38 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $interval($scope.tick, 50);
     });
 
+    rs.on ("slide", function(msg){
+        $ ("#slider-val").val (msg.action);
+        console.log ("This player's slider val: " + msg.action);
+    });
 
+    rs.on ("snipe", function(){
+        console.log ("This player sniped!");
+    });
+
+    rs.on ("speed", function(){
+        console.log ("This player speeded!");
+    });
+
+    rs.on ("out", function(){
+        console.log ("This player outed!");
+    });
+
+    rs.recv ("slide", function (uid, msg){
+        console.log ("player " + uid + " updated their slider to: " + msg.action);
+    });
+
+    rs.recv ("snipe", function (uid){
+        console.log ("player " + uid + " sniped!");
+    });
+
+    rs.recv ("speed", function (uid){
+        console.log ("player " + uid + " speeded!");
+    });
+
+    rs.recv ("out", function (uid){
+        console.log ("player " + uid + " outed!");
+    });
 
     rs.on("rp.next_round", function () {
 
