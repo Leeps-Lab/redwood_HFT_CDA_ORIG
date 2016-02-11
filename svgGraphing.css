@@ -29,3 +29,11 @@
 .time-grid-box-dark{
    fill: rgb(215, 215, 215);
 }
+
+.price-line{
+   stroke: rgb(50, 50, 150);
+}
+
+.spread{
+   fill: rgba(255, 127, 80, .5);
+},

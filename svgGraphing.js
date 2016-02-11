@@ -18,8 +18,8 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
       graph.elementHeight = 0;         //    (use calculateSize to determine)
       graph.axisLabelWidth = 40;       //Width of area where price axis labels are drawn
       graph.svg = d3.select('#'+ graph.elementId); //svg element
-      graph.minPrice = 2;              //min price on price axis
-      graph.maxPrice = 27;             //max price on price axis
+      graph.minPrice = 5;              //min price on price axis
+      graph.maxPrice = 25;             //max price on price axis
       graph.priceGridIncriment = 5;    //amount between each line on price axis
       graph.timeInterval = 30;         //Amount in seconds displayed at once on full time axis
       graph.timeIncriment = 5;         //Amount in seconds between lines on time axis
@@ -27,6 +27,13 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
       graph.priceLines = [];           //
       graph.timeLines = [];
       graph.startTime = 0;
+      graph.pricesArray = [];
+      graph.dataObj = {
+         prices: [],
+         buyOffers: [],
+         sellOffers: [],
+         drawData: []
+      };
 
       graph.calculateSize = function(){
          this.elementWidth = $('#'+ this.elementId).width();
@@ -45,6 +52,10 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
       graph.mapTimeToXAxis = function(timeStamp){
          var percentOffset = (timeStamp - (this.currentTime - (this.timeInterval * 1000))) / (this.timeInterval * 1000);
          return (this.elementWidth - this.axisLabelWidth) * percentOffset;
+      }
+
+      graph.priceUnit = function(){
+         return this.elementHeight / (this.maxPrice - this.minPrice);
       }
 
       graph.millisToTime = function(timeStamp){
@@ -93,6 +104,8 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
 
          var graphRefr = this;
 
+         var drawData = this.dataObj.drawData;
+
          if(this.currentTime > this.timeLines[0] + this.timeIncriment){
             this.timeLines = this.calcTimeGridLines(this.currentTime);
          }
@@ -118,7 +131,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
             .text(function(d) {return graphRefr.millisToTime(d)})
             .attr("class", "time-grid-line-text");
          //Draw the lines for the price gridlines
-         this.svg.selectAll("line")
+         this.svg.selectAll("line.price-grid-line")
             .data(this.priceLines)
             .enter()
             .append("line")
@@ -127,6 +140,39 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
             .attr("y1", function(d) {return graphRefr.mapPriceToYAxis(d);})
             .attr("y2", function(d) {return graphRefr.mapPriceToYAxis(d);})
             .attr("class", "price-grid-line");
+         //Draw the price line
+         this.svg.selectAll("line.price-line")
+            .data(drawData)
+            .enter()
+            .append("line")
+            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis( d.price[0] + graphRefr.startTime ); })
+            .attr("x2", function(d, i){
+               if(i != drawData.length-1)
+                  return graphRefr.mapTimeToXAxis( drawData[i+1].price[0] + graphRefr.startTime );
+               else
+                  return graphRefr.elementWidth - graphRefr.axisLabelWidth;
+            })
+            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d.price[1]); })
+            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d.price[1]); })
+            .attr("class", "price-line");
+         //Draw the spread over the price line
+         this.svg.selectAll("rect.spread")
+            .data(drawData)
+            .enter()
+            .append("rect")
+            .attr("x", function(d){ return graphRefr.mapTimeToXAxis( d.price[0] + graphRefr.startTime ); })
+            .attr("width", function(d, i){
+               var startLoc = graphRefr.mapTimeToXAxis( d.price[0] + graphRefr.startTime );
+               if (i != drawData.length-1) {
+                  return graphRefr.mapTimeToXAxis( drawData[i+1].price[0] + graphRefr.startTime ) - startLoc;
+               }
+               else {
+                  return 0;
+               }
+            })
+            .attr("y", function(d){ return graphRefr.mapPriceToYAxis(d.price[1]) - 2 * graphRefr.priceUnit(); })
+            .attr("height", 4 * graphRefr.priceUnit())
+            .attr("class", "spread");
          //Draw rectangle on right side for price axis
          this.svg.append("rect")
             .attr("x", this.elementWidth - this.axisLabelWidth)
@@ -146,11 +192,39 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
             .text(function(d) {return d;});
       }
 
-      graph.init = function(timeStamp, prices){
+      graph.init = function(timeStamp, pricesArray, buyOffersArray, sellOffersArray){
          this.calculateSize();
          this.priceLines = this.calcPriceGridLines();
          this.timeLines = this.calcTimeGridLines(this.currentTime);
          this.startTime = timeStamp;
+         var buyIndex = 0;
+         var sellIndex = 0;
+         var i = 0;
+
+         //Create price segment for each time the price changes
+         for(i; i < pricesArray.length; i++){
+            this.dataObj.drawData.push({price: pricesArray[i], buyOffers: []});
+            
+            //Loop through and add all buy offers that fit on this price segment
+            while (buyIndex < buyOffersArray.length) {
+               //On last Price segment, keep inserting until no more buy offers
+               if (i == pricesArray.length-1){
+                  this.dataObj.drawData[i].buyOffers.push(buyOffersArray[buyIndex]);
+                  buyIndex++;
+                  continue;
+               }
+               //Check if this is the right price segment to insert on
+               if (buyOffersArray[buyIndex][0] < pricesArray[i+1][0]) {
+                  this.dataObj.drawData[i].buyOffers.push(buyOffersArray[buyIndex]);
+                  buyIndex++;
+                  continue;
+               }
+               else {
+                  break;
+               }
+            }
+         }
+         console.log(this.dataObj.drawData);
          this.draw(timeStamp);
       }
 
