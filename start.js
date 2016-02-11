@@ -43,21 +43,18 @@ function ($scope, $interval, rs, graphing, configManager, stopWatch) {
     }
 
     rs.on_load(function () {
+        
+        //Get info from the config file
         function extractConfigEntry (entry, index) {
             return $.isArray(entry) ? entry[userIndex] : entry
         }
-
         var userIndex = (parseInt(rs.user_id) - 1) % 2;
         $scope.config = configManager.loadPerSubject(rs, {
             testValue: "Hello World Test"
         });
 
-        console.log($scope.config.testValue);
-
-        $scope.tradingGraph = graphing.makeTradingGraph("graph1");
-        $scope.tradingGraph.init(Date.now());
-
-        $interval($scope.tick, 50);
+        //spread is recorded in array of all moments when the spread was changed
+        $scope.spread = [[Date.now(), 5]];
 
         $ ("#slider")
             .slider ({
@@ -86,36 +83,13 @@ function ($scope, $interval, rs, graphing, configManager, stopWatch) {
                 console.log ("Out!");
             })
 
-        /*
-        $scope.endowment = {
-            x: $scope.config.Ex,
-            y: $scope.config.Ey
-        }
-        if ($scope.config.computeEndowment) {
-            console.log(rs.self.user_id)
-            $scope.endowment = ea.getAssignedEndowment(rs.self.user_id, {
-                endowmentA: {x: 100, y: 0},
-                endowmentB: {x: 0, y: 50},
-                minimizeEquilibriumPrice: $scope.config.minimizeEquilibriumPrice
-            });
-        }
-
-        if ($scope.config.showEndowment) {
-            $scope.shownEndowment = $scope.endowment;
-        }
-
-        $scope.currentRound = 0;
-        $scope.inputEnabled = false;
-
-        tatonnement = ta.TatonnementAlgorithm($scope.config);
-
-        rs.trigger("rp.configuration", $scope.config);
-        rs.trigger("rp.endowment", $scope.endowment);
-        rs.trigger("rp.next_round");
-
-        if ($scope.config.saveAllocation) {
-            ea.save();
-        }*/
+        
+        //Set up all the graph stuff here
+        $scope.tradingGraph = graphing.makeTradingGraph("graph1");
+        var testPriceArray = [[0, 15], [3000, 14.56], [8854, 15.365], [16548, 16.257], [24516, 18.345785], [40876, 14.2589], [68542, 12.9854], [98745, 11.985], [120548, 11.0254], [135684, 12.3], [165542, 15.68], [172558, 14.523]];
+        var testBuyOfferArray = [[1600]];
+        $scope.tradingGraph.init(Date.now(), testPriceArray, testBuyOfferArray);
+        $interval($scope.tick, 50);
     });
 
 
