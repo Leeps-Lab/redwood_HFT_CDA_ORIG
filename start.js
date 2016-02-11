@@ -97,9 +97,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             .slider ({
                 orientation: "vertical",
                 slide: function (event, ui) {
-                    $ ("#slider-val").val ($ ("#slider").slider ("value"));
                     var msg = {"action": $ ("#slider").slider ("value")};
-                    rs.trigger ("slide", msg);
                     rs.send ("slide", msg);
                 }
             })
@@ -107,21 +105,18 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $ ("#snipe")
             .button()
             .click (function (event) {
-                rs.trigger ("snipe");
                 rs.send ("snipe");
             })
 
         $ ("#speed")
             .button()
             .click (function (event) {
-                rs.trigger ("speed");
                 rs.send ("speed");
             })
 
         $ ("#out")
             .button()
             .click (function (event) {
-                rs.trigger ("out");
                 rs.send ("out");
             })
 
@@ -158,6 +153,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     });
 
     rs.on ("slide", function(msg){
+        $ ("#slider-val").val (msg.action);
         console.log ("This player's slider val: " + msg.action);
     });
 
