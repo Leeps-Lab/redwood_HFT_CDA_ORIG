@@ -11,33 +11,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     // module private variables
     var CLOCK_FREQUENCY = 50;
 
-    function animateLimits () {
-        /*var larger = $scope.intercepts.x > $scope.intercepts.y
-            ? $scope.intercepts.x
-            : $scope.intercepts.y;
-
-        var lastLimits = rs.self.get("rp.last_limits");
-
-        var baseLimits = {};
-        baseLimits.x = $scope.currentRound > 1 ? lastLimits.x : $scope.limits.x;
-        baseLimits.y = $scope.currentRound > 1 ? lastLimits.y : $scope.limits.y;
-
-        $(baseLimits).animate({x: larger, y: larger}, {
-            duration: $scope.config.limitAnimDuration,
-            easing: "easeInOutCubic",
-            step: function (now, fx) {
-                if (!$scope.$$phase) {
-                    $scope.$apply(function () {
-                        $scope.limits[fx.prop] = now;
-                    })
-                } else {
-                    $scope.limits[fx.prop] = now;
-                }
-            }
-        });
-
-        rs.set("rp.last_limits", {x: larger, y: larger});*/
-    }
+    $scope.marketEvents = [];
+    $scope.priceChanges = [];
 
     $scope.tick = function(tick){
         $scope.tradingGraph.draw(Date.now());
@@ -50,107 +25,94 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
         var userIndex = (parseInt(rs.user_id) - 1) % 2;
         $scope.config = configManager.loadPerSubject(rs, {
-            testValue: "Hello World Test",
             startingWealth: "100",
-            priceChanges: [[0, 15], [1000, 20], [2500, 22]],
-            buyOffers: [1500, 2500, 3100],
-            sellOffers: [2000, 2500, 3000],
-            marketEventsURL: null
+            marketEventsURL: null,
+            priceChangesURL: null
         });
 
-        //build market events array from dropbox csv
-        //mostly stolen from portfolio allocation
-        if ($scope.config.marketEventsURL) {
-            $http.get($scope.config.marketEventsURL).then(function(response) {
-                // build market events (simple csv parsing with String.split)
+        loadCSVs();
+    });
+
+    //loads market events and price changes from dropbox CSVs
+    //basic CSV parsing with string.split
+    //largely stolen from portfolio allocation
+    function loadCSVs () {
+        $http.get($scope.config.marketEventsURL).then(function(response) {
+            var rows = response.data.split("\n");
+
+            for (var i = 0; i < rows.length; i++) {
+                $scope.marketEvents[i] = [];
+            }
+
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i] == "") continue;
+                var cells = rows[i].split(",");
+                for (var j = 0; j < cells.length; j++) {
+                    $scope.marketEvents[i][j] = isNaN (cells[j]) ? cells[j] : parseFloat (cells[j]);
+                }
+            }
+
+            //once market events has finished loading, load price changes
+            $http.get($scope.config.priceChangesURL).then(function(response) {
                 var rows = response.data.split("\n");
 
-                // create series arrays
-                var marketEvents = [];
-                for (var i = 0; i < rows[0].split(",").length; i++) {
-                    marketEvents[i] = [];
+                for (var i = 0; i < rows.length; i++) {
+                    $scope.priceChanges[i] = [];
                 }
 
-                // fill arrays with csv data
                 for (var i = 0; i < rows.length; i++) {
                     if (rows[i] == "") continue;
                     var cells = rows[i].split(",");
                     for (var j = 0; j < cells.length; j++) {
-                        marketEvents[j][i] = parseFloat(cells[j]);
+                        $scope.priceChanges[i][j] = parseFloat(cells[j]);
                     }
                 }
-                console.log(marketEvents);
-            });
-        }
 
-        console.log($scope.config.startingWealth);
-        console.log($scope.config.priceChanges);
-        console.log($scope.config.buyOffers);
-        console.log($scope.config.sellOffers);
+                //once price changes have finished loading, start the experiment
+                initExperiment();
+            });
+        });
+    }
+
+    function initExperiment () {
+        console.log ("market events:");
+        console.log ($scope.marketEvents);
+
+        console.log ("price changes:");
+        console.log ($scope.priceChanges);
 
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
-        $scope.tradingGraph.init(Date.now());
+        $scope.tradingGraph.init(Date.now(), $scope.priceChanges, [], []);
 
         $interval($scope.tick, 50);
+    }
 
-        $ ("#slider")
-            .slider ({
-                orientation: "vertical",
-                slide: function (event, ui) {
-                    var msg = {"action": $ ("#slider").slider ("value")};
-                    rs.send ("slide", msg);
-                }
-            })
+    $ ("#slider")
+        .slider ({
+            orientation: "vertical",
+            slide: function (event, ui) {
+                var msg = {"action": $ ("#slider").slider ("value")};
+                rs.send ("slide", msg);
+            }
+        })
 
-        $ ("#snipe")
-            .button()
-            .click (function (event) {
-                rs.send ("snipe");
-            })
+    $ ("#snipe")
+        .button()
+        .click (function (event) {
+            rs.send ("snipe");
+        })
 
-        $ ("#speed")
-            .button()
-            .click (function (event) {
-                rs.send ("speed");
-            })
+    $ ("#speed")
+        .button()
+        .click (function (event) {
+            rs.send ("speed");
+        })
 
-        $ ("#out")
-            .button()
-            .click (function (event) {
-                rs.send ("out");
-            })
-
-        /*
-        $scope.endowment = {
-            x: $scope.config.Ex,
-            y: $scope.config.Ey
-        }
-        if ($scope.config.computeEndowment) {
-            console.log(rs.self.user_id)
-            $scope.endowment = ea.getAssignedEndowment(rs.self.user_id, {
-                endowmentA: {x: 100, y: 0},
-                endowmentB: {x: 0, y: 50},
-                minimizeEquilibriumPrice: $scope.config.minimizeEquilibriumPrice
-            });
-        }
-
-        if ($scope.config.showEndowment) {
-            $scope.shownEndowment = $scope.endowment;
-        }
-
-        $scope.currentRound = 0;
-        $scope.inputEnabled = false;
-
-        tatonnement = ta.TatonnementAlgorithm($scope.config);
-
-        rs.trigger("rp.configuration", $scope.config);
-        rs.trigger("rp.endowment", $scope.endowment);
-        rs.trigger("rp.next_round");
-
-        if ($scope.config.saveAllocation) {
-            ea.save();
-        }*/
-    });
+    $ ("#out")
+        .button()
+        .click (function (event) {
+            rs.send ("out");
+        })
 
     rs.on ("slide", function(msg){
         $ ("#slider-val").val (msg.action);
@@ -187,79 +149,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     rs.on("rp.next_round", function () {
 
-        /*//Reset the text on the button to reflect that it is 'active'
-        $scope.ButtonText = "Confirm";
-        $scope.waiting = true;
-
-        // Begin next round
-        $scope.currentRound++;
-        $scope.cursor = undefined;
-        $scope.selection = null;
-        if ($scope.config.useDefaultSelection) {
-            $scope.selection = [$scope.endowment.x, $scope.endowment.y];
-        }
-        rs.trigger("rp.selection", $scope.selection)
-
-        // set initial price
-        var price = rs.self.get("rp.price");
-        $scope.price = $scope.currentRound > 1 ? price : $scope.config.Price;
-        console.log("price: " + $scope.price);
-
-        // find x and y intercepts
-        $scope.intercepts = {};
-        $scope.intercepts.x = $scope.endowment.x + $scope.endowment.y / $scope.price;
-        $scope.intercepts.y = $scope.endowment.y + $scope.price * $scope.endowment.x;
-
-        // set plot limits
-        $scope.limits = {}
-        $scope.limits.x = $scope.config.XLimit ? $scope.config.XLimit : $scope.intercepts.x;
-        $scope.limits.y = $scope.config.YLimit ? $scope.config.YLimit : $scope.intercepts.y;
-        animateLimits();
-
-        // set budget functions
-        $scope.budgetFunction = function (x) {
-            return $scope.endowment.y + $scope.price * ($scope.endowment.x - x);
-        }
-        $scope.inverseBudgetFunction = function (y) {
-            return $scope.endowment.x + ($scope.endowment.y - y) / $scope.price;
-        }
-
-        rs.trigger("rp.round_started", {
-            "round": $scope.currentRound,
-            "endowment": $scope.endowment,
-            "price": $scope.price
-        });
-        $scope.inputEnabled = true;
-
-        // setup timer
-        if ($scope.config.timeLimit > 0) {
-            if (!$scope.stopWatch) {
-                $scope.timeRemaining = 0;
-                // The round which this timer was started
-                $scope.timerRound = $scope.currentRound;
-                $scope.stopWatch = stopWatch.instance()
-                    .frequency(1)
-                    .duration($scope.config.timeLimit)
-                    .onTick(function (tick, t) {
-                        $scope.timeRemaining = $scope.timeTotal - t;
-                    })
-                    .onComplete(function () {
-                        $scope.confirm();
-                        $scope.stopWatch = null;
-                    }).start();
-            } else {
-                $scope.stopWatch.duration($scope.stopWatch.getDurationInTicks() + $scope.config.timeLimit - $scope.timeRemaining)
-            }
-
-            $scope.timeTotal = $scope.stopWatch.getDurationInTicks();
-        }
-
-        // flash the Confirm Selection button to alert the subject that a new round started
-        // ooh the dirty dirty JQuery (.n.)
-        var confirmButton = $("#confirmButton");
-        confirmButton.effect("highlight", {color: "#c6feb6"}, 500, function() {
-            confirmButton.effect("highlight", {color: "#c6feb6"}, 500);
-        });*/
     });
 
     rs.on("rp.selection", function (selection) {

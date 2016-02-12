@@ -1,3 +1,3 @@
-period,subject,testValue,startingWealth,priceChanges,buyOffers,sellOffers,marketEventsURL
-1,default,test1,500,"[[0, 12], [5500, 50], [4200, 53]]","[500, 1400, 6000]","[8000, 7400, 500]",https://dl.dropboxusercontent.com/s/ac57b1meg9nru3z/hft_market_events.csv?dl=1
-2,default,test2,,,,,
+period,subject,testValue,startingWealth,priceChanges,buyOffers,sellOffers,marketEventsURL,priceChangesURL
+1,default,test1,500,"[[0, 12], [5500, 50], [4200, 53]]","[500, 1400, 6000]","[8000, 7400, 500]",https://dl.dropboxusercontent.com/s/u8webax29e99z1a/market_events.csv?dl=1,https://dl.dropboxusercontent.com/s/bjp8lq2qky4ztnj/price_changes.csv?dl=1
+2,default,test2,,,,,,
