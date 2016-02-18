@@ -69,7 +69,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 }
 
                 //once price changes have finished loading, start the experiment
-                initExperiment();
+                rs.synchronizationBarrier("init_round_" + rs.period).then(initExperiment());
             });
         });
     }
@@ -147,93 +147,4 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("player " + uid + " outed!");
     });
 
-    rs.on("rp.next_round", function () {
-
-    });
-
-    rs.on("rp.selection", function (selection) {
-        //$scope.selection = selection;
-    })
-
-    rs.on("rp.confirm", function (position) {
-        /*$scope.inputEnabled = false; // for recovery
-
-        //Switch text on the button so that participant knows button has been pressed
-        $scope.ButtonText = "Confirmed";
-        $scope.waiting = false;
-
-
-        rs.synchronizationBarrier('rp.round_' + $scope.currentRound).then(function () {
-            // Calculate current price
-            var currentPrice = $scope.price;
-
-            // Compute tatonnement data for this round]
-            var subjectData = ta.getSubjectData(rs.subjects);
-            var roundContext = ta.RoundContext(currentPrice, subjectData);
-
-            // check if demand is under threshold (epsilon)
-            var roundsUnder = rs.self.get("rp.rounds_under_epsilon");
-            if (Math.abs(roundContext.excessDemandPerCapita) < $scope.config.epsilon) {
-                roundsUnder += 1;
-            } else {
-                roundsUnder = 0;
-            }
-            rs.set("rp.rounds_under_epsilon", roundsUnder);
-
-            // If demand has been under threshold for @roundsUnderEpsilon rounds,
-            // or if the maximum number of rounds have been played,
-            // or if the all of the weightvector weights have been used, stop tatonnement
-            if (roundsUnder            >= $scope.config.roundsUnderEpsilon
-                || $scope.currentRound >= $scope.config.rounds
-                || tatonnement.weightVectorFinished()) {
-
-                var actualAllocation = tatonnement.adjustedAllocation(
-                    $scope.selection,
-                    $scope.endowment,
-                    roundContext,
-                    $scope.config.marketMaker);
-
-                $scope.selection = [actualAllocation.x, actualAllocation.y];
-
-                // reset rounds under epsilon
-                rs.set("rp.rounds_under_epsilon", 0);
-                rs.trigger("rp.perform_allocation", actualAllocation);
-                return;
-            }
-
-            // Get adjusted price
-            var newPrice = tatonnement.adjustedPrice(roundContext);
-
-            // Proceed to next round
-            rs.set("rp.price", newPrice);
-            rs.trigger("rp.next_round");
-        });*/
-    });
-
-    // Recieve result (whether X or Y was chosen) from admin.
-    // This result is really only used for practice rounds.
-    rs.on("rp.result", function (result) {
-        /*result.period = rs.period;
-        rs.set("rp.results", result);
-
-        if($scope.config.plotResult) {
-            $scope.finalResult = result;
-            rs.next_period($scope.config.delay);
-        } else {
-            rs.next_period();
-        }*/
-    });
-
-    $scope.$on("rpPlot.click", function (event, selection) {
-        //rs.trigger("rp.selection", selection);
-    });
-
-    $scope.confirm = function () {
-        /*$scope.inputEnabled = false;
-        rs.trigger("rp.confirm", {
-            "round": $scope.currentRound,
-            "x": $scope.selection[0],
-            "y": $scope.selection[1]
-        });*/
-    };
 }]);
