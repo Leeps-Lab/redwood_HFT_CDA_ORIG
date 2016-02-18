@@ -133,6 +133,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     rs.recv ("slide", function (uid, msg){
         console.log ("player " + uid + " updated their slider to: " + msg.action);
+        console.log (typeof uid);
     });
 
     rs.recv ("snipe", function (uid){
