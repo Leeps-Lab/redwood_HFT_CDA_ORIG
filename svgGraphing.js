@@ -192,7 +192,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
             .text(function(d) {return d;});
       }
 
-      graph.init = function(timeStamp, pricesArray, buyOffersArray, sellOffersArray){
+      graph.init = function(timeStamp, pricesArray, buyOffersArray){
          this.calculateSize();
          this.priceLines = this.calcPriceGridLines();
          this.timeLines = this.calcTimeGridLines(this.currentTime);
