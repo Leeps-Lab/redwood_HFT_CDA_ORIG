@@ -8,16 +8,20 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
  "$http",
  function ($scope, $interval, rs, graphing, configManager, stopWatch, $http) {
 
+
     // module private variables
     var CLOCK_FREQUENCY = 50;
 
-    $scope.marketEvents = [];
-    $scope.priceChanges = [];
+    $scope.marketEvents = [];   //Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
+    $scope.priceChanges = [];   //Price events stored here -> [[time, newPrice], ...etc]
 
+    //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.tick = function(tick){
         $scope.tradingGraph.draw(Date.now());
     }
 
+
+    //First function to run when page is loaded
     rs.on_load(function () {
 
         //Get info from the config file
@@ -31,21 +35,24 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             priceChangesURL: null
         });
 
+        //Initiate new procedure to load data from external csv files
         loadCSVs();
     });
 
+
     //loads market events and price changes from dropbox CSVs
     //basic CSV parsing with string.split
-    //largely stolen from portfolio allocation
     function loadCSVs () {
+        //Load market events
         $http.get($scope.config.marketEventsURL).then(function(response) {
             var rows = response.data.split("\n");
 
-            for (var i = 0; i < rows.length; i++) {
+            //Parse first market events CSV
+            for (var i = 0; i < rows.length-1; i++) {
                 $scope.marketEvents[i] = [];
             }
 
-            for (var i = 0; i < rows.length; i++) {
+            for (var i = 0; i < rows.length-1; i++) {
                 if (rows[i] == "") continue;
                 var cells = rows[i].split(",");
                 for (var j = 0; j < cells.length; j++) {
@@ -53,15 +60,16 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 }
             }
 
-            //once market events has finished loading, load price changes
+            //once market events has been loaded and parsed, load price changes
             $http.get($scope.config.priceChangesURL).then(function(response) {
                 var rows = response.data.split("\n");
 
-                for (var i = 0; i < rows.length; i++) {
+                //Parse price changes CSV
+                for (var i = 0; i < rows.length-1; i++) {
                     $scope.priceChanges[i] = [];
                 }
 
-                for (var i = 0; i < rows.length; i++) {
+                for (var i = 0; i < rows.length-1; i++) {
                     if (rows[i] == "") continue;
                     var cells = rows[i].split(",");
                     for (var j = 0; j < cells.length; j++) {
@@ -69,12 +77,13 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                     }
                 }
 
-                //once price changes have finished loading, start the experiment
+                //once price changes have finished loading, initialize the experiment
                 rs.synchronizationBarrier("init_round_" + rs.period).then(initExperiment());
             });
         });
     }
 
+    //Called after CSV's have been loaded, initializes the graph
     function initExperiment () {
         console.log ("market events:");
         console.log ($scope.marketEvents);
@@ -83,10 +92,11 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ($scope.priceChanges);
 
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
-        $scope.tradingGraph.init(Date.now(), $scope.priceChanges, [], []);
+        $scope.tradingGraph.init(Date.now(), $scope.priceChanges, []);
 
-        $interval($scope.tick, 50);
+        $interval($scope.tick, CLOCK_FREQUENCY);
     }
+
 
     $ ("#slider")
         .slider ({

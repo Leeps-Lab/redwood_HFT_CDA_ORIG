@@ -3,17 +3,18 @@
       <div time-remaining="timeRemaining" time-total="config.timeLimit"></div>
       <div class="container">
 
+      <div class="ui-container">
         <!--Top two screens-->
-        <div class="row">
+        <div class="row" style="margin-bottom:20px;">
 
           <!--Top left screen-->
-          <div class="col-xs-4" style="height:320px; background-color:blue">
+          <div class="col-xs-4" style="height:320px; padding-right:20px;">
+            <div class="top-left-screen screen"></div>
           </div>
 
           <!--Top right screen-->
-          <div class="col-xs-8 market-graph" style="height:320px;">
+          <div class="col-xs-8 market-graph screen" style="height:320px;">
             <svg width="100%" height="100%" id="graph1">
-
             </svg>
           </div>
         </div>
@@ -22,23 +23,32 @@
         <div class="row">
 
           <!--Bottom left screen-->
-            <div class="col-xs-4" style="height:320px; background-color:green">
-                <div id="button-container">
-                    <button id="snipe" class="action-button" type="button">Snipe!</buttton>
-                    <button id="speed" class="action-button" type="button">Speed</buttton>
-                    <button id="out" class="action-button" type="button">Out</buttton>
-                </div>
-                <div id="slider-container">
-                    <input id="slider-val" value="5" readonly>
-                    <div id="slider"></div>
-                </div>
+          <div class="col-xs-4" style="height:320px; padding-right:20px">
+            <div class="bottom-left-screen screen">
+              <div id="buttons-container">
+                  <div class="button-container">
+                    <button id="snipe" class="btn btn-danger" type="button">Snipe!</buttton>
+                  </div>
+                  <div class="button-container">
+                    <button id="speed" class="btn btn-warning" type="button">Speed</buttton>
+                  </div>
+                  <div class="button-container">
+                    <button id="out" class="btn btn-primary" type="button">Out</buttton>
+                  </div>
+              </div>
+              <div id="slider-container">
+                  <input id="slider-val" value="5" readonly>
+                  <div id="slider"></div>
+              </div>
+            </div>
           </div>
 
           <!--Bottom right screen-->
-          <div class="col-xs-8" style="height:320px; background-color:yellow">
+          <div class="col-xs-8 screen" style="height:320px; background-color:yellow;">
           </div>
         </div>
         <!--End Screens-->
+      </div>
 
       </div>
     </div>
