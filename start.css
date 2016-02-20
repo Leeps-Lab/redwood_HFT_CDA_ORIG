@@ -15,7 +15,8 @@ body {
     height: 300px;
     margin: 10px;
     padding: 10px;
-    background-color: rgb(230, 230, 230);;
+    background-color: rgb(230, 230, 230);
+    border-radius: 10px;
 }
 
 #slider-val {
@@ -32,6 +33,7 @@ body {
     margin: 10px;
     padding: 10px;
     background-color: rgb(230, 230, 230);
+    border-radius: 10px;
 }
 
 .ui-container{
