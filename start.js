@@ -15,6 +15,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
 
+    $scope.spread = 0;
+
+    $scope.MESpreads = {}; //store other players' spread values when a market event occurs
+
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.tick = function(tick){
         $scope.tradingGraph.draw(Date.now());
@@ -76,6 +80,9 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                     }
                 }
 
+                //initialize object containing other players' spreads
+                initMESpreads();
+
                 //once price changes have finished loading, initialize the experiment
                 rs.synchronizationBarrier("init_round_" + rs.period).then(initExperiment());
             });
@@ -90,10 +97,20 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("price changes:");
         console.log ($scope.priceChanges);
 
+        console.log($scope.MESpreads);
+
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init(Date.now(), $scope.priceChanges, []);
 
         $interval($scope.tick, CLOCK_FREQUENCY, 100);
+    }
+
+    function initMESpreads () {
+        $scope.MESpreads = {
+            time_a : {id : "buy", spreads : [-1, -1, -1, -1]},
+            time_b : {id : "buy", spreads : [-1, -1, -1, -1]},
+            time_c : {id : "sell", spreads : [-1, -1, -1, -1]}
+        }
     }
 
 
@@ -124,13 +141,22 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             rs.send ("out");
         })
 
+    $ ("#send_spread")
+        .button()
+        .click (function (event) {
+            var msg = {spread : $scope.spread, id : "a"};
+            rs.send ("send_spread", msg);
+        })
+
     rs.on ("slide", function(msg){
         $ ("#slider-val").val (msg.action);
+        $scope.spread = msg.action;
         console.log ("This player's slider val: " + msg.action);
     });
 
     rs.on ("snipe", function(){
         console.log ("This player sniped!");
+        console.log($scope.MESpreads);
     });
 
     rs.on ("speed", function(){
@@ -141,9 +167,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("This player outed!");
     });
 
+    rs.on ("send_spread", function (msg){
+        $scope.MESpreads ["time_" + msg.id].spreads[parseFloat(rs.user_id) - 1] = msg.spread;
+    });
+
     rs.recv ("slide", function (uid, msg){
         console.log ("player " + uid + " updated their slider to: " + msg.action);
-        console.log (typeof uid);
     });
 
     rs.recv ("snipe", function (uid){
@@ -156,6 +185,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     rs.recv ("out", function (uid){
         console.log ("player " + uid + " outed!");
+    });
+
+    rs.recv ("send_spread", function (uid, msg){
+        $scope.MESpreads ["time_" + msg.id].spreads[parseFloat(uid) - 1] = msg.spread;
     });
 
 }]);
