@@ -30,7 +30,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
       graph.pricesArray = [];
       graph.dataObj = {
          prices: [],
-         buyOffers: [],
+         buyOffers: [[500,15,2]],
          sellOffers: [],
          drawData: []
       };
@@ -176,6 +176,21 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
       }
 
 
+      graph.drawMarketEvents = function(graphRefr){
+            
+         //Draw all of the buys
+         this.svg.selectAll("line.buy-line")
+            .data(this.dataObj.buyOffers)
+            .enter()
+            .append("line")
+            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0] + graphRefr.startTime); })
+            .attr("x2", function(d){ return graphRefr.mapTimeToXAxis(d[0] + graphRefr.startTime); })
+            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[1]); })
+            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[1]) + graphRefr.priceUnit() * d[2]; })
+            .attr("class", "buy-line");
+      }
+
+
       graph.drawPriceAxis = function(graphRefr){
          //Draw rectangle on right side for price axis
          this.svg.append("rect")
@@ -214,6 +229,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
          this.drawTimeGridLines(graphRefr);
          this.drawPriceGridLines(graphRefr);
          this.drawPriceLine(graphRefr, drawData);
+         this.drawMarketEvents(graphRefr, drawData);
          this.drawSpread(graphRefr, drawData);
          this.drawPriceAxis(graphRefr);
       }
@@ -229,7 +245,10 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
 
          //Create price segment for each time the price changes
          for(i; i < priceChanges.length; i++)
-            this.dataObj.drawData.push({price: priceChanges[i], buys: [], sells: [],});
+            this.dataObj.drawData.push({price: priceChanges[i], buys: [], sells: []});
+
+         this.dataObj.drawData[0].buys.push(500);
+
          console.log(this.dataObj.drawData);
          this.draw(timeStamp);
       }

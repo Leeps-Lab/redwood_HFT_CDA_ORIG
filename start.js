@@ -9,17 +9,16 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
  function ($scope, $interval, rs, graphing, configManager, stopWatch, $http) {
 
 
-    // module private variables
-    var CLOCK_FREQUENCY = 50;
+    var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
+    var LATENCY = 1000;         // Milliseconds of latency that will occur when user not using high speed
 
-    $scope.marketEvents = [];   //Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
-    $scope.priceChanges = [];   //Price events stored here -> [[time, newPrice], ...etc]
+    $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
+    $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
 
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.tick = function(tick){
         $scope.tradingGraph.draw(Date.now());
     }
-
 
     //First function to run when page is loaded
     rs.on_load(function () {
@@ -94,7 +93,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init(Date.now(), $scope.priceChanges, []);
 
-        $interval($scope.tick, CLOCK_FREQUENCY);
+        $interval($scope.tick, CLOCK_FREQUENCY, 100);
     }
 
 
