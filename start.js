@@ -114,6 +114,30 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         }
     }
 
+    //stolen from bubbles
+    //returns an appropriate value to index players with inside groups
+    function indexFromId (id) {
+        var index = 0;
+        for (var i = 0; i < rs.subjects.length; i++) {
+            if (parseInt(rs.subjects[i].user_id) < id) index++;
+        }
+        return index;
+    }
+
+    //adds a spread to the list of spreads
+    //if the array is full, it checks to see if this player has the lowest spread
+    function addSpread (id, msg) {
+        //add spread to list
+        $scope.MESpreads ["time_" + msg.id].spreads [indexFromId (id)] = msg.spread;
+
+        //check to see if the list has been completely filled with actual spread values
+        if (!$scope.MESpreads ["time_" + msg.id].spreads.includes (-1)) {
+            //if it has, this nasty expression checks to see if this player has the lowest spread
+            if (Math.min.apply (null, $scope.MESpreads ["time_" + msg.id].spreads) == $scope.MESpreads ["time_" + msg.id].spreads [indexFromId (id)]) {
+                console.log("I win!");
+            }
+        }
+    }
 
     $ ("#slider")
         .slider ({
@@ -169,7 +193,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     });
 
     rs.on ("send_spread", function (msg){
-        $scope.MESpreads ["time_" + msg.id].spreads[parseFloat(rs.user_id) - 1] = msg.spread;
+        addSpread (rs.user_id, msg);
     });
 
     rs.recv ("slide", function (uid, msg){
@@ -189,7 +213,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     });
 
     rs.recv ("send_spread", function (uid, msg){
-        $scope.MESpreads ["time_" + msg.id].spreads[parseFloat(uid) - 1] = msg.spread;
+        addSpread (uid, msg);
     });
 
 }]);
