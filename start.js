@@ -8,12 +8,13 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
  "$http",
  function ($scope, $interval, rs, graphing, configManager, stopWatch, $http) {
 
+    var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
+    var LATENCY = 1000;         // Milliseconds of latency that will occur when user not using high speed
 
-    // module private variables
-    var CLOCK_FREQUENCY = 50;
-
-    $scope.marketEvents = [];   //Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
-    $scope.priceChanges = [];   //Price events stored here -> [[time, newPrice], ...etc]
+    $scope.market_button_text = "Enter Market";
+    $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
+    $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
+    $scope.in_market = false;
 
     $scope.spread = 0;
 
@@ -23,7 +24,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.tick = function(tick){
         $scope.tradingGraph.draw(Date.now());
     }
-
 
     //First function to run when page is loaded
     rs.on_load(function () {
@@ -42,7 +42,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         //Initiate new procedure to load data from external csv files
         loadCSVs();
     });
-
 
     //loads market events and price changes from dropbox CSVs
     //basic CSV parsing with string.split
@@ -100,10 +99,25 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
         console.log($scope.MESpreads);
 
+        var testvals = [
+            {price : 15, timestamp : 1000, uid : null},
+            {price : 20, timestamp : 1250, uid : null},
+            {price : 20, timestamp : 1300, uid : null},
+            {price : 8, timestamp : 1700, uid : null},
+            {price : 15, timestamp : 1800, uid : null}
+        ]
+
+        function comparator (a, b) {
+            if (a.price == b.price) return a.timestamp > b.timestamp ? 1 : -1;
+            else return a.price < b.price ? 1 : -1;
+        }
+
+        console.log(testvals.sort (comparator));
+
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init(Date.now(), $scope.priceChanges, []);
 
-        $interval($scope.tick, CLOCK_FREQUENCY);
+        $interval($scope.tick, CLOCK_FREQUENCY, 100);
     }
 
     function initMESpreads () {
@@ -160,10 +174,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             rs.send ("speed");
         })
 
-    $ ("#out")
+    $ ("#market_button")
         .button()
         .click (function (event) {
-            rs.send ("out");
+            console.log("toggled market button");
+            $scope.in_market = !$scope.in_market;
+            $scope.market_button_text = $scope.in_market ? "Leave Market" : "Enter Market";
         })
 
     $ ("#send_spread")
