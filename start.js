@@ -12,8 +12,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
     var LATENCY = 1000;         // Milliseconds of latency that will occur when user not using high speed
 
+    $scope.market_button_text = "Enter Market";
     $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
+    $scope.in_market = false;
 
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.tick = function(tick){
@@ -118,10 +120,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             rs.send ("speed");
         })
 
-    $ ("#out")
+    $ ("#market_button")
         .button()
         .click (function (event) {
-            rs.send ("out");
+            console.log("toggled market button");
+            $scope.in_market = !$scope.in_market;
+            $scope.market_button_text = $scope.in_market ? "Leave Market" : "Enter Market";
         })
 
     rs.on ("slide", function(msg){
