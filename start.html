@@ -27,13 +27,19 @@
             <div class="bottom-left-screen screen">
               <div id="buttons-container">
                   <div class="button-container">
-                    <button id="snipe" class="btn btn-danger" type="button">Snipe!</buttton>
+                    <button id="snipe" class="btn btn-danger" type="button">
+                      Snipe!
+                    </buttton>
                   </div>
                   <div class="button-container">
-                    <button id="speed" class="btn btn-warning" type="button">Speed</buttton>
+                    <button id="speed" class="btn btn-warning" type="button">
+                      Speed
+                    </buttton>
                   </div>
                   <div class="button-container">
-                    <button id="out" class="btn btn-primary" type="button">Out</buttton>
+                    <button id="market_button" ng-click="toggle_market_button()" class="btn btn-primary" type="button">
+                      {{market_button_text}}
+                    </button>
                   </div>
               </div>
               <div id="slider-container">
