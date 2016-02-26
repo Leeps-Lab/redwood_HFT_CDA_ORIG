@@ -154,7 +154,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
       }
 
 
-      graph.drawSpread = function(graphRefr, drawData){
+      graph.drawMinSpread = function(graphRefr, drawData){
          //Draw the spread over the price line
          this.svg.selectAll("rect.spread")
             .data(drawData)
@@ -173,6 +173,10 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
             .attr("y", function(d){ return graphRefr.mapPriceToYAxis(d.price[1]) - 2 * graphRefr.priceUnit(); })
             .attr("height", 4 * graphRefr.priceUnit())
             .attr("class", "spread");
+      }
+
+      graph.drawMySpread = function(graphRefr){
+         
       }
 
 
@@ -230,7 +234,7 @@ RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
          this.drawPriceGridLines(graphRefr);
          this.drawPriceLine(graphRefr, drawData);
          this.drawMarketEvents(graphRefr, drawData);
-         this.drawSpread(graphRefr, drawData);
+         this.drawMinSpread(graphRefr, drawData);
          this.drawPriceAxis(graphRefr);
       }
 

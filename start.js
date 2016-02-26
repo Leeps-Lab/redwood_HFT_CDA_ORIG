@@ -104,7 +104,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init(Date.now(), $scope.priceChanges, []);
 
-        $interval($scope.tick, CLOCK_FREQUENCY, 100);
+        $interval($scope.tick, CLOCK_FREQUENCY);
     }
 
     function initMESpreads () {
