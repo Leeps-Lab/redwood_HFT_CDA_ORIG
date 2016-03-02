@@ -2,17 +2,29 @@ Redwood.factory("MarketManager", function () {
    var api = {};
 
    //Creates the market manager, pass var's that you need for creation in here.
-   api.createMarketManager = function(sampleArgument){
+   api.createMarketManager = function(){
       var market = {};
 
-      //Sample Variables
-      market.sampleValue = "Market Manager says Hello World";
-      market.stuff = sampleArgument;
+      //array to hold bids
+      market.bids = [];
+      //array to hold asks
+      market.asks = [];
 
-      //Sample Function
-      market.sampleFunction = function(){
-         console.log(this.sampleValue);
-         console.log("created with argument: " + this.stuff);
+      function comparator (a, b) {
+          if (a.price == b.price) return a.timestamp > b.timestamp ? 1 : -1;
+          else return a.price < b.price ? 1 : -1;
+      }
+
+      //function to insert bid into bid array
+      market.insertBid = function (newBid, timestamp) {
+          market.bids.push ({price : newBid, timestamp : timestamp});
+          market.bids.sort (comparator);
+      }
+
+      //function to insert ask into ask array
+      market.insertAsk = function (newAsk, timestamp) {
+          market.asks.push ({price : newAsk, timestamp : timestamp});
+          market.asks.sort (comparator);
       }
 
       return market;

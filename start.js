@@ -15,14 +15,16 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
     $scope.in_market = false;
-
+    $scope.numTicks = 0;
     $scope.spread = 0;
+    $scope.testMEIndex = 0;
 
     $scope.MESpreads = {}; //store other players' spread values when a market event occurs
 
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.tick = function(tick){
         $scope.tradingGraph.draw(Date.now());
+        $scope.numTicks++;
     }
 
     //First function to run when page is loaded
@@ -56,7 +58,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             }
 
             for (var i = 0; i < rows.length-1; i++) {
-                if (rows[i] == "") continue;
+                if (rows[i] === "") continue;
                 var cells = rows[i].split(",");
                 for (var j = 0; j < cells.length; j++) {
                     $scope.marketEvents[i][j] = isNaN (cells[j]) ? cells[j] : parseFloat (cells[j]);
@@ -73,7 +75,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 }
 
                 for (var i = 0; i < rows.length-1; i++) {
-                    if (rows[i] == "") continue;
+                    if (rows[i] === "") continue;
                     var cells = rows[i].split(",");
                     for (var j = 0; j < cells.length; j++) {
                         $scope.priceChanges[i][j] = parseFloat(cells[j]);
@@ -99,21 +101,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
         console.log($scope.MESpreads);
 
-        var testvals = [
-            {price : 15, timestamp : 1000, uid : null},
-            {price : 20, timestamp : 1250, uid : null},
-            {price : 20, timestamp : 1300, uid : null},
-            {price : 8, timestamp : 1700, uid : null},
-            {price : 15, timestamp : 1800, uid : null}
-        ]
-
-        function comparator (a, b) {
-            if (a.price == b.price) return a.timestamp > b.timestamp ? 1 : -1;
-            else return a.price < b.price ? 1 : -1;
-        }
-
-        console.log(testvals.sort (comparator));
-
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init(Date.now(), $scope.priceChanges, []);
 
@@ -126,6 +113,13 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             time_b : {id : "buy", spreads : [-1, -1, -1, -1]},
             time_c : {id : "sell", spreads : [-1, -1, -1, -1]}
         }
+    }
+
+    //gets the fundamental market value at a given time from the price changes array
+    function getFundVal (time) {
+        var index = 0;
+        while (index < $scope.priceChanges.length && time > $scope.priceChanges[index + 1][0]) index++;
+        return $scope.priceChanges[index][1];
     }
 
     //stolen from bubbles
@@ -179,14 +173,25 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         .click (function (event) {
             console.log("toggled market button");
             $scope.in_market = !$scope.in_market;
+
+            //when player joins market, send bid and ask orders at fund value +- 1/2 spread
+            if ($scope.in_market) {
+                var currtime = $scope.numTicks * CLOCK_FREQUENCY;
+                var currfundval = getFundVal (currtime);
+                var msg = {
+                    bid : currfundval + .5 * $scope.spread,
+                    ask : currfundval - .5 * $scope.spread,
+                    timestamp : currtime
+                }
+                rs.send ("player_join_market", msg);
+            }
             $scope.market_button_text = $scope.in_market ? "Leave Market" : "Enter Market";
         })
 
     $ ("#send_spread")
         .button()
         .click (function (event) {
-            var msg = {spread : $scope.spread, id : "a"};
-            rs.send ("send_spread", msg);
+
         })
 
     rs.on ("slide", function(msg){

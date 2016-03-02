@@ -133,14 +133,18 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
 
    Display.initialize();
 
+   $scope.market = null;
+
    ra.on_load(function () {
       resetGroups(); //Assign groups to users
 
-      //Example of creating and using the market manager
-      $scope.market = mm.createMarketManager("sampleArgument");
-      $scope.market.sampleFunction();
-      //End of example
+      $scope.market = mm.createMarketManager();
+   });
 
+   ra.recv ("player_join_market", function (uid, msg) {
+       $scope.market.insertBid (msg.bid, msg.timestamp);
+       $scope.market.insertAsk (msg.ask, msg.timestamp);
+       console.log($scope.market);
    });
 
    ra.on_register(function(user) { //Add a row to the table to each user
@@ -160,4 +164,3 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
    });
 
 }]);
-
