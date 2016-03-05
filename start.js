@@ -2,11 +2,13 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 ["$scope",
  '$interval',
  "RedwoodSubject",
- "SVGGraphing",
+ "DataHistory",
+ "MarketAlgorithm",
+ "Graphing",
  "ConfigManager",
  "SynchronizedStopWatch",
  "$http",
- function ($scope, $interval, rs, graphing, configManager, stopWatch, $http) {
+ function ($scope, $interval, rs, dataHistory, marketAlgorithm, graphing, configManager, stopWatch, $http) {
 
     var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
     var LATENCY = 1000;         // Milliseconds of latency that will occur when user not using high speed
@@ -93,13 +95,17 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     //Called after CSV's have been loaded, initializes the graph
     function initExperiment () {
-        console.log ("market events:");
-        console.log ($scope.marketEvents);
+        
+        var testvals = [
+            {price : 15, timestamp : 1000, uid : null},
+            {price : 20, timestamp : 1250, uid : null},
+            {price : 20, timestamp : 1300, uid : null},
+            {price : 8, timestamp : 1700, uid : null},
+            {price : 15, timestamp : 1800, uid : null}
+        ]
 
-        console.log ("price changes:");
-        console.log ($scope.priceChanges);
-
-        console.log($scope.MESpreads);
+        dataHistory.runtest();
+        marketAlgorithm.runtest();
 
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init(Date.now(), $scope.priceChanges, []);
