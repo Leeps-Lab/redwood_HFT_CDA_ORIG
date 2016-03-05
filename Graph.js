@@ -5,7 +5,7 @@
 *     This will return a new graph object. Call graph.init(timeStamp) to
 *     initialize the graph, call graph.draw(timeStamp) to update the graph.
 */
-RedwoodHighFrequencyTrading.factory("SVGGraphing", function () {
+RedwoodHighFrequencyTrading.factory("Graphing", function () {
    var api = {};
 
    //Call this function to create a new graph object. Pass in the id
