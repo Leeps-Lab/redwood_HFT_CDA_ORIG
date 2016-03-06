@@ -1,0 +1,42 @@
+//loads market events and price changes from dropbox CSVs
+    //basic CSV parsing with string.split
+    function loadCSVs () {
+        //Load market events
+        $http.get($scope.config.marketEventsURL).then(function(response) {
+            var rows = response.data.split("\n");
+
+            //Parse first market events CSV
+            for (var i = 0; i < rows.length-1; i++) {
+                $scope.marketEvents[i] = [];
+            }
+
+            for (var i = 0; i < rows.length-1; i++) {
+                if (rows[i] === "") continue;
+                var cells = rows[i].split(",");
+                for (var j = 0; j < cells.length; j++) {
+                    $scope.marketEvents[i][j] = isNaN (cells[j]) ? cells[j] : parseFloat (cells[j]);
+                }
+            }
+
+            //once market events has been loaded and parsed, load price changes
+            $http.get($scope.config.priceChangesURL).then(function(response) {
+                var rows = response.data.split("\n");
+
+                //Parse price changes CSV
+                for (var i = 0; i < rows.length-1; i++) {
+                    $scope.priceChanges[i] = [];
+                }
+
+                for (var i = 0; i < rows.length-1; i++) {
+                    if (rows[i] === "") continue;
+                    var cells = rows[i].split(",");
+                    for (var j = 0; j < cells.length; j++) {
+                        $scope.priceChanges[i][j] = parseFloat(cells[j]);
+                    }
+                }
+
+                //once price changes have finished loading, initialize the experiment
+                rs.synchronizationBarrier("init_round_" + rs.period).then(initExperiment());
+            });
+        });
+    }

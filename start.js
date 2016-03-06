@@ -5,28 +5,27 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
  "DataHistory",
  "MarketAlgorithm",
  "Graphing",
+ "GroupManager",
  "ConfigManager",
  "SynchronizedStopWatch",
  "$http",
- function ($scope, $interval, rs, dataHistory, marketAlgorithm, graphing, configManager, stopWatch, $http) {
+ function ($scope, $interval, rs, dataHistory, marketAlgorithm, graphing, groupManager, configManager, stopWatch, $http) {
 
     var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
-    var LATENCY = 1000;         // Milliseconds of latency that will occur when user not using high speed
 
     $scope.market_button_text = "Enter Market";
     $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
     $scope.in_market = false;
-    $scope.numTicks = 0;
     $scope.spread = 0;
-    $scope.testMEIndex = 0;
+    $scope.messageList = { "outBoundMessages" : [], "inBoundMessages" : [] };
+
 
     $scope.MESpreads = {}; //store other players' spread values when a market event occurs
 
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
-    $scope.tick = function(tick){
-        $scope.tradingGraph.draw(Date.now());
-        $scope.numTicks++;
+    $scope.update = function(){
+        //$scope.tradingGraph.draw(Date.now());
     }
 
     //First function to run when page is loaded
@@ -43,115 +42,45 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             priceChangesURL: null
         });
 
-        //Initiate new procedure to load data from external csv files
-        loadCSVs();
-    });
-
-    //loads market events and price changes from dropbox CSVs
-    //basic CSV parsing with string.split
-    function loadCSVs () {
-        //Load market events
-        $http.get($scope.config.marketEventsURL).then(function(response) {
-            var rows = response.data.split("\n");
-
-            //Parse first market events CSV
-            for (var i = 0; i < rows.length-1; i++) {
-                $scope.marketEvents[i] = [];
-            }
-
-            for (var i = 0; i < rows.length-1; i++) {
-                if (rows[i] === "") continue;
-                var cells = rows[i].split(",");
-                for (var j = 0; j < cells.length; j++) {
-                    $scope.marketEvents[i][j] = isNaN (cells[j]) ? cells[j] : parseFloat (cells[j]);
-                }
-            }
-
-            //once market events has been loaded and parsed, load price changes
-            $http.get($scope.config.priceChangesURL).then(function(response) {
-                var rows = response.data.split("\n");
-
-                //Parse price changes CSV
-                for (var i = 0; i < rows.length-1; i++) {
-                    $scope.priceChanges[i] = [];
-                }
-
-                for (var i = 0; i < rows.length-1; i++) {
-                    if (rows[i] === "") continue;
-                    var cells = rows[i].split(",");
-                    for (var j = 0; j < cells.length; j++) {
-                        $scope.priceChanges[i][j] = parseFloat(cells[j]);
+        // Parse config.groups for information - provides these variables:
+        // $scope.myId      -> id of this subject
+        // $scope.groupId   -> id of the group that this subject is in
+        // $scope.group     -> array of id's of ALL SUBJECTS in this subject's group
+        // $scope.others    -> array of id's of ALL OTHER SUBJECTS in this subject's group
+        // $scope.groupRoot -> id of the root subject of this group
+        // $scope.iAmRoot   -> boolean reflecting if this subject is the root subject for this group
+        $scope.myId = rs.user_id;
+        var i = 1;
+        var j = 0;
+        for(i; i < $scope.config.groups.length + 1; i++){
+            for(j = 0; j < $scope.config.groups[i-1].length; j++){
+                if($scope.config.groups[i-1][j] == $scope.myId){
+                    $scope.groupId = i;
+                    $scope.group = $scope.config.groups[i-1].slice();
+                    $scope.groupRoot = $scope.group[0];
+                    $scope.others = [];
+                    var z = 0;
+                    for(z; z < $scope.group.length; z++){
+                        if($scope.myId != $scope.group[z]){
+                            $scope.others.push($scope.group[z]);
+                        }
                     }
+                    $scope.iAmRoot = $scope.myId == $scope.groupRoot;
                 }
-
-                //initialize object containing other players' spreads
-                initMESpreads();
-
-                //once price changes have finished loading, initialize the experiment
-                rs.synchronizationBarrier("init_round_" + rs.period).then(initExperiment());
-            });
-        });
-    }
-
-    //Called after CSV's have been loaded, initializes the graph
-    function initExperiment () {
-        
-        var testvals = [
-            {price : 15, timestamp : 1000, uid : null},
-            {price : 20, timestamp : 1250, uid : null},
-            {price : 20, timestamp : 1300, uid : null},
-            {price : 8, timestamp : 1700, uid : null},
-            {price : 15, timestamp : 1800, uid : null}
-        ]
-
-        dataHistory.runtest();
-        marketAlgorithm.runtest();
-
-        $scope.tradingGraph = graphing.makeTradingGraph("graph1");
-        $scope.tradingGraph.init(Date.now(), $scope.priceChanges, []);
-
-        $interval($scope.tick, CLOCK_FREQUENCY);
-    }
-
-    function initMESpreads () {
-        $scope.MESpreads = {
-            time_a : {id : "buy", spreads : [-1, -1, -1, -1]},
-            time_b : {id : "buy", spreads : [-1, -1, -1, -1]},
-            time_c : {id : "sell", spreads : [-1, -1, -1, -1]}
-        }
-    }
-
-    //gets the fundamental market value at a given time from the price changes array
-    function getFundVal (time) {
-        var index = 0;
-        while (index < $scope.priceChanges.length && time > $scope.priceChanges[index + 1][0]) index++;
-        return $scope.priceChanges[index][1];
-    }
-
-    //stolen from bubbles
-    //returns an appropriate value to index players with inside groups
-    function indexFromId (id) {
-        var index = 0;
-        for (var i = 0; i < rs.subjects.length; i++) {
-            if (parseInt(rs.subjects[i].user_id) < id) index++;
-        }
-        return index;
-    }
-
-    //adds a spread to the list of spreads
-    //if the array is full, it checks to see if this player has the lowest spread
-    function addSpread (id, msg) {
-        //add spread to list
-        $scope.MESpreads ["time_" + msg.id].spreads [indexFromId (id)] = msg.spread;
-
-        //check to see if the list has been completely filled with actual spread values
-        if (!$scope.MESpreads ["time_" + msg.id].spreads.includes (-1)) {
-            //if it has, this nasty expression checks to see if this player has the lowest spread
-            if (Math.min.apply (null, $scope.MESpreads ["time_" + msg.id].spreads) == $scope.MESpreads ["time_" + msg.id].spreads [indexFromId (id)]) {
-                console.log("I win!");
             }
+        } // End of parsing config.groups
+
+        //Create market algorithm object with ability to attatch messages to the message waiting list
+        $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm();
+        $scope.tradingGraph = graphing.makeTradingGraph("graph1");
+
+        //If this is the root, create the group manager
+        if($scope.iAmRoot){
+            $http.get($scope.config.priceChangesURL).then(function(response) {
+                $scope.groupManager = groupManager.createGroupManager(response, rs.send);
+            });
         }
-    }
+    });
 
     $ ("#slider")
         .slider ({
@@ -179,18 +108,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         .click (function (event) {
             console.log("toggled market button");
             $scope.in_market = !$scope.in_market;
-
-            //when player joins market, send bid and ask orders at fund value +- 1/2 spread
-            if ($scope.in_market) {
-                var currtime = $scope.numTicks * CLOCK_FREQUENCY;
-                var currfundval = getFundVal (currtime);
-                var msg = {
-                    bid : currfundval + .5 * $scope.spread,
-                    ask : currfundval - .5 * $scope.spread,
-                    timestamp : currtime
-                }
-                rs.send ("player_join_market", msg);
-            }
             $scope.market_button_text = $scope.in_market ? "Leave Market" : "Enter Market";
         })
 
@@ -199,6 +116,59 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         .click (function (event) {
 
         })
+
+
+    function setListeners(){
+                //Functions for handling messages sent to group manager
+                function handleMsgToGM(message){
+                    if($scope.iAmRoot){
+                        $scope.groupManager.recvFromSubject(message);
+                    }
+                }
+
+                rs.on ("To_Group_Manager", function (msg){
+                    handleMsgToGM(msg);
+                });
+
+                rs.recv ("To_Group_Manager", function (uid, msg){
+                    handleMsgToGM(msg);
+                });
+
+
+                //Functions for handling messages sent from the group manager
+                function handleMsgFromGM(message){
+                    console.log("Recieved message from GM:" + message.asString());
+                }
+
+                rs.on ("From_Group_Manager", function (msg){
+                    handleMsgFromGM(msg);
+                });
+
+                rs.recv ("From_Group_Manager", function (uid, msg){
+                    handleMsgFromGM(msg);
+                });
+    }
+
+    //Functions for starting the experiment
+    function startExperiment(startTime){
+        $scope.startTime = startTime;
+        $interval($scope.update, CLOCK_FREQUENCY);
+        console.log($scope.startTime);
+        setListeners();
+        temp = new Message("ITCH", 100, "Subject " + String($scope.myId) + " is ready.");
+        rs.send("To_Group_Manager", temp);
+    }
+
+    rs.on ("Experiment_Begin", function (msg){
+        console.log("Begining at time: " + String(msg));
+        startExperiment(msg);
+    });
+
+    rs.recv ("Experiment_Begin", function (uid, msg){
+        console.log("Begining at time: " + String(msg));
+        startExperiment(msg);
+    });
+
 
     rs.on ("slide", function(msg){
         $ ("#slider-val").val (msg.action);
@@ -219,10 +189,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("This player outed!");
     });
 
-    rs.on ("send_spread", function (msg){
-        addSpread (rs.user_id, msg);
-    });
-
     rs.recv ("slide", function (uid, msg){
         console.log ("player " + uid + " updated their slider to: " + msg.action);
     });
@@ -239,8 +205,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("player " + uid + " outed!");
     });
 
-    rs.recv ("send_spread", function (uid, msg){
-        addSpread (uid, msg);
+    rs.recv ("sample", function (uid, msg){
+        //Do stuff here
     });
 
 }]);

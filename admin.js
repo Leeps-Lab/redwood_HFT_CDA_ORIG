@@ -1,4 +1,4 @@
-Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager", function($rootScope, $scope, ra, mm) {
+Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager", "$http", function($rootScope, $scope, ra, mm, $http) {
    var Display = { //Display controller
 
       initialize: function() {
@@ -137,8 +137,34 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
 
    ra.on_load(function () {
       resetGroups(); //Assign groups to users
+      
+      //INITIALIZE ADMIN FOR EXPERIMENT   **************************************
 
+      $scope.priceChanges = [];
+      var priceURL = ra.get_config(1, 0).priceChangesURL;
+      console.log(priceURL);
       $scope.market = mm.createMarketManager();
+      $http.get(priceURL).then(function(response) {
+         var rows = response.data.split("\n");
+
+         //Parse price changes CSV
+         for (var i = 0; i < rows.length-1; i++) {
+            $scope.priceChanges[i] = [];
+         }
+
+         for (var i = 0; i < rows.length-1; i++) {
+            if (rows[i] === "") continue;
+            var cells = rows[i].split(",");
+            for (var j = 0; j < cells.length; j++) {
+               $scope.priceChanges[i][j] = parseFloat(cells[j]);
+            }
+         }
+
+         console.log($scope.priceChanges);
+
+      });
+
+      //DONE INITIALIZING ADMIN FOR EXPERIEMENT    ************************************
    });
 
    ra.recv ("player_join_market", function (uid, msg) {
