@@ -18,7 +18,9 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
     $scope.in_market = false;
     $scope.spread = 0;
-    $scope.messageList = { "outBoundMessages" : [], "inBoundMessages" : [] };
+    $scope.outBoundMessages = [];
+    $scope.inBoundMessages = [];
+    $scope.latency = 1000;
 
 
     $scope.MESpreads = {}; //store other players' spread values when a market event occurs
@@ -26,6 +28,40 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.update = function(){
         //$scope.tradingGraph.draw(Date.now());
+        if($scope.iAmRoot){
+            $scope.groupManager.update();
+        }
+        
+        //Check the inbound message wait list to see if a msg needs to be sent
+        while($scope.inBoundMessages.length > 0 
+              && Date.now() > $scope.inBoundMessages[0].actionTime){
+            var msg = $scope.inBoundMessages[0].msg;
+            updateMsgTime(msg);
+            $scope.logger.logSend(msg, "Market Algorithm");
+            $scope.inBoundMessages.shift();
+            $scope.mAlgorithm.recvMessage(msg);
+        }
+
+        //Check the inbound message wait list to see if a msg needs to be sent
+        while($scope.outBoundMessages.length > 0 
+              && Date.now() > $scope.outBoundMessages[0].actionTime){
+            var msg = $scope.outBoundMessages[0].msg;
+            updateMsgTime(msg);
+            $scope.logger.logSend(msg, "Group Manager");
+            $scope.outBoundMessages.shift();
+            rs.send("To_Group_Manager", msg);
+        }
+    }
+
+    //Sorts a message list by using actionTime
+    $scope.sortMsgList = function(msgList){
+        msgList.sort(function(a, b){
+            if (a.actionTime < b.actionTime)
+                return -1;
+            if (a.actionTime > b.actionTime)
+                return 1;
+            return 0;
+        });
     }
 
     //First function to run when page is loaded
@@ -70,8 +106,21 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             }
         } // End of parsing config.groups
 
+        //Create the logger for this start.js page
+        $scope.logger = new MessageLogger("Subject Manager" + String($scope.myId), "yellow", "subject-log");
+
+        //Create reciever function that will recieve messages from the market algorithm
+        var recvFromMarketAlg = function(msg){
+            updateMsgTime(msg);
+            $scope.logger.logRecv(msg, "Market Algorithm");
+            var packedMsg = packMsg(msg, $scope.latency);
+            $scope.logger.logSendWait(packedMsg.msg);
+            $scope.outBoundMessages.push(packedMsg);
+            $scope.sortMsgList($scope.outBoundMessages);
+        }
+
         //Create market algorithm object with ability to attatch messages to the message waiting list
-        $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm();
+        $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm($scope.myId, recvFromMarketAlg);
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
 
         //If this is the root, create the group manager
@@ -137,7 +186,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
                 //Functions for handling messages sent from the group manager
                 function handleMsgFromGM(message){
-                    console.log("Recieved message from GM:" + message.asString());
+                    updateMsgTime(message);
+                    $scope.logger.logRecv(message, "group manager");
+                    var packedMsg = packMsg(message, $scope.latency);
+                    $scope.logger.logRecvWait(packedMsg.msg);
+                    $scope.inBoundMessages.push(packedMsg);
+                    $scope.sortMsgList($scope.inBoundMessages);
                 }
 
                 rs.on ("From_Group_Manager", function (msg){
@@ -152,11 +206,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     //Functions for starting the experiment
     function startExperiment(startTime){
         $scope.startTime = startTime;
-        $interval($scope.update, CLOCK_FREQUENCY);
-        console.log($scope.startTime);
         setListeners();
-        temp = new Message("ITCH", 100, "Subject " + String($scope.myId) + " is ready.");
-        rs.send("To_Group_Manager", temp);
+        $interval($scope.update, CLOCK_FREQUENCY);
     }
 
     rs.on ("Experiment_Begin", function (msg){

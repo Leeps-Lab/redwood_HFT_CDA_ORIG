@@ -3,7 +3,7 @@
       <div time-remaining="timeRemaining" time-total="config.timeLimit"></div>
       <div class="container">
 
-      <div class="ui-container">
+      <div class="ui-container" id="ui">
         <!--Top two screens-->
         <div class="row" style="margin-bottom:20px;">
 
@@ -26,21 +26,21 @@
           <div class="col-xs-4" style="height:320px; padding-right:20px">
             <div class="bottom-left-screen screen">
               <div id="buttons-container">
-                  <div class="button-container">
-                    <button id="snipe" class="btn btn-danger" type="button">
-                      Snipe!
-                    </buttton>
-                  </div>
-                  <div class="button-container">
-                    <button id="speed" class="btn btn-warning" type="button">
-                      Speed
-                    </buttton>
-                  </div>
-                  <div class="button-container">
-                    <button id="market_button" ng-click="toggle_market_button()" class="btn btn-primary" type="button">
-                      {{market_button_text}}
-                    </button>
-                  </div>
+                <div class="button-container">
+                  <button id="snipe" class="btn btn-danger" type="button">
+                    Snipe!
+                  </button>
+                </div>
+                <div class="button-container">
+                  <button id="speed" class="btn btn-warning" type="button">
+                    Speed
+                  </button>
+                </div>
+                <div class="button-container">
+                  <button id="market_button" ng-click="toggle_market_button()" class="btn btn-primary" type="button">
+                    {{market_button_text}}
+                  </button>
+                </div>
               </div>
               <div id="slider-container">
                   <input id="slider-val" value="5" readonly>
@@ -49,13 +49,21 @@
             </div>
           </div>
 
+
           <!--Bottom right screen-->
           <div class="col-xs-8 screen" style="height:320px; background-color:yellow;">
-              <button id="send_spread" class="btn btn-primary" type="button">Send Spread</buttton>
+              <button id="send_spread" class="btn btn-primary" type="button">Send Spread</button>
           </div>
         </div>
         <!--End Screens-->
-      </div>
+
+        <!-- for logging messages -->
+        <div class="terminal-wrap">
+          <div class="terminal-head">Subject Message Log</div>
+          <div id="subject-log" class="terminal"></div>
+        </div>
+
+      </div><!-- ui-container -->
 
       </div>
     </div>
