@@ -6,11 +6,13 @@ Redwood.factory("MarketManager", function () {
       var market = {};
 
       market.recvMessage = function(message){
+        updateMsgTime(message);
 
+        //Code for recieving message goes here for 
       }
 
       market.sendMessage = function(message){
-        
+        //Assume that this function works
       }
 
       //array to hold bids
