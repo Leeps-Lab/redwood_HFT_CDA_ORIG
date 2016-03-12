@@ -5,6 +5,14 @@ Redwood.factory("MarketManager", function () {
    api.createMarketManager = function(){
       var market = {};
 
+      market.recvMessage = function(message){
+
+      }
+
+      market.sendMessage = function(message){
+        
+      }
+
       //array to hold bids
       market.bids = [];
       //array to hold asks
