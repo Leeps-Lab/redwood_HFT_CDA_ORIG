@@ -11,10 +11,10 @@ Redwood.factory("MarketManager", function () {
         updateMsgTime(message);
         switch (message.message[0]) {
             case "insertBuy":
-                market.CDABook.insertBuy (message.message[1], message.message[2]);
+                market.CDABook.insertBuy (message.message[1], message.message[2], message.timestamp);
                 break;
             case "insertSell":
-                market.CDABook.insertSell (message.message[1], message.message[2]);
+                market.CDABook.insertSell (message.message[1], message.message[2], message.timestamp);
                 break;
             case "removeBuy":
                 market.CDABook.removeBuy (message.message[1]);
@@ -68,7 +68,7 @@ Redwood.factory("MarketManager", function () {
           var index = market.CDABook.buyOrders.findIndex (function (element) {
               return element.id === idToRemove;
           });
-          if (index === -1) {
+          if (index == -1) {
              console.error("marketManager: tried to remove nonexistant buy order");
              return null;
           }
@@ -83,7 +83,7 @@ Redwood.factory("MarketManager", function () {
           var index = market.CDABook.sellOrders.findIndex (function (element) {
               return element.id === idToRemove;
           });
-          if (index === -1) {
+          if (index == -1) {
              console.error("marketManager: tried to remove nonexistant sell order");
              return null;
           }
@@ -98,7 +98,7 @@ Redwood.factory("MarketManager", function () {
           var index = market.CDABook.buyOrders.findIndex (function (element) {
               return element.id === idToUpdate;
           });
-          if (index === -1) {
+          if (index == -1) {
              console.error("marketManager: tried to update nonexistant buy order");
              return;
           }
@@ -112,7 +112,7 @@ Redwood.factory("MarketManager", function () {
           var index = market.CDABook.sellOrders.findIndex (function (element) {
               return element.id === idToUpdate;
           });
-          if (index === -1) {
+          if (index == -1) {
              console.error("marketManager: tried to update nonexistant sell order");
              return;
           }
