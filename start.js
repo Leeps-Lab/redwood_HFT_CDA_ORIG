@@ -18,9 +18,9 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
     $scope.in_market = false;
     $scope.spread = 0;
-    $scope.outBoundMessages = [];
-    $scope.inBoundMessages = [];
-    $scope.latency = 1000;
+    $scope.sendWaitListToGroupManager = [];
+    $scope.sendWaitListToMarketAlg = [];
+    $scope.latency = 0;
 
 
     $scope.MESpreads = {}; //store other players' spread values when a market event occurs
@@ -33,27 +33,27 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         }
         
         //Check the inbound message wait list to see if a msg needs to be sent
-        while($scope.inBoundMessages.length > 0 
-              && Date.now() > $scope.inBoundMessages[0].actionTime){
-            var msg = $scope.inBoundMessages[0].msg;
+        while($scope.sendWaitListToMarketAlg.length > 0 
+              && Date.now() > $scope.sendWaitListToMarketAlg[0].actionTime){
+            var msg = $scope.sendWaitListToMarketAlg[0].msg;
             updateMsgTime(msg);
             $scope.logger.logSend(msg, "Market Algorithm");
-            $scope.inBoundMessages.shift();
+            $scope.sendWaitListToMarketAlg.shift();
             $scope.mAlgorithm.recvMessage(msg);
         }
 
-        //Check the inbound message wait list to see if a msg needs to be sent
-        while($scope.outBoundMessages.length > 0 
-              && Date.now() > $scope.outBoundMessages[0].actionTime){
-            var msg = $scope.outBoundMessages[0].msg;
+        //Check the outbound message wait list to see if a msg needs to be sent
+        while($scope.sendWaitListToGroupManager.length > 0 
+              && Date.now() > $scope.sendWaitListToGroupManager[0].actionTime){
+            var msg = $scope.sendWaitListToGroupManager[0].msg;
             updateMsgTime(msg);
             $scope.logger.logSend(msg, "Group Manager");
-            $scope.outBoundMessages.shift();
+            $scope.sendWaitListToGroupManager.shift();
             rs.send("To_Group_Manager", msg);
         }
     }
 
-    //Sorts a message list by using actionTime
+    // Sorts a message list with the lowest actionTime first
     $scope.sortMsgList = function(msgList){
         msgList.sort(function(a, b){
             if (a.actionTime < b.actionTime)
@@ -62,6 +62,34 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 return 1;
             return 0;
         });
+    }
+
+    // Sends a message to the Market Algorithm
+    $scope.sendToMarketAlg = function(msg, delay){
+        if(delay == 0) {
+            $scope.logger.logSend(msg, "Market Algorithm");
+            $scope.mAlgorithm.recvMessage(msg);
+        }
+        else {
+            var packedMsg = packMsg(msg, delay);
+            $scope.logger.logSendWait(packedMsg.msg);
+            $scope.sendWaitListToMarketAlg.push(packedMsg);
+            $scope.sortMsgList($scope.sendWaitListToMarketAlg);
+        }
+    }
+
+    // Sends a message to the Group Manager
+    $scope.sendToGroupManager = function(msg, delay){
+        if(delay == 0) {
+            $scope.logger.logSend(msg, "Group Manager");
+            rs.send("To_Group_Manager", msg);
+        }
+        else {
+            var packedMsg = packMsg(msg, delay);
+            $scope.logger.logSendWait(packedMsg.msg);
+            $scope.sendWaitListToGroupManager.push(packedMsg);
+            $scope.sortMsgList($scope.sendWaitListToGroupManager);
+        }
     }
 
     //First function to run when page is loaded
@@ -113,10 +141,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         var recvFromMarketAlg = function(msg){
             updateMsgTime(msg);
             $scope.logger.logRecv(msg, "Market Algorithm");
-            var packedMsg = packMsg(msg, $scope.latency);
-            $scope.logger.logSendWait(packedMsg.msg);
-            $scope.outBoundMessages.push(packedMsg);
-            $scope.sortMsgList($scope.outBoundMessages);
+            $scope.sendToGroupManager(msg, $scope.latency);
         }
 
         //Create market algorithm object with ability to attatch messages to the message waiting list
@@ -156,6 +181,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         .button()
         .click (function (event) {
             console.log("toggled market button");
+            rs.send ("marketStatus");
             $scope.in_market = !$scope.in_market;
             $scope.market_button_text = $scope.in_market ? "Leave Market" : "Enter Market";
         })
@@ -188,10 +214,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 function handleMsgFromGM(message){
                     updateMsgTime(message);
                     $scope.logger.logRecv(message, "group manager");
-                    var packedMsg = packMsg(message, $scope.latency);
-                    $scope.logger.logRecvWait(packedMsg.msg);
-                    $scope.inBoundMessages.push(packedMsg);
-                    $scope.sortMsgList($scope.inBoundMessages);
+                    $scope.sendToMarketAlg(message, $scope.latency);
                 }
 
                 rs.on ("From_Group_Manager", function (msg){
@@ -252,8 +275,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("player " + uid + " speeded!");
     });
 
-    rs.recv ("out", function (uid){
-        console.log ("player " + uid + " outed!");
+    rs.recv ("marketStatus", function (uid){
+        
     });
 
     rs.recv ("sample", function (uid, msg){
