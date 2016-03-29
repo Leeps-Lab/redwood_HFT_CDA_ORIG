@@ -162,6 +162,20 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
 
          console.log($scope.priceChanges);
 
+         //FOR TESTING- Produces messages that simulate changes in the fundamental value
+         $("body").append('<button type="button" id="genpc" class="btn btn-default" style="margin-top:20px">Generate Price Change</button>');
+         $ ("#genpc")
+        .button()
+        .click (function (event) {
+            var newPrice = 1 + Math.random()*24;
+            var msg = new Message("OUCH", "FPC", [Date.now(), newPrice]);
+            console.log(msg.asString);
+            ra.sendCustom("From_Group_Manager", msg, 0, 1, 1);
+        })
+
+        var startMsg = new Message("OUCH", "START", [Date.now(), 15]);
+        ra.sendCustom("From_Group_Manager", startMsg, 0, 1, 1);
+
       });
 
       //DONE INITIALIZING ADMIN FOR EXPERIEMENT    ************************************

@@ -12,12 +12,6 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
       marketAlgorithm.uid = uid;
       marketAlgorithm.sendToSubjectManager = sendToSubjectManager;   //Sends message to subject manager, function obtained as parameter
 
-      marketAlgorithm.runTest = function(){
-         console.log("running test for market alg. object");
-         var temp = new Message("OUCH", this.latency, "Hello World");
-         console.log(temp.asString());
-      }
-
       marketAlgorithm.sendMessage = function(msg){
          this.logger.logSend(msg, "Subject Manager");
          this.sendToSubjectManager(msg);
@@ -37,8 +31,10 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
       marketAlgorithm.recvMessage = function(msg){
          this.logger.logRecv(msg, "Subject Manager");
-         var outmsg = new Message("OUCH", 0, "Subject" + String(uid) + " acknowledges price change");
-         this.sendMessage(outmsg);
+         
+         if(msg.msgType == "FPC"){
+            this.logger.logString(msg.msgData);
+         }
       }
 
       return marketAlgorithm;

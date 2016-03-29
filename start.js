@@ -20,7 +20,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.spread = 0;
     $scope.sendWaitListToGroupManager = [];
     $scope.sendWaitListToMarketAlg = [];
-    $scope.latency = 0;
+    $scope.latency = 1000;
 
 
     $scope.MESpreads = {}; //store other players' spread values when a market event occurs

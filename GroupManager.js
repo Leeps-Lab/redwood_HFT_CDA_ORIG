@@ -38,13 +38,13 @@ RedwoodHighFrequencyTrading.factory("GroupManager", function () {
 
       //Looks for change in fundemental price and sends message if change is found
       groupManager.update = function(){
-         while(this.priceIndex < this.priceChanges.length
+         /*while(this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
             var msg = new Message("OUCH", 0, "Fundemental price changed to " + String(this.priceChanges[this.priceIndex][1]));
             this.logger.logSend(msg, "subjects");
             this.rssend("From_Group_Manager", msg);
             this.priceIndex++;
-         }
+         }*/
       }
 
       //Send out the message that starts the experiment

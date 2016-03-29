@@ -1,10 +1,10 @@
-function Message(protocol, delay, message){
+function Message(protocol, msgType, msgData){
    this.protocol = protocol;
    this.timeStamp = Date.now();
-   this.delay = delay;
-   this.message = message;
+   this.msgType = msgType;
+   this.msgData = msgData;
    this.sendTime = this.timeStamp + this.delay;
-   this.asString = "Message using protocol: " + this.protocol + " generated at " + String(this.timeStamp) + " with latency delay " + String(delay);
+   this.asString = "Message using protocol: " + this.protocol + " generated at " + String(this.timeStamp);
 }
 
 function updateMsgTime(msg){
@@ -36,7 +36,7 @@ function MessageLogger(name, nameColor, elementId){
          + this.nameColor + '"> ' + this.name 
          + '</span> <span>sent message to ' + reciever + ' at</span> <span class="timestamp">' 
          + millisToTime(msg.timeStamp) + '</span> <span> containing:</span> <span class="message">'
-         + msg.message + '</span></div>');
+         + msg.msgType + '</span></div>');
       this.scrollDown();
    }
 
@@ -45,7 +45,7 @@ function MessageLogger(name, nameColor, elementId){
          + this.nameColor + '"> ' + this.name 
          + '</span> <span>recieved message from ' + sender +' at </span> <span class="timestamp">' 
          + millisToTime(msg.timeStamp) + '</span> <span> containing:</span> <span class="message">'
-         + msg.message + '</span></div>');
+         + msg.msgType + '</span></div>');
       this.scrollDown();
    }
 
@@ -55,7 +55,7 @@ function MessageLogger(name, nameColor, elementId){
          + '</span> <span>out wait list at</span> <span class="timestamp">' 
          + millisToTime(msg.timeStamp) + '</span> <span> delay</span> <span class="delay">' 
          + String(msg.delay) + '</span> <span> containing:</span> <span class="message">'
-         + msg.message + '</span></div>');
+         + msg.msgType + '</span></div>');
       this.scrollDown();
    }
 
@@ -65,7 +65,14 @@ function MessageLogger(name, nameColor, elementId){
          + '</span> <span>in wait list at</span> <span class="timestamp">' 
          + millisToTime(msg.timeStamp) + '</span> <span> delay</span> <span class="delay">' 
          + String(msg.delay) + '</span> <span> containing:</span> <span class="message">'
-         + msg.message + '</span></div>');
+         + msg.msgType + '</span></div>');
+      this.scrollDown();
+   }
+
+   this.logString = function(str){
+      this.element.append('<div class="log-line"><span style="color:' 
+         + this.nameColor + '"> ' + this.name 
+         + '</span> <span>' + str + '</span></div>');
       this.scrollDown();
    }
 
