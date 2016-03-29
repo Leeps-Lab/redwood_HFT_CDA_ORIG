@@ -27,7 +27,9 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.update = function(){
-        //$scope.tradingGraph.draw(Date.now());
+        
+        $scope.tradingGraph.draw($scope.dHistory);
+        
         if($scope.iAmRoot){
             $scope.groupManager.update();
         }
@@ -150,6 +152,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm($scope.myId, recvFromMarketAlg);
         $scope.dHistory = dataHistory.createDataHistory();
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
+        $scope.tradingGraph.init();
 
         //If this is the root, create the group manager
         if($scope.iAmRoot){
@@ -183,10 +186,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $ ("#market_button")
         .button()
         .click (function (event) {
-            console.log("toggled market button");
             rs.send ("marketStatus");
-            $scope.in_market = !$scope.in_market;
-            $scope.market_button_text = $scope.in_market ? "Leave Market" : "Enter Market";
         })
 
     $ ("#send_spread")
@@ -262,10 +262,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("This player speeded!");
     });
 
-    rs.on ("out", function(){
-        console.log ("This player outed!");
-    });
-
     rs.recv ("slide", function (uid, msg){
         console.log ("player " + uid + " updated their slider to: " + msg.action);
     });
@@ -278,8 +274,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("player " + uid + " speeded!");
     });
 
-    rs.recv ("marketStatus", function (uid){
-        
+    rs.on ("marketStatus", function (uid){
+        $scope.in_market = !$scope.in_market;
+        $scope.market_button_text = $scope.in_market ? "Leave Market" : "Enter Market";
+        var msgType = $scope.in_market ? "UENTM" : "UEXTM";
+        var msg = new Message("USER", msgType, -1);
+        $scope.sendToMarketAlg(msg, 0);
     });
 
     rs.recv ("sample", function (uid, msg){

@@ -135,21 +135,21 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       }
 
 
-      graph.drawPriceLine = function(graphRefr, drawData){
+      graph.drawPriceLine = function(graphRefr, dataHistory){
          //Draw the price line
          this.svg.selectAll("line.price-line")
-            .data(drawData)
+            .data(dataHistory.fundementalPrices)
             .enter()
             .append("line")
-            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis( d.price[0] + graphRefr.startTime ); })
+            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis( d[0] ); })
             .attr("x2", function(d, i){
-               if(i != drawData.length-1)
-                  return graphRefr.mapTimeToXAxis( drawData[i+1].price[0] + graphRefr.startTime );
+               if(i != dataHistory.fundementalPrices.length-1)
+                  return graphRefr.mapTimeToXAxis( dataHistory.fundementalPrices[i+1][0] );
                else
                   return graphRefr.elementWidth - graphRefr.axisLabelWidth;
             })
-            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d.price[1]); })
-            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d.price[1]); })
+            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[1]); })
+            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[1]); })
             .attr("class", "price-line");
       }
 
@@ -216,45 +216,31 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       }
 
 
-      graph.draw = function(timeStamp){
+      graph.draw = function(dataHistory){
          //Clear the svg element
          this.svg.selectAll("*").remove();
-         //Record time
-         this.currentTime = timeStamp;
 
          var graphRefr = this;
 
-         var drawData = this.dataObj.drawData;
+         this.currentTime = Date.now();
 
+         //Check if it is necisary to recalculate timeLines
          if(this.currentTime > this.timeLines[0] + this.timeIncriment){
             this.timeLines = this.calcTimeGridLines(this.currentTime);
          }
 
          this.drawTimeGridLines(graphRefr);
          this.drawPriceGridLines(graphRefr);
-         this.drawPriceLine(graphRefr, drawData);
-         this.drawMarketEvents(graphRefr, drawData);
-         this.drawMinSpread(graphRefr, drawData);
-         this.drawPriceAxis(graphRefr);
+         this.drawPriceLine(graphRefr, dataHistory);
+         //this.drawMarketEvents(graphRefr, drawData);
+         //this.drawMinSpread(graphRefr, drawData);
+         //this.drawPriceAxis(graphRefr);
       }
 
-      graph.init = function(timeStamp, priceChanges, marketEvents){
+      graph.init = function(){
          this.calculateSize();
          this.priceLines = this.calcPriceGridLines();
-         this.timeLines = this.calcTimeGridLines(this.currentTime);
-         this.startTime = timeStamp;
-         var buyIndex = 0;
-         var sellIndex = 0;
-         var i = 0;
-
-         //Create price segment for each time the price changes
-         for(i; i < priceChanges.length; i++)
-            this.dataObj.drawData.push({price: priceChanges[i], buys: [], sells: []});
-
-         this.dataObj.drawData[0].buys.push(500);
-
-         console.log(this.dataObj.drawData);
-         this.draw(timeStamp);
+         this.timeLines = this.calcTimeGridLines(Date.now());
       }
 
       return graph;
