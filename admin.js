@@ -167,7 +167,7 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
          $ ("#genpc")
         .button()
         .click (function (event) {
-            var newPrice = 1 + Math.random()*24;
+            var newPrice = 10 + Math.random()*10;
             var msg = new Message("OUCH", "FPC", [Date.now(), newPrice]);
             console.log(msg.asString);
             ra.sendCustom("From_Group_Manager", msg, 0, 1, 1);

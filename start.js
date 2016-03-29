@@ -30,6 +30,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         
         $scope.tradingGraph.draw($scope.dHistory);
         
+        //Update group manager WILL BE MOVED TO ADMIN PAGE
         if($scope.iAmRoot){
             $scope.groupManager.update();
         }
@@ -154,7 +155,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init();
 
-        //If this is the root, create the group manager
+        //If this is the root, create the group manager WILL BE MOVED TO ADMIN PAGE
         if($scope.iAmRoot){
             $http.get($scope.config.priceChangesURL).then(function(response) {
                 $scope.groupManager = groupManager.createGroupManager(response, rs.send);
