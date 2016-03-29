@@ -21,7 +21,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.minPrice = 5;              //min price on price axis
       graph.maxPrice = 25;             //max price on price axis
       graph.priceGridIncriment = 5;    //amount between each line on price axis
-      graph.timeInterval = 120;         //Amount in seconds displayed at once on full time axis
+      graph.timeInterval = 30;         //Amount in seconds displayed at once on full time axis
       graph.timeIncriment = 5;         //Amount in seconds between lines on time axis
       graph.currentTime = 0;           //Time displayed on graph
       graph.priceLines = [];           //
@@ -243,7 +243,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.drawPriceLine(graphRefr, dataHistory);
          //this.drawMarketEvents(graphRefr, drawData);
          //this.drawMinSpread(graphRefr, drawData);
-         //this.drawPriceAxis(graphRefr);
+         this.drawPriceAxis(graphRefr);
       }
 
       graph.init = function(){

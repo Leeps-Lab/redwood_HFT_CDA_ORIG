@@ -9,6 +9,11 @@ RedwoodHighFrequencyTrading.factory("GroupManager", function () {
       groupManager.inBoundMessages = [];
       groupManager.priceIndex = 0;
 
+      console.log("hello");
+      console.log(groupManager.rssend);
+      console.log(sendFunction);
+
+
       //Add the logging terminal to the ui section of the html
       $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group Message Log</div><div id="group-log" class="terminal"></div></div>');
       groupManager.logger = new MessageLogger("Group Manager", "#5555FF", "group-log");
@@ -28,12 +33,19 @@ RedwoodHighFrequencyTrading.factory("GroupManager", function () {
 
       //Initialize functions
       groupManager.sendToSubjects = function(message){
-         rssend("From_Group_Manager", message);
+         this.rssend("From_Group_Manager", message);
       }
 
       groupManager.recvFromSubject = function(msg){
          updateMsgTime(msg);
          this.logger.logRecv(msg, "subjects");
+
+         //FOR TESTING ONLY
+         if(msg.msgType == "EBUY"){
+            console.log("RANNN");
+            var nMsg = new Message("ITCH", "C_EBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
       }
 
       //Looks for change in fundemental price and sends message if change is found

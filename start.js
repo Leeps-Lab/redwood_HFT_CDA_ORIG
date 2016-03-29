@@ -14,13 +14,16 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
 
     $scope.market_button_text = "Enter Market";
+    $scope.speed_button_text = "Turn On Speed";
     $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
     $scope.in_market = false;
+    $scope.using_speed = false;
     $scope.spread = 0;
     $scope.sendWaitListToGroupManager = [];
     $scope.sendWaitListToMarketAlg = [];
-    $scope.latency = 1000;
+    $scope.maxLatency = 1000
+    $scope.latency = $scope.maxLatency;
 
 
     $scope.MESpreads = {}; //store other players' spread values when a market event occurs
@@ -260,7 +263,9 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     });
 
     rs.on ("speed", function(){
-        console.log ("This player speeded!");
+        $scope.using_speed = !$scope.using_speed;
+        $scope.speed_button_text = $scope.using_speed ? "Turn Off Speed" : "Turn On Speed";
+        $scope.latency = $scope.using_speed ? 0 : $scope.maxLatency;
     });
 
     rs.recv ("slide", function (uid, msg){
