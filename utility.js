@@ -1,3 +1,4 @@
+// Message object. Used to communicate between group manager, subject manager, and market algorithm
 function Message(protocol, msgType, msgData){
    this.protocol = protocol;
    this.timeStamp = Date.now();
@@ -7,15 +8,18 @@ function Message(protocol, msgType, msgData){
    this.asString = "Message using protocol: " + this.protocol + " generated at " + String(this.timeStamp);
 }
 
+// Updates timestamp of message to current timestamp
 function updateMsgTime(msg){
    msg.timeStamp = Date.now();
 }
 
+// Returns packed message with "actionTime" tag used to simulate latency
 function packMsg(msg, delay){
    msg.delay = delay;
    return{"actionTime" : msg.timeStamp + msg.delay, "msg" : msg};
 }
 
+// Converts timestamp to readable time
 function millisToTime(millis){
    var date = new Date(millis);
    var str = '';
@@ -26,6 +30,7 @@ function millisToTime(millis){
    return str;
 }
 
+// Logger object used to debug messages as they are recieved and sent
 function MessageLogger(name, nameColor, elementId){
    this.name = name;
    this.nameColor = nameColor;
