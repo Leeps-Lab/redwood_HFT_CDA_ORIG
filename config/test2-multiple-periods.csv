@@ -1,0 +1,6 @@
+period,subject,groups,startingWealth,marketEventsURL,priceChangesURL
+1,default,"[[1,2,3,4]]",500,https://dl.dropboxusercontent.com/s/u8webax29e99z1a/market_events.csv?dl=1,https://dl.dropboxusercontent.com/s/bjp8lq2qky4ztnj/price_changes.csv?dl=1
+2,default,"[[1,2,3,4]]",500,https://dl.dropboxusercontent.com/s/u8webax29e99z1a/market_events.csv?dl=1,https://dl.dropboxusercontent.com/s/bjp8lq2qky4ztnj/price_changes.csv?dl=1
+3,default,"[[1,2,3,4]]",500,https://dl.dropboxusercontent.com/s/u8webax29e99z1a/market_events.csv?dl=1,https://dl.dropboxusercontent.com/s/bjp8lq2qky4ztnj/price_changes.csv?dl=1
+4,default,"[[1,2,3,4]]",500,https://dl.dropboxusercontent.com/s/u8webax29e99z1a/market_events.csv?dl=1,https://dl.dropboxusercontent.com/s/bjp8lq2qky4ztnj/price_changes.csv?dl=1
+5,default,"[[1,2,3,4]]",500,https://dl.dropboxusercontent.com/s/u8webax29e99z1a/market_events.csv?dl=1,https://dl.dropboxusercontent.com/s/bjp8lq2qky4ztnj/price_changes.csv?dl=1

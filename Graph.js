@@ -21,7 +21,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.minPrice = 5;              //min price on price axis
       graph.maxPrice = 25;             //max price on price axis
       graph.priceGridIncriment = 5;    //amount between each line on price axis
-      graph.timeInterval = 30;         //Amount in seconds displayed at once on full time axis
+      graph.timeInterval = 120;         //Amount in seconds displayed at once on full time axis
       graph.timeIncriment = 5;         //Amount in seconds between lines on time axis
       graph.currentTime = 0;           //Time displayed on graph
       graph.priceLines = [];           //
@@ -108,6 +108,15 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("width", this.timeIncriment / this.timeInterval * (this.elementWidth - this.axisLabelWidth))
             .attr("height", this.elementHeight)
             .attr("class", function(d){return graphRefr.getTimeGridClass(d);});
+         //If necisarry, draw the dark gray space to signify the "dead zone" before exp. started
+         if(this.currentTime < this.startTime + this.timeInterval * 1000){
+            this.svg.append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", this.mapTimeToXAxis(this.startTime))
+            .attr("height", this.elementHeight)
+            .attr("class", "dead-zone");
+         }
          //Draw labels for time gridlines
          this.svg.selectAll("text.time-grid-line-text")
             .data(this.timeLines)
@@ -238,6 +247,10 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       }
 
       graph.init = function(){
+
+         //FOR NOW USE THIS TIME AS START TIME Eventually will get this from admin page
+         this.startTime = Date.now();
+
          this.calculateSize();
          this.priceLines = this.calcPriceGridLines();
          this.timeLines = this.calcTimeGridLines(Date.now());

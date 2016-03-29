@@ -30,6 +30,10 @@
    fill: rgb(215, 215, 215);
 }
 
+.dead-zone{
+   fill: rgb(200, 200, 200);
+}
+
 .price-line{
    stroke: rgb(50, 50, 150);
    stroke-width:1;
