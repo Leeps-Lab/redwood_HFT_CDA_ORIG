@@ -1,30 +1,22 @@
-RedwoodHighFrequencyTrading.factory("GroupManager", function () {
+Redwood.factory("GroupManager", function () {
    var api = {};
 
-   api.createGroupManager = function(priceLinesFile, sendFunction){
+   api.createGroupManager = function(priceLinesArray, sendFunction, groupNumber){
       var groupManager = {};
-      groupManager.priceChanges = [];
-      groupManager.rssend = sendFunction;
+      groupManager.priceChanges = priceLinesArray;
       groupManager.outBoundMessages = [];
       groupManager.inBoundMessages = [];
       groupManager.priceIndex = 0;
 
-      //Add the logging terminal to the ui section of the html
-      $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group Message Log</div><div id="group-log" class="terminal"></div></div>');
-      groupManager.logger = new MessageLogger("Group Manager", "#5555FF", "group-log");
+      groupManager.rssend = function (key, value) {
+          sendFunction (key, value, "admin", 1, groupNumber);
+      }
 
-      //Parse the price lines file
-      var rows = priceLinesFile.data.split("\n");
-      for (var i = 0; i < rows.length-1; i++) {
-         groupManager.priceChanges[i] = [];
-      }
-      for (var i = 0; i < rows.length-1; i++) {
-         if (rows[i] === "") continue;
-         var cells = rows[i].split(",");
-         for (var j = 0; j < cells.length; j++) {
-            groupManager.priceChanges[i][j] = parseFloat(cells[j]);
-         }
-      }
+      //Add the logging terminal to the ui section of the html
+      $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group ' + groupNumber + ' Message Log</div><div id="group-' + groupNumber + '-log" class="terminal"></div></div>');
+      groupManager.logger = new MessageLogger("Group Manager", "#5555FF", "group-" + groupNumber + "-log");
+
+      //changed to accept a pre-processed price changes array
 
       //Initialize functions
       groupManager.sendToSubjects = function(message){
@@ -36,20 +28,23 @@ RedwoodHighFrequencyTrading.factory("GroupManager", function () {
          this.logger.logRecv(msg, "subjects");
       }
 
-      //Looks for change in fundemental price and sends message if change is found
+      //Looks for change in fundamental price and sends message if change is found
       groupManager.update = function(){
          while(this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
-            var msg = new Message("OUCH", 0, "Fundemental price changed to " + String(this.priceChanges[this.priceIndex][1]));
+            var msg = new Message("OUCH", 0, "Fundamental price changed to " + String(this.priceChanges[this.priceIndex][1]));
             this.logger.logSend(msg, "subjects");
             this.rssend("From_Group_Manager", msg);
             this.priceIndex++;
-         }
+        }
       }
 
-      //Send out the message that starts the experiment
-      groupManager.startTime = Date.now();
-      groupManager.rssend("Experiment_Begin", groupManager.startTime);
+      //function to send out the message that starts the experiment
+      groupManager.startExperiment = function() {
+          groupManager.startTime = Date.now();
+          var msg = {time : groupManager.startTime, group : groupNumber};
+          groupManager.rssend("Experiment_Begin", msg);
+      }
 
       return groupManager;
    }

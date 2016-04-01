@@ -28,12 +28,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.update = function(){
         //$scope.tradingGraph.draw(Date.now());
-        if($scope.iAmRoot){
-            $scope.groupManager.update();
-        }
-        
+        // if($scope.iAmRoot){
+        //     $scope.groupManager.update();
+        // }
+
         //Check the inbound message wait list to see if a msg needs to be sent
-        while($scope.inBoundMessages.length > 0 
+        while($scope.inBoundMessages.length > 0
               && Date.now() > $scope.inBoundMessages[0].actionTime){
             var msg = $scope.inBoundMessages[0].msg;
             updateMsgTime(msg);
@@ -43,7 +43,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         }
 
         //Check the inbound message wait list to see if a msg needs to be sent
-        while($scope.outBoundMessages.length > 0 
+        while($scope.outBoundMessages.length > 0
               && Date.now() > $scope.outBoundMessages[0].actionTime){
             var msg = $scope.outBoundMessages[0].msg;
             updateMsgTime(msg);
@@ -123,18 +123,24 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm($scope.myId, recvFromMarketAlg);
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
 
-        //If this is the root, create the group manager
-        if($scope.iAmRoot){
-            $http.get($scope.config.priceChangesURL).then(function(response) {
-                $scope.groupManager = groupManager.createGroupManager(response, rs.send);
-            });
-        }
+        //handled by admin now
+        // //If this is the root, create the group manager
+        // if($scope.iAmRoot){
+        //     $http.get($scope.config.priceChangesURL).then(function(response) {
+        //         $scope.groupManager = groupManager.createGroupManager(response, rs.send);
+        //     });
+        // }
+
+        rs.synchronizationBarrier ("group_ready").then (function (){
+            if ($scope.iAmRoot)
+                rs.send ("start_group");
+        });
     });
 
     $ ("#slider")
         .slider ({
             orientation: "vertical",
-            slide: function (event, ui) {
+            stop: function (event, ui) {
                 var msg = {"action": $ ("#slider").slider ("value")};
                 rs.send ("slide", msg);
             }
@@ -168,20 +174,21 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
 
     function setListeners(){
-                //Functions for handling messages sent to group manager
-                function handleMsgToGM(message){
-                    if($scope.iAmRoot){
-                        $scope.groupManager.recvFromSubject(message);
-                    }
-                }
-
-                rs.on ("To_Group_Manager", function (msg){
-                    handleMsgToGM(msg);
-                });
-
-                rs.recv ("To_Group_Manager", function (uid, msg){
-                    handleMsgToGM(msg);
-                });
+                // Functions for handling messages sent to group manager
+                // moved to admin page
+                // function handleMsgToGM(message){
+                //     if($scope.iAmRoot){
+                //         $scope.groupManager.recvFromSubject(message);
+                //     }
+                // }
+                //
+                // rs.on ("To_Group_Manager", function (msg){
+                //     handleMsgToGM(msg);
+                // });
+                //
+                // rs.recv ("To_Group_Manager", function (uid, msg){
+                //     handleMsgToGM(msg);
+                // });
 
 
                 //Functions for handling messages sent from the group manager
@@ -210,16 +217,14 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $interval($scope.update, CLOCK_FREQUENCY);
     }
 
-    rs.on ("Experiment_Begin", function (msg){
-        console.log("Begining at time: " + String(msg));
-        startExperiment(msg);
+    rs.recv ("test", function (uid, msg) {
+        console.log(msg + "received from " + uid);
     });
 
     rs.recv ("Experiment_Begin", function (uid, msg){
         console.log("Begining at time: " + String(msg));
         startExperiment(msg);
     });
-
 
     rs.on ("slide", function(msg){
         $ ("#slider-val").val (msg.action);

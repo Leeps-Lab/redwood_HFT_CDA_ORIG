@@ -1,4 +1,12 @@
-Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager", "$http", function($rootScope, $scope, ra, mm, $http) {
+Redwood.controller("AdminCtrl",
+["$rootScope",
+ "$scope",
+ "Admin",
+ "MarketManager",
+ "GroupManager",
+ "$http",
+ "$interval",
+ function($rootScope, $scope, ra, mm, gm, $http, $interval) {
    var Display = { //Display controller
 
       initialize: function() {
@@ -111,6 +119,15 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
       }
    };
 
+   var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
+
+   $scope.groupManagers = [];
+
+   $scope.updateGroupManagers = function() {
+       $scope.groupManagers.forEach (function (entry) {
+           entry.update();
+       })
+   }
 
    var resetGroups = function() {
       var config = ra.get_config(1, 0) || {};
@@ -137,7 +154,7 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
 
    ra.on_load(function () {
       resetGroups(); //Assign groups to users
-      
+
       //INITIALIZE ADMIN FOR EXPERIMENT   **************************************
 
       $scope.priceChanges = [];
@@ -161,10 +178,16 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
          }
 
          console.log($scope.priceChanges);
+     });
 
-      });
-
+     //create a group manager for each group and put them in an array
+     var groups = ra.get_config (1, 0).groups;
+     for (var currGroup = 0; currGroup < groups.length; currGroup++) {
+         //just use first period for now, will have to fix for other periods later
+         $scope.groupManagers[currGroup] = gm.createGroupManager ($scope.priceChanges, ra.sendCustom, currGroup + 1);
+     }
       //DONE INITIALIZING ADMIN FOR EXPERIEMENT    ************************************
+
    });
 
    ra.recv ("player_join_market", function (uid, msg) {
@@ -173,12 +196,28 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
        console.log($scope.market);
    });
 
+
    ra.on_register(function(user) { //Add a row to the table to each user
       resetGroups();
    });
 
    ra.on("start_session", function() {
       ra.start_session();
+   });
+
+   ra.recv ("start_group", function(uid) {
+       $scope.groupManagers[ra.groups[uid] - 1].startExperiment();
+   });
+
+   ra.on ("Experiment_Begin", function (msg) {
+       //for some reason, groupManagers.update's this value is the window instead of the groupManager object
+       //fixing it for now with bind
+       console.log(msg);
+       $interval($scope.groupManagers[msg.group - 1].update.bind($scope.groupManagers[msg.group - 1]), CLOCK_FREQUENCY);
+   });
+
+   ra.recv ("To_Group_Manager", function (uid, msg) {
+       $scope.groupManagers[ra.groups[uid] - 1].recvFromSubject (msg);
    });
 
    ra.on("pause", function() {
