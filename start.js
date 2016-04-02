@@ -46,7 +46,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             $scope.logger.logSend(msg, "Market Algorithm");
             $scope.sendWaitListToMarketAlg.shift();
             $scope.mAlgorithm.recvMessage(msg);
-            $scope.dHistory.recvMessage(msg);
+            //$scope.dHistory.recvMessage(msg);
         }
 
         //Check the outbound message wait list to see if a msg needs to be sent
@@ -76,7 +76,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         if(delay == 0) {
             $scope.logger.logSend(msg, "Market Algorithm");
             $scope.mAlgorithm.recvMessage(msg);
-            $scope.dHistory.recvMessage(msg);
+            //$scope.dHistory.recvMessage(msg);
         }
         else {
             var packedMsg = packMsg(msg, delay);
@@ -153,8 +153,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         }
 
         //Create market algorithm object with ability to attatch messages to the message waiting list
-        $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm($scope.myId, recvFromMarketAlg);
         $scope.dHistory = dataHistory.createDataHistory();
+        $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm($scope.myId, recvFromMarketAlg, $scope.dHistory);
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init();
 

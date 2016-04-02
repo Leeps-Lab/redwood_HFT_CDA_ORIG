@@ -42,8 +42,22 @@ RedwoodHighFrequencyTrading.factory("GroupManager", function () {
 
          //FOR TESTING ONLY
          if(msg.msgType == "EBUY"){
-            console.log("RANNN");
             var nMsg = new Message("ITCH", "C_EBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
+         //FOR TESTING ONLY
+         if(msg.msgType == "ESELL"){
+            var nMsg = new Message("ITCH", "C_ESELL", [msg.msgData[0], msg.msgData[1], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
+         //FOR TESTING ONLY
+         if(msg.msgType == "RBUY"){
+            var nMsg = new Message("ITCH", "C_RBUY", [msg.msgData[0], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
+         //FOR TESTING ONLY
+         if(msg.msgType == "RSELL"){
+            var nMsg = new Message("ITCH", "C_RSELL", [msg.msgData[0], Date.now()]);
             this.sendToSubjects(nMsg);
          }
       }

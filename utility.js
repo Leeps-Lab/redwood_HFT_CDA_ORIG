@@ -4,7 +4,6 @@ function Message(protocol, msgType, msgData){
    this.timeStamp = Date.now();
    this.msgType = msgType;
    this.msgData = msgData;
-   this.sendTime = this.timeStamp + this.delay;
    this.asString = "Message using protocol: " + this.protocol + " generated at " + String(this.timeStamp);
 }
 

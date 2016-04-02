@@ -168,12 +168,12 @@ Redwood.controller("AdminCtrl", ["$rootScope", "$scope", "Admin", "MarketManager
         .button()
         .click (function (event) {
             var newPrice = 10 + Math.random()*10;
-            var msg = new Message("OUCH", "FPC", [Date.now(), newPrice]);
+            var msg = new Message("ITCH", "FPC", [Date.now(), newPrice]);
             console.log(msg.asString);
             ra.sendCustom("From_Group_Manager", msg, 0, 1, 1);
         })
 
-        var startMsg = new Message("OUCH", "START", [Date.now(), 15]);
+        var startMsg = new Message("USER", "START", [Date.now(), 15]);
         ra.sendCustom("From_Group_Manager", startMsg, 0, 1, 1);
 
       });

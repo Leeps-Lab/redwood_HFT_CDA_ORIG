@@ -47,3 +47,13 @@
    stroke:rgb(20,100,20);
    stroke-width:1;
 }
+
+.cur-buy-offer{
+   stroke:rgb(80, 50, 30);
+   stroke-width:1;
+}
+
+.past-buy-offer{
+   stroke:rgb(80, 50, 30);
+   stroke-width:1;
+}
