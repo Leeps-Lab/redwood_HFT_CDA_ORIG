@@ -30,16 +30,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.update = function(){
-        
         $scope.tradingGraph.draw($scope.dHistory);
-        
-        //Update group manager WILL BE MOVED TO ADMIN PAGE
-        if($scope.iAmRoot){
-            $scope.groupManager.update();
-        }
-        
+
         //Check the inbound message wait list to see if a msg needs to be sent
-        while($scope.sendWaitListToMarketAlg.length > 0 
+        while($scope.sendWaitListToMarketAlg.length > 0
               && Date.now() > $scope.sendWaitListToMarketAlg[0].actionTime){
             var msg = $scope.sendWaitListToMarketAlg[0].msg;
             updateMsgTime(msg);
@@ -50,7 +44,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         }
 
         //Check the outbound message wait list to see if a msg needs to be sent
-        while($scope.sendWaitListToGroupManager.length > 0 
+        while($scope.sendWaitListToGroupManager.length > 0
               && Date.now() > $scope.sendWaitListToGroupManager[0].actionTime){
             var msg = $scope.sendWaitListToGroupManager[0].msg;
             updateMsgTime(msg);
@@ -158,18 +152,16 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init();
 
-        //If this is the root, create the group manager WILL BE MOVED TO ADMIN PAGE
-        if($scope.iAmRoot){
-            $http.get($scope.config.priceChangesURL).then(function(response) {
-                $scope.groupManager = groupManager.createGroupManager(response, rs.send);
-            });
-        }
+        rs.synchronizationBarrier ("group_ready").then (function (){
+            if ($scope.iAmRoot)
+                rs.send ("start_group");
+        });
     });
 
     $ ("#slider")
         .slider ({
             orientation: "vertical",
-            slide: function (event, ui) {
+            stop: function (event, ui) {
                 var msg = {"action": $ ("#slider").slider ("value")};
                 rs.send ("slide", msg);
             }
@@ -201,20 +193,21 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
 
     function setListeners(){
-                //Functions for handling messages sent to group manager
-                function handleMsgToGM(message){
-                    if($scope.iAmRoot){
-                        $scope.groupManager.recvFromSubject(message);
-                    }
-                }
-
-                rs.on ("To_Group_Manager", function (msg){
-                    handleMsgToGM(msg);
-                });
-
-                rs.recv ("To_Group_Manager", function (uid, msg){
-                    handleMsgToGM(msg);
-                });
+                // Functions for handling messages sent to group manager
+                // moved to admin page
+                // function handleMsgToGM(message){
+                //     if($scope.iAmRoot){
+                //         $scope.groupManager.recvFromSubject(message);
+                //     }
+                // }
+                //
+                // rs.on ("To_Group_Manager", function (msg){
+                //     handleMsgToGM(msg);
+                // });
+                //
+                // rs.recv ("To_Group_Manager", function (uid, msg){
+                //     handleMsgToGM(msg);
+                // });
 
 
                 //Functions for handling messages sent from the group manager
@@ -240,16 +233,14 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $interval($scope.update, CLOCK_FREQUENCY);
     }
 
-    rs.on ("Experiment_Begin", function (msg){
-        console.log("Begining at time: " + String(msg));
-        startExperiment(msg);
+    rs.recv ("test", function (uid, msg) {
+        console.log(msg + "received from " + uid);
     });
 
     rs.recv ("Experiment_Begin", function (uid, msg){
         console.log("Begining at time: " + String(msg));
         startExperiment(msg);
     });
-
 
     rs.on ("slide", function(msg){
         $ ("#slider-val").val (msg.action);
