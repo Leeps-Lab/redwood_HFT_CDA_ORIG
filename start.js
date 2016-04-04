@@ -209,17 +209,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 //     handleMsgToGM(msg);
                 // });
 
-
                 //Functions for handling messages sent from the group manager
                 function handleMsgFromGM(message){
                     updateMsgTime(message);
                     $scope.logger.logRecv(message, "group manager");
                     $scope.sendToMarketAlg(message, $scope.latency);
                 }
-
-                rs.on ("From_Group_Manager", function (msg){
-                    handleMsgFromGM(msg);
-                });
 
                 rs.recv ("From_Group_Manager", function (uid, msg){
                     handleMsgFromGM(msg);

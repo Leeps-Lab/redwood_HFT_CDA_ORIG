@@ -228,7 +228,6 @@ Redwood.controller("AdminCtrl",
    ra.on ("Experiment_Begin", function (msg) {
        //for some reason, groupManagers.update's this value is the window instead of the groupManager object
        //fixing it for now with bind
-       console.log(msg);
        $interval($scope.groupManagers[msg.group - 1].update.bind($scope.groupManagers[msg.group - 1]), CLOCK_FREQUENCY);
    });
 

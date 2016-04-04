@@ -3,7 +3,7 @@
 
 **********  MESSAGE STRUCTURE  **************
 
-General Structure:   
+General Structure:
    Message {
       protocol    -> string: Gives general idea about type of message and what protocol this message should use. Three types:
                         - "OUCH" Message sent to enter buy/sell offer or change market in some way.
@@ -16,7 +16,7 @@ General Structure:
 
 
 Specific Message Structures:
-   
+
    OUCH Messages:
       Enter Buy Order:
          protocol    -> "OUCH"
@@ -39,9 +39,9 @@ Specific Message Structures:
          msgData     -> [seller-id]
 
 
-   
-   ITCH Messages:      
-      Fundemental Price Change:
+
+   ITCH Messages:
+      Fundamental Price Change:
          protocol    -> "ITCH"
          msgType     -> "FPC"
          msgData     -> [change-time, new-price]
@@ -66,14 +66,14 @@ Specific Message Structures:
          msgType     -> "C_RSELL"
          msgData     -> [seller-id, time-order-entered]
 
-   
+
 
 
    USER Messages:
       Round Start Message:
          protocol    -> "USER"
          msgType     -> "START"
-         msgData     -> [start-time, initial-fundemental-price]
+         msgData     -> [start-time, initial-fundamental-price]
 
       User Enter Market:
          protocol    -> "USER"
