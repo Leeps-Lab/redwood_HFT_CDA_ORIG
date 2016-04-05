@@ -8,8 +8,7 @@
 RedwoodHighFrequencyTrading.factory("Graphing", function () {
    var api = {};
 
-   //Call this function to create a new graph object. Pass in the id
-   //    of the svg element that the graph will be tied to.
+   // Returns new grpah object - pass in id of svg element on which graph will be drawn
    api.makeTradingGraph = function(svgElementID){
       var graph = {};
 
@@ -175,6 +174,17 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("class", "cur-buy-offer");
       };
 
+      // If current buy offer exists, draw it on the graph
+      graph.drawCurSellOffer = function(graphRefr, dataHistory){
+         if(dataHistory.curSellOffer != null)
+         this.svg.append("line")
+            .attr("x1", this.mapTimeToXAxis(dataHistory.curSellOffer[0]) )
+            .attr("x2", this.curTimeX)
+            .attr("y1", this.mapPriceToYAxis(dataHistory.curSellOffer[1]) )
+            .attr("y2", this.mapPriceToYAxis(dataHistory.curSellOffer[1]) )
+            .attr("class", "cur-sell-offer");
+      };
+
       graph.drawPastBuyOffers = function(graphRefr, dataHistory){
          this.svg.selectAll("line.past-buy-offer")
             .data(dataHistory.pastBuyOffers)
@@ -185,7 +195,19 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
             .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
             .attr("class", "past-buy-offer");
-      }
+      };
+
+      graph.drawPastSellOffers = function(graphRefr, dataHistory){
+         this.svg.selectAll("line.past-sell-offer")
+            .data(dataHistory.pastSellOffers)
+            .enter()
+            .append("line")
+            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0]); })
+            .attr("x2", function(d){ return graphRefr.mapTimeToXAxis(d[1]); })
+            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
+            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
+            .attr("class", "past-sell-offer");
+      };
 
  /*     graph.drawMinSpread = function(graphRefr, drawData){
          //Draw the spread over the price line
@@ -262,11 +284,14 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             this.timeLines = this.calcTimeGridLines(this.currentTime);
          }
 
+         //Invoke all of the draw functions
          this.drawTimeGridLines(graphRefr);
          this.drawPriceGridLines(graphRefr);
          this.drawPriceLine(graphRefr, dataHistory);
          this.drawCurBuyOffer(graphRefr, dataHistory);
+         this.drawCurSellOffer(graphRefr, dataHistory);
          this.drawPastBuyOffers(graphRefr, dataHistory);
+         this.drawPastSellOffers(graphRefr, dataHistory);
          //this.drawMarketEvents(graphRefr, drawData);
          //this.drawMinSpread(graphRefr, drawData);
          this.drawPriceAxis(graphRefr);

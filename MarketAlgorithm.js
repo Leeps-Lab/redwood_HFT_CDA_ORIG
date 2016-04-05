@@ -69,6 +69,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
          if(msg.msgType == "C_ESELL"){
             if(msg.msgData[0] == this.uid){
                this.logger.logString("My sell offer confirmed at time: " + millisToTime(msg.msgData[2]) );
+               this.dataHistory.recordSellOffer(msg);
             }
          }
 
@@ -84,6 +85,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
          if(msg.msgType == "C_RSELL"){
             if(msg.msgData[0] == this.uid){
                this.logger.logString("My sell offer removed at time: " + millisToTime(msg.msgData[1]) );
+               this.dataHistory.storeSellOffer(msg.msgData[1]);
             }
          }
       }
