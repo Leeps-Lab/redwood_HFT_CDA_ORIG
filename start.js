@@ -13,11 +13,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
 
-    $scope.market_button_text = "Enter Market";
     $scope.speed_button_text = "Turn On Speed";
     $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
-    $scope.in_market = false;
+    $scope.state = "state_out";
     $scope.using_speed = false;
     $scope.spread = 0;
     $scope.sendWaitListToGroupManager = [];
@@ -165,31 +164,18 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 var msg = {"action": $ ("#slider").slider ("value")};
                 rs.send ("slide", msg);
             }
-        })
-
-    $ ("#snipe")
-        .button()
-        .click (function (event) {
-            rs.send ("snipe");
-        })
+        });
 
     $ ("#speed")
         .button()
         .click (function (event) {
             rs.send ("speed");
-        })
-
-    $ ("#market_button")
-        .button()
-        .click (function (event) {
-            rs.send ("marketStatus");
-        })
+        });
 
     $ ("#send_spread")
         .button()
         .click (function (event) {
-
-        })
+        });
 
 
     function setListeners(){
@@ -248,11 +234,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("This player's slider val: " + msg.action);
     });
 
-    rs.on ("snipe", function(){
-        console.log ("This player sniped!");
-        console.log($scope.MESpreads);
-    });
-
     rs.on ("speed", function(){
         $scope.using_speed = !$scope.using_speed;
         $scope.speed_button_text = $scope.using_speed ? "Turn Off Speed" : "Turn On Speed";
@@ -263,21 +244,63 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         console.log ("player " + uid + " updated their slider to: " + msg.action);
     });
 
-    rs.recv ("snipe", function (uid){
-        console.log ("player " + uid + " sniped!");
-    });
-
     rs.recv ("speed", function (uid){
         console.log ("player " + uid + " speeded!");
     });
 
-    rs.on ("marketStatus", function (uid){
-        $scope.in_market = !$scope.in_market;
-        $scope.market_button_text = $scope.in_market ? "Leave Market" : "Enter Market";
-        var msgType = $scope.in_market ? "UENTM" : "UEXTM";
-        var msg = new Message("USER", msgType, -1);
+
+    //Buttons for handling state changes
+    $ ("#state_snipe")
+        .css("border", "2px solid black")
+        .button()
+        .click (function (event) {
+            rs.send ("state_snipe");
+        });
+
+    $ ("#state_maker")
+        .css("border", "2px solid black")
+        .button()
+        .click (function (event) {
+            rs.send ("state_maker");
+        });
+
+    $ ("#state_out")
+        .css("border", "2px solid yellow")
+        .button()
+        .click (function (event) {
+            rs.send ("state_out");
+        });
+
+    $scope.setState = function(newState){
+        $("#"+$scope.state).css("border", "2px solid black");
+        $scope.state = newState;
+        $("#"+$scope.state).css("border", "2px solid yellow");
+    };
+
+    rs.on ("state_maker", function (uid){
+        $scope.setState("state_maker");
+        var msg = new Message("USER", "UENTM", -1);
         $scope.sendToMarketAlg(msg, 0);
     });
+
+    rs.on ("state_snipe", function (uid){
+        if($scope.state == "state_maker"){
+            var msg = new Message("USER", "UEXTM", -1);
+            $scope.sendToMarketAlg(msg, 0);
+        }
+        $scope.setState("state_snipe");
+    });
+
+    rs.on ("state_out", function (uid){
+        if($scope.state == "state_maker"){
+            var msg = new Message("USER", "UEXTM", -1);
+            $scope.sendToMarketAlg(msg, 0);
+        }
+        $scope.setState("state_out");
+    });
+
+
+
 
     rs.recv ("sample", function (uid, msg){
         //Do stuff here
