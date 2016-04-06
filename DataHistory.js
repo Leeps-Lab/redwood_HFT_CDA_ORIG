@@ -19,11 +19,21 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
 
       // Records a new buy offer
       dataHistory.recordBuyOffer = function(buyMsg) {
+         //Check if current buy offer needs to be stored
+         if(this.curBuyOffer != null){
+            this.storeBuyOffer(buyMsg.msgData[2]);
+         }
+         //Push on new buy offer
          this.curBuyOffer = [buyMsg.msgData[2], buyMsg.msgData[1]];   // [timestamp, price]
       }
 
       // Records a new Sell offer
       dataHistory.recordSellOffer = function(sellMsg) {
+         //Check if current sell offer needs to be stored
+         if(this.curSellOffer != null){
+            this.storeSellOffer(sellMsg.msgData[2]);
+         }
+         //Push on new sell offer
          this.curSellOffer = [sellMsg.msgData[2], sellMsg.msgData[1]];   // [timestamp, price]
       }   
 

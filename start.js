@@ -16,6 +16,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.speed_button_text = "Turn On Speed";
     $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
+    $scope.sliderVal = 5;
     $scope.state = "state_out";
     $scope.using_speed = false;
     $scope.spread = 0;
@@ -160,10 +161,16 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $ ("#slider")
         .slider ({
             orientation: "vertical",
-            stop: function (event, ui) {
-                var msg = {"action": $ ("#slider").slider ("value")};
-                rs.send ("slide", msg);
-            }
+            change: function (event, ui) {
+                    //rs.send ("slide", msg);
+                    var newVal = $("#slider").slider ("value");
+                    if(newVal != $scope.sliderVal){
+                        $scope.sliderVal = newVal;
+                        var msg = new Message("USER", "UUSPR", [$scope.sliderVal]);
+                        $scope.sendToMarketAlg(msg, 0);
+                    }
+                    
+                }
         });
 
     $ ("#speed")
