@@ -161,6 +161,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $ ("#slider")
         .slider ({
             orientation: "vertical",
+            value: 5,
             stop: function (event, ui) {
                 var msg = {"action": $ ("#slider").slider ("value")};
                 rs.send ("slide", msg);
