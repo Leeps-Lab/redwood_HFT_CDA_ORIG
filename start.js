@@ -9,7 +9,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
  "ConfigManager",
  "SynchronizedStopWatch",
  "$http",
- function ($scope, $interval, rs, dataHistory, marketAlgorithm, graphing, groupManager, configManager, stopWatch, $http) {
+ "Logger",
+ function ($scope, $interval, rs, dataHistory, marketAlgorithm, graphing, groupManager, configManager, stopWatch, $http, log) {
 
     var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
 
@@ -138,6 +139,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
         //Create the logger for this start.js page
         $scope.logger = new MessageLogger("Subject Manager" + String($scope.myId), "yellow", "subject-log");
+
+        log.init("hello-world");
+        log.log("hi");
+        log.log($scope.config.groups);
 
         //Create reciever function that will recieve messages from the market algorithm
         var recvFromMarketAlg = function(msg){
