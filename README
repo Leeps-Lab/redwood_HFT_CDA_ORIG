@@ -86,7 +86,10 @@ Specific Message Structures:
          msgType     -> "C_USELL"
          msgData     -> [seller-id, price, time-order-updated]
 
-
+      Confirm that Transaction has taken place:
+         protocol    -> "ITCH"
+         msgType     -> "C_TRA"
+         msgData     -> [time-stamp, buyer-id, seller-id, price]
    
 
 
