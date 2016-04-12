@@ -161,6 +161,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $ ("#slider")
         .slider ({
             orientation: "vertical",
+<<<<<<< HEAD
             change: function (event, ui) {
                     //rs.send ("slide", msg);
                     var newVal = $("#slider").slider ("value");
@@ -172,6 +173,20 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                     
                 }
         });
+=======
+            value: 5,
+            stop: function (event, ui) {
+                var msg = {"action": $ ("#slider").slider ("value")};
+                rs.send ("slide", msg);
+            }
+        })
+
+    $ ("#snipe")
+        .button()
+        .click (function (event) {
+            rs.send ("snipe");
+        })
+>>>>>>> dev_morgan
 
     $ ("#speed")
         .button()

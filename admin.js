@@ -150,8 +150,6 @@ Redwood.controller("AdminCtrl",
 
    Display.initialize();
 
-   $scope.market = null;
-
    ra.on_load(function () {
       resetGroups(); //Assign groups to users
 
@@ -160,7 +158,6 @@ Redwood.controller("AdminCtrl",
       $scope.priceChanges = [];
       var priceURL = ra.get_config(1, 0).priceChangesURL;
       console.log(priceURL);
-      $scope.market = mm.createMarketManager();
       $http.get(priceURL).then(function(response) {
          var rows = response.data.split("\n");
 
@@ -179,28 +176,50 @@ Redwood.controller("AdminCtrl",
 
          console.log($scope.priceChanges);
 
-         //FOR TESTING- Produces messages that simulate changes in the fundamental value
-         $("body").append('<button type="button" id="genpc" class="btn btn-default" style="margin-top:20px">Generate Price Change</button>');
-         $ ("#genpc")
-        .button()
-        .click (function (event) {
-            var newPrice = 10 + Math.random()*10;
-            var msg = new Message("ITCH", "FPC", [Date.now(), newPrice]);
-            console.log(msg.asString);
-            ra.sendCustom("From_Group_Manager", msg, 0, 1, 1);
-        })
+         $scope.investorArrivals = [];
+         var arrivalURL = ra.get_config(1, 0).marketEventsURL;
+         console.log(arrivalURL);
+         $http.get(arrivalURL).then(function(response) {
+            var rows = response.data.split("\n");
 
-        var startMsg = new Message("USER", "START", [Date.now(), 15]);
-        ra.sendCustom("From_Group_Manager", startMsg, 0, 1, 1);
+            //Parse investor arrival changes CSV
+            for (var i = 0; i < rows.length-1; i++) {
+               $scope.investorArrivals[i] = [];
+            }
+
+            for (var i = 0; i < rows.length-1; i++) {
+               if (rows[i] === "") continue;
+               var cells = rows[i].split(",");
+               for (var j = 0; j < cells.length; j++) {
+                  $scope.investorArrivals[i][j] = isNaN(cells[j]) ? cells[j] : parseFloat(cells[j]);
+               }
+            }
+
+            console.log($scope.investorArrivals);
+
+            //create a group manager for each group and put them in an array
+            var groups = ra.get_config (1, 0).groups;
+            for (var currGroup = 0; currGroup < groups.length; currGroup++) {
+                //just use first period for now, will have to fix for other periods later
+                $scope.groupManagers[currGroup] = gm.createGroupManager ($scope.priceChanges, $scope.investorArrivals, ra.sendCustom, currGroup + 1, mm.createMarketManager());
+            }
+
+            //FOR TESTING- Produces messages that simulate changes in the fundamental value
+            $("body").append('<button type="button" id="genpc" class="btn btn-default" style="margin-top:20px">Generate Price Change</button>');
+            $ ("#genpc")
+           .button()
+           .click (function (event) {
+               var newPrice = 10 + Math.random()*10;
+               var msg = new Message("ITCH", "FPC", [Date.now(), newPrice]);
+               console.log(msg.asString);
+               ra.sendCustom("From_Group_Manager", msg, 0, 1, 1);
+           })
+
+           var startMsg = new Message("USER", "START", [Date.now(), 15]);
+           ra.sendCustom("From_Group_Manager", startMsg, 0, 1, 1);
+         });
 
       });
-
-     //create a group manager for each group and put them in an array
-     var groups = ra.get_config (1, 0).groups;
-     for (var currGroup = 0; currGroup < groups.length; currGroup++) {
-         //just use first period for now, will have to fix for other periods later
-         $scope.groupManagers[currGroup] = gm.createGroupManager ($scope.priceChanges, ra.sendCustom, currGroup + 1);
-     }
 
       //DONE INITIALIZING ADMIN FOR EXPERIEMENT    ************************************
 

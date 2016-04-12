@@ -29,12 +29,12 @@ Specific Message Structures:
          msgData     -> [seller-id, price]
 
       Remove Buy Order:
-         protocol    -> "OUTCH"
+         protocol    -> "OUCH"
          msgType     -> "RBUY"
          msgData     -> [buyer-id]
 
       Remove Sell Order:
-         protocol    -> "OUTCH"
+         protocol    -> "OUCH"
          msgType     -> "RSELL"
          msgData     -> [seller-id]
 

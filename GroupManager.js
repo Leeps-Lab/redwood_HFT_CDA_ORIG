@@ -1,12 +1,16 @@
 Redwood.factory("GroupManager", function () {
    var api = {};
 
-   api.createGroupManager = function(priceLinesArray, sendFunction, groupNumber){
+   api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, market){
       var groupManager = {};
+      console.log(investorArrivalsArray);
       groupManager.priceChanges = priceLinesArray;
+      groupManager.investorArrivals = investorArrivalsArray;
       groupManager.outBoundMessages = [];
       groupManager.inBoundMessages = [];
       groupManager.priceIndex = 0;
+      groupManager.investorIndex = 0;
+      groupManager.market = market;
 
       groupManager.rssend = function (key, value) {
           sendFunction (key, value, "admin", 1, groupNumber);
@@ -26,6 +30,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.recvFromSubject = function(msg){
          updateMsgTime(msg);
          this.logger.logRecv(msg, "subjects");
+         groupManager.market.recvMessage (msg);
 
          //FOR TESTING ONLY
          if(msg.msgType == "EBUY"){
@@ -67,6 +72,14 @@ Redwood.factory("GroupManager", function () {
             this.logger.logSend(msg, "subjects");
             this.rssend("From_Group_Manager", msg);
             this.priceIndex++;
+         }
+
+         while(this.investorIndex < this.investorArrivals.length
+               && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
+            var investorType = this.investorArrivals[this.investorIndex][1] == "buy" ? "EBUY" : "ESELL";
+            var msg = new Message("OUCH", investorType, [0, this.investorArrivals[this.investorIndex][1]]);
+            groupManager.market.recvMessage(msg);
+            this.investorIndex++;
          }
       }
 
