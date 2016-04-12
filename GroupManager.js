@@ -47,6 +47,16 @@ Redwood.factory("GroupManager", function () {
             var nMsg = new Message("ITCH", "C_RSELL", [msg.msgData[0], Date.now()]);
             this.sendToSubjects(nMsg);
          }
+         //FOR TESTING ONLY
+         if(msg.msgType == "UBUY"){
+            var nMsg = new Message("ITCH", "C_UBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
+         //FOR TESTING ONLY
+         if(msg.msgType == "USELL"){
+            var nMsg = new Message("ITCH", "C_USELL", [msg.msgData[0], msg.msgData[1], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
       }
 
       //Looks for change in fundamental price and sends message if change is found

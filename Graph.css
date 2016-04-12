@@ -53,7 +53,17 @@
    stroke-width:1;
 }
 
+.cur-sell-offer{
+   stroke:rgb(80, 50, 30);
+   stroke-width:1;
+}
+
 .past-buy-offer{
+   stroke:rgb(80, 50, 30);
+   stroke-width:1;
+}
+
+.past-sell-offer{
    stroke:rgb(80, 50, 30);
    stroke-width:1;
 }
