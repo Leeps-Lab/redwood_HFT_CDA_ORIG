@@ -23,7 +23,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.spread = 0;
     $scope.sendWaitListToGroupManager = [];
     $scope.sendWaitListToMarketAlg = [];
-    $scope.maxLatency = 1000
+    $scope.maxLatency = 500
     $scope.latency = $scope.maxLatency;
 
 
