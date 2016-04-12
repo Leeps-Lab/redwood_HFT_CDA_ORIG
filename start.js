@@ -175,7 +175,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                         $scope.sendToMarketAlg(msg, 0);
                     }
             },
-            value: 5
+            value : 5,
+            max : 10
         })
 
     $ ("#snipe")
