@@ -76,9 +76,14 @@ Redwood.factory("GroupManager", function () {
 
          while(this.investorIndex < this.investorArrivals.length
                && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
-            var investorType = this.investorArrivals[this.investorIndex][1] == "buy" ? "EBUY" : "ESELL";
-            var msg = new Message("OUCH", investorType, [0, this.investorArrivals[this.investorIndex][1]]);
-            groupManager.market.recvMessage(msg);
+            var returned = market.makeTransaction (this.investorArrivals[this.investorIndex][1])
+            if (returned !== undefined) {
+                var seller = (this.investorArrivals[this.investorIndex][1].trim() == "sell" ? 0 : returned.id);
+                var buyer = (this.investorArrivals[this.investorIndex][1].trim() == "buy" ? 0 : returned.id);
+                var msg = new Message ("ITCH", "C_TRA", [returned.timestamp, buyer, seller, returned.price]);
+                this.logger.logSend(msg, "subjects");
+                this.rssend("From_Group_Manager", msg);
+            }
             this.investorIndex++;
          }
       }

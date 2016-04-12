@@ -8,7 +8,7 @@ Redwood.factory("MarketManager", function () {
       market.CDABook = {};
 
       market.recvMessage = function(message){
-        updateMsgTime(message);
+        message.timestamp = Date.now();
         switch (message.msgType) {
             case "EBUY":
                 market.CDABook.insertBuy (message.msgData[0], message.msgData[1], message.timestamp);
@@ -22,13 +22,25 @@ Redwood.factory("MarketManager", function () {
             case "RSELL":
                 market.CDABook.removeSell (message.msgData[0]);
                 break;
+            case "UBUY":
+                market.CDABook.updateBuy (message.msgData[0], message.msgData[1]);
+                break;
+            case "USELL":
+                market.CDABook.updateSell (message.msgData[0], message.msgData[1]);
+                break;
             default:
                 console.error("marketManager: invalid message type");
         }
       }
 
-      market.sendMessage = function(message){
-        //Assume that this function works
+      market.makeTransaction = function (transactionType) {
+          if (transactionType.trim() == "sell") {
+              return market.CDABook.buyOrders.pop();
+          }
+          else if (transactionType.trim() == "buy"){
+              return market.CDABook.sellOrders.pop();
+          }
+          else console.error("marketManager: tried to make invalid transaction type");
       }
 
       //array to hold buyOrders
@@ -36,27 +48,30 @@ Redwood.factory("MarketManager", function () {
       //array to hold sellOrders
       market.CDABook.sellOrders = [];
 
-      function comparator (a, b) {
+      function sellComparator (a, b) {
           if (a.price == b.price) return a.timestamp > b.timestamp ? 1 : -1;
           else return a.price < b.price ? 1 : -1;
+      }
+
+      function buyComparator (a, b) {
+          if (a.price == b.price) return a.timestamp > b.timestamp ? 1 : -1;
+          else return a.price > b.price ? 1 : -1;
       }
 
       //inserts buy into buy orders array
       market.CDABook.insertBuy = function (newId, newPrice, timestamp) {
           market.CDABook.buyOrders.push ({id : newId, price : newPrice, timestamp : timestamp});
-          market.CDABook.buyOrders.sort (comparator);
-          var msg = new Message ("OUCH", 0, ["newBuyAdded", newId, newPrice]);
-          market.sendMessage (msg);
+          market.CDABook.buyOrders.sort (buyComparator);
           console.log("player " + newId + " inserted buy at price " + newPrice);
+          console.log(market.CDABook.buyOrders);
       }
 
       //inserts sell into sell orders array
       market.CDABook.insertSell = function (newId, newPrice, timestamp) {
           market.CDABook.sellOrders.push ({id : newId, price : newPrice, timestamp : timestamp});
-          market.CDABook.sellOrders.sort (comparator);
-          var msg = new Message ("OUCH", 0, ["newSellAdded", newId, newPrice]);
-          market.sendMessage (msg);
+          market.CDABook.sellOrders.sort (sellComparator);
           console.log("player " + newId + " inserted sell at price " + newPrice);
+          console.log(market.CDABook.sellOrders);
       }
 
       //removes buy order associated with a user id from the order book and returns it
@@ -69,9 +84,7 @@ Redwood.factory("MarketManager", function () {
              return null;
           }
           var removed = market.CDABook.buyOrders.splice (index, 1)[0];
-          var msg = new Message ("OUCH", 0, ["buyRemoved", idToRemove, removed]);
-          market.sendMessage (msg);
-          console.log("player " + newId + " removed buy at price " + removed);
+          console.log("player " + idToRemove + " removed buy at price " + removed);
           return removed;
       }
 
@@ -85,9 +98,7 @@ Redwood.factory("MarketManager", function () {
              return null;
           }
           var removed = market.CDABook.sellOrders.splice (index, 1)[0];
-          var msg = new Message ("OUCH", 0, ["sellRemoved", idToRemove, removed]);
-          market.sendMessage (msg);
-          console.log("player " + newId + " removed sell at price " + removed);
+          console.log("player " + idToRemove + " removed sell at price " + removed);
           return removed;
       }
 
@@ -101,8 +112,6 @@ Redwood.factory("MarketManager", function () {
              return;
           }
           market.CDABook.buyOrders[index].price = newPrice;
-          var msg = new Message ("OUCH", 0, ["buyUpdated", idToUpdate, newPrice]);
-          market.sendMessage (msg);
       }
 
       //updates a sell order to a new price
@@ -115,8 +124,6 @@ Redwood.factory("MarketManager", function () {
              return;
           }
           market.CDABook.sellOrders[index].price = newPrice;
-          var msg = new Message ("OUCH", 0, ["sellUpdated", idToUpdate, newPrice]);
-          market.sendMessage (msg);
       }
 
       return market;
