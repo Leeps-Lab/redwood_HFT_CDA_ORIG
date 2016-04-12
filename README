@@ -14,6 +14,8 @@ General Structure:
       msgData     -> array: Various information included with message, content varies by message type.
    }
 
+   Outside investor id is 0
+
 
 Specific Message Structures:
 
@@ -76,9 +78,6 @@ Specific Message Structures:
          msgType     -> "C_RSELL"
          msgData     -> [seller-id, time-order-entered]
 
-<<<<<<< HEAD
-
-=======
       Confirm that Buy Order was Updated:
          protocol    -> "ITCH"
          msgType     -> "C_UBUY"
@@ -88,10 +87,6 @@ Specific Message Structures:
          protocol    -> "ITCH"
          msgType     -> "C_USELL"
          msgData     -> [seller-id, price, time-order-updated]
-
-
-   
->>>>>>> 331cd183b8ef366a1496a5e6f3c415765c28a6e4
 
 
    USER Messages:
@@ -109,11 +104,8 @@ Specific Message Structures:
          protocol    -> "USER"
          msgType     -> "UEXTM"
          msgData     -> -1
-<<<<<<< HEAD
-=======
 
       User Update Spread:
          protocol    -> "USER"
          msgType     -> "UUSPR"
          msgData     -> [new-spread-value
->>>>>>> 331cd183b8ef366a1496a5e6f3c415765c28a6e4
