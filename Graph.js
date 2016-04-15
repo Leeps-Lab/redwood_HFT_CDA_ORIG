@@ -17,8 +17,8 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.elementHeight = 0;         //    (use calculateSize to determine)
       graph.axisLabelWidth = 40;       //Width of area where price axis labels are drawn
       graph.svg = d3.select('#'+ graph.elementId); //svg element
-      graph.minPrice = 5;              //min price on price axis
-      graph.maxPrice = 25;             //max price on price axis
+      graph.minPrice = 85;              //min price on price axis
+      graph.maxPrice = 115;             //max price on price axis
       graph.priceGridIncriment = 5;    //amount between each line on price axis
       graph.timeInterval = 30;         //Amount in seconds displayed at once on full time axis
       graph.timeIncriment = 5;         //Amount in seconds between lines on time axis

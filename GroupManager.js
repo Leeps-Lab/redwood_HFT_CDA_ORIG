@@ -68,7 +68,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.update = function(){
          while(this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
-            var msg = new Message("ITCH", "FPC", [this.priceChanges[this.priceIndex][0], this.priceChanges[this.priceIndex][1]]);
+            var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1]]);
             this.logger.logSend(msg, "subjects");
             this.rssend("From_Group_Manager", msg);
             this.priceIndex++;

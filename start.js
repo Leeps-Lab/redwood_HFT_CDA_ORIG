@@ -23,7 +23,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.spread = 0;
     $scope.sendWaitListToGroupManager = [];
     $scope.sendWaitListToMarketAlg = [];
-    $scope.maxLatency = 1000
+    $scope.maxLatency = 500
     $scope.latency = $scope.maxLatency;
 
 
@@ -157,7 +157,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init();
 
+        // Communicate with the group manager to start this round
         rs.synchronizationBarrier ("group_ready").then (function (){
+            var msg = new Message("USER", "UREADY", [-1]);
+            $scope.sendToGroupManager(msg, 0);
             if ($scope.iAmRoot)
                 rs.send ("start_group");
         });
@@ -175,7 +178,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                         $scope.sendToMarketAlg(msg, 0);
                     }
             },
-            value: 5
+            value : 5,
+            max : 10
         })
 
     $ ("#snipe")
