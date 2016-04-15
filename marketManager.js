@@ -29,7 +29,7 @@ Redwood.factory("MarketManager", function () {
                 market.CDABook.updateSell (message.msgData[0], message.msgData[1]);
                 break;
             default:
-                console.error("marketManager: invalid message type");
+                console.error("marketManager: invalid message type: " + message.msgType);
         }
       }
 
