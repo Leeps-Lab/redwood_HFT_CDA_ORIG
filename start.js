@@ -221,7 +221,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 function handleMsgFromGM(message){
                     updateMsgTime(message);
                     $scope.logger.logRecv(message, "group manager");
-                    $scope.sendToMarketAlg(message, $scope.latency);
+                    $scope.sendToMarketAlg(message, 0);
                 }
 
                 rs.recv ("From_Group_Manager", function (uid, msg){
