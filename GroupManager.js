@@ -78,8 +78,8 @@ Redwood.factory("GroupManager", function () {
                && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
             var returned = market.makeTransaction (this.investorArrivals[this.investorIndex][1])
             if (returned !== undefined) {
-                var seller = (this.investorArrivals[this.investorIndex][1].trim() == "sell" ? 0 : returned.id);
-                var buyer = (this.investorArrivals[this.investorIndex][1].trim() == "buy" ? 0 : returned.id);
+                var seller = (this.investorArrivals[this.investorIndex][1] == "sell" ? 0 : returned.id);
+                var buyer = (this.investorArrivals[this.investorIndex][1] == "buy" ? 0 : returned.id);
                 var msg = new Message ("ITCH", "C_TRA", [returned.timestamp, buyer, seller, returned.price]);
                 this.logger.logSend(msg, "subjects");
                 this.rssend("From_Group_Manager", msg);

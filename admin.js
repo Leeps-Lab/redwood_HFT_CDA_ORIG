@@ -191,7 +191,7 @@ Redwood.controller("AdminCtrl",
                if (rows[i] === "") continue;
                var cells = rows[i].split(",");
                for (var j = 0; j < cells.length; j++) {
-                  $scope.investorArrivals[i][j] = isNaN(cells[j]) ? cells[j] : parseFloat(cells[j]);
+                  $scope.investorArrivals[i][j] = isNaN(cells[j]) ? cells[j].trim() : parseFloat(cells[j]);
                }
             }
 

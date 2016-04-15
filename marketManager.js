@@ -34,10 +34,10 @@ Redwood.factory("MarketManager", function () {
       }
 
       market.makeTransaction = function (transactionType) {
-          if (transactionType.trim() == "sell") {
+          if (transactionType == "sell") {
               return market.CDABook.buyOrders.pop();
           }
-          else if (transactionType.trim() == "buy"){
+          else if (transactionType == "buy"){
               return market.CDABook.sellOrders.pop();
           }
           else console.error("marketManager: tried to make invalid transaction type");
