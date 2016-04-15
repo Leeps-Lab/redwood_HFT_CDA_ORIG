@@ -158,6 +158,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.tradingGraph.init();
 
         rs.synchronizationBarrier ("group_ready").then (function (){
+            var msg = new Message("USER", "UREADY", [-1]);
+            $scope.sendToGroupManager(msg, 0);
             if ($scope.iAmRoot)
                 rs.send ("start_group");
         });

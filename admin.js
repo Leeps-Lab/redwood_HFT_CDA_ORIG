@@ -214,9 +214,6 @@ Redwood.controller("AdminCtrl",
                console.log(msg.asString);
                ra.sendCustom("From_Group_Manager", msg, 0, 1, 1);
            })
-
-           var startMsg = new Message("USER", "START", [Date.now(), 15]);
-           ra.sendCustom("From_Group_Manager", startMsg, 0, 1, 1);
          });
 
       });
