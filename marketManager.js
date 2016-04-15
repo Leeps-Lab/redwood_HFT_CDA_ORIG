@@ -29,15 +29,15 @@ Redwood.factory("MarketManager", function () {
                 market.CDABook.updateSell (message.msgData[0], message.msgData[1]);
                 break;
             default:
-                console.error("marketManager: invalid message type");
+                console.error("marketManager: invalid message type:" + message.msgType);
         }
       }
 
       market.makeTransaction = function (transactionType) {
-          if (transactionType == "sell") {
+          if (transactionType == 0) {
               return market.CDABook.buyOrders.pop();
           }
-          else if (transactionType == "buy"){
+          else if (transactionType == 1){
               return market.CDABook.sellOrders.pop();
           }
           else console.error("marketManager: tried to make invalid transaction type");

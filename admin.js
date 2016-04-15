@@ -162,13 +162,13 @@ Redwood.controller("AdminCtrl",
          var rows = response.data.split("\n");
 
          //Parse price changes CSV
-         for (var i = 0; i < rows.length-1; i++) {
+         for (var i = 0; i < rows.length-2; i++) {
             $scope.priceChanges[i] = [];
          }
 
-         for (var i = 0; i < rows.length-1; i++) {
-            if (rows[i] === "") continue;
-            var cells = rows[i].split(",");
+         for (var i = 0; i < rows.length-2; i++) {
+            if (rows[i + 1] === "") continue;
+            var cells = rows[i + 1].split(",");
             for (var j = 0; j < cells.length; j++) {
                $scope.priceChanges[i][j] = parseFloat(cells[j]);
             }
@@ -183,15 +183,15 @@ Redwood.controller("AdminCtrl",
             var rows = response.data.split("\n");
 
             //Parse investor arrival changes CSV
-            for (var i = 0; i < rows.length-1; i++) {
+            for (var i = 0; i < rows.length-2; i++) {
                $scope.investorArrivals[i] = [];
             }
 
-            for (var i = 0; i < rows.length-1; i++) {
-               if (rows[i] === "") continue;
-               var cells = rows[i].split(",");
+            for (var i = 0; i < rows.length-2; i++) {
+               if (rows[i + 1] === "") continue;
+               var cells = rows[i + 1].split(",");
                for (var j = 0; j < cells.length; j++) {
-                  $scope.investorArrivals[i][j] = isNaN(cells[j]) ? cells[j].trim() : parseFloat(cells[j]);
+                  $scope.investorArrivals[i][j] = parseFloat(cells[j]);
                }
             }
 

@@ -3,7 +3,6 @@ Redwood.factory("GroupManager", function () {
 
    api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, market){
       var groupManager = {};
-      console.log(investorArrivalsArray);
       groupManager.priceChanges = priceLinesArray;
       groupManager.investorArrivals = investorArrivalsArray;
       groupManager.outBoundMessages = [];
