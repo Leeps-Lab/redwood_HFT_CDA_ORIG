@@ -157,6 +157,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init();
 
+        // Communicate with the group manager to start this round
         rs.synchronizationBarrier ("group_ready").then (function (){
             var msg = new Message("USER", "UREADY", [-1]);
             $scope.sendToGroupManager(msg, 0);
