@@ -3,7 +3,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
    api.createMarketAlgorithm = function(uid, sendToSubjectManager, dataHistory){
       var marketAlgorithm = {};
-      
+
       marketAlgorithm.latency = 1000;
       marketAlgorithm.spread = 5;   //NEEDS TO UPDATED BY SPREAD
       //Create the logger for this start.js page
@@ -33,12 +33,17 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
       // Handle message sent to the market algorithm
       marketAlgorithm.recvMessage = function(msg){
          this.logger.logRecv(msg, "Subject Manager");
-         
+
          // Fundemental Price Change
          if(msg.msgType == "FPC"){
             this.logger.logString(msg.msgData);
             dataHistory.recordFPCchange(msg);
             this.fundementalPrice = msg.msgData[1];
+
+            //send player state to group manager
+            //messageData is empty for now, will be implemented later
+            var nMsg3 = new Message ("ITCH", "FPC_S", [uid, msg.msgData[2]]);
+            this.sendMessage(nMsg3);
 
             //See if there are existing orders that need to be updated
             if(this.dataHistory.curBuyOffer != null){
