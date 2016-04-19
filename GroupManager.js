@@ -35,6 +35,7 @@ Redwood.factory("GroupManager", function () {
          //if this is a user message, handle it and don't send it to market
          if(msg.protocol == "USER"){
             return;
+          }
 
          if(msg.msgType == "FPC_S") {
              if (groupManager.priceChangeStates[msg.msgData[1]] === undefined) groupManager.priceChangeStates[msg.msgData[1]] = [];

@@ -42,7 +42,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
             //send player state to group manager
             //messageData is empty for now, will be implemented later
-            var nMsg3 = new Message ("ITCH", "FPC_S", [uid, msg.msgData[2]]);
+            var nMsg3 = new Message ("ITCH", "FPC_S", [this.groupData.myId, msg.msgData[2]]);
             this.sendMessage(nMsg3);
 
             //See if there are existing orders that need to be updated
