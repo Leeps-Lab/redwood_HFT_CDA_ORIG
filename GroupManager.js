@@ -11,6 +11,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.investorIndex = 0;
       groupManager.market = market;
       groupManager.memberIDs = memberIDs;
+      groupManager.priceChangeStates = [];
 
       groupManager.rssend = function (key, value) {
           sendFunction (key, value, "admin", 1, groupNumber);
@@ -31,10 +32,42 @@ Redwood.factory("GroupManager", function () {
          updateMsgTime(msg);
          this.logger.logRecv(msg, "subjects");
 
-
          //if this is a user message, handle it and don't send it to market
          if(msg.protocol == "USER"){
             return;
+
+         if(msg.msgType == "FPC_S") {
+             if (groupManager.priceChangeStates[msg.msgData[1]] === undefined) groupManager.priceChangeStates[msg.msgData[1]] = [];
+            groupManager.priceChangeStates[msg.msgData[1]].push(msg.msgData[0]);
+            if (groupManager.priceChangeStates[msg.msgData[1]].length == groupManager.memberIDs.length) console.log("GroupManager received all FPC states");
+            console.log(groupManager.priceChangeStates[msg.msgData[1]]);
+         }
+
+         //FOR TESTING ONLY
+         if(msg.msgType == "EBUY"){
+            var nMsg = new Message("ITCH", "C_EBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
+         //FOR TESTING ONLY
+         if(msg.msgType == "ESELL"){
+            var nMsg = new Message("ITCH", "C_ESELL", [msg.msgData[0], msg.msgData[1], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
+         //FOR TESTING ONLY
+         if(msg.msgType == "RBUY"){
+            var nMsg = new Message("ITCH", "C_RBUY", [msg.msgData[0], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
+         //FOR TESTING ONLY
+         if(msg.msgType == "RSELL"){
+            var nMsg = new Message("ITCH", "C_RSELL", [msg.msgData[0], Date.now()]);
+            this.sendToSubjects(nMsg);
+         }
+         //FOR TESTING ONLY
+         if(msg.msgType == "UBUY"){
+            var nMsg = new Message("ITCH", "C_UBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
+            this.sendToSubjects(nMsg);
+
          }
          else{
 
@@ -77,7 +110,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.update = function(){
          while(this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
-            var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1]]);
+            var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);
             this.logger.logSend(msg, "subjects");
             this.rssend("From_Group_Manager", msg);
             this.priceIndex++;
