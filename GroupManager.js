@@ -1,7 +1,7 @@
 Redwood.factory("GroupManager", function () {
    var api = {};
 
-   api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, market){
+   api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, market, memberIDs){
       var groupManager = {};
       groupManager.priceChanges = priceLinesArray;
       groupManager.investorArrivals = investorArrivalsArray;
@@ -10,6 +10,8 @@ Redwood.factory("GroupManager", function () {
       groupManager.priceIndex = 0;
       groupManager.investorIndex = 0;
       groupManager.market = market;
+      groupManager.memberIDs = memberIDs;
+      groupManager.priceChangeStates = [];
 
       groupManager.rssend = function (key, value) {
           sendFunction (key, value, "admin", 1, groupNumber);
@@ -30,6 +32,13 @@ Redwood.factory("GroupManager", function () {
          updateMsgTime(msg);
          this.logger.logRecv(msg, "subjects");
          groupManager.market.recvMessage (msg);
+
+         if(msg.msgType == "FPC_S") {
+             if (groupManager.priceChangeStates[msg.msgData[1]] === undefined) groupManager.priceChangeStates[msg.msgData[1]] = [];
+            groupManager.priceChangeStates[msg.msgData[1]].push(msg.msgData[0]);
+            if (groupManager.priceChangeStates[msg.msgData[1]].length == groupManager.memberIDs.length) console.log("GroupManager received all FPC states");
+            console.log(groupManager.priceChangeStates[msg.msgData[1]]);
+         }
 
          //FOR TESTING ONLY
          if(msg.msgType == "EBUY"){
@@ -67,7 +76,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.update = function(){
          while(this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
-            var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1]]);
+            var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);
             this.logger.logSend(msg, "subjects");
             this.rssend("From_Group_Manager", msg);
             this.priceIndex++;

@@ -53,10 +53,15 @@ Specific Message Structures:
 
 
    ITCH Messages:
+      Send Player State After Price Change:
+        protocol    -> "ITCH"
+        msgType     -> "FPC_S"
+        msgData     -> [player-id, price-change-index]
+
       Fundamental Price Change:
          protocol    -> "ITCH"
          msgType     -> "FPC"
-         msgData     -> [change-time, new-price]
+         msgData     -> [change-time, new-price, price-change-index]
 
       Confirm that Buy Order was Entered:
          protocol    -> "ITCH"
