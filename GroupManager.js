@@ -35,12 +35,15 @@ Redwood.factory("GroupManager", function () {
          //if this is a user message, handle it and don't send it to market
          if(msg.protocol == "USER"){
             return;
+        }
 
          if(msg.msgType == "FPC_S") {
              if (groupManager.priceChangeStates[msg.msgData[1]] === undefined) groupManager.priceChangeStates[msg.msgData[1]] = [];
             groupManager.priceChangeStates[msg.msgData[1]].push(msg.msgData[0]);
             if (groupManager.priceChangeStates[msg.msgData[1]].length == groupManager.memberIDs.length) console.log("GroupManager received all FPC states");
             console.log(groupManager.priceChangeStates[msg.msgData[1]]);
+            //don't need to send message to market, so just return
+            return;
          }
 
          //FOR TESTING ONLY
