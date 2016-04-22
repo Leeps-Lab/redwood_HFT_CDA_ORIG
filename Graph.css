@@ -48,6 +48,16 @@
    stroke-width:1;
 }
 
+.buy-offer{
+   stroke:rgb(80, 50, 30);
+   stroke-width:1;
+}
+
+.sell-offer{
+   stroke:rgb(80, 50, 30);
+   stroke-width:1;
+}
+
 .cur-buy-offer{
    stroke:rgb(80, 50, 30);
    stroke-width:1;
