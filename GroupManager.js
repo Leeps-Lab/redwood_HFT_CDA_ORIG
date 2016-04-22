@@ -32,19 +32,20 @@ Redwood.factory("GroupManager", function () {
          updateMsgTime(msg);
          this.logger.logRecv(msg, "subjects");
 
-         //if this is a user message, handle it and don't send it to market
-         if(msg.protocol == "USER"){
+         //if this is a user or a sync message, handle it and don't send it to market
+         if(msg.protocol == "USER" || msg.protocol == "SYNC_FP"){
             return;
         }
 
-         if(msg.msgType == "FPC_S") {
-             if (groupManager.priceChangeStates[msg.msgData[1]] === undefined) groupManager.priceChangeStates[msg.msgData[1]] = [];
-            groupManager.priceChangeStates[msg.msgData[1]].push(msg.msgData[0]);
-            if (groupManager.priceChangeStates[msg.msgData[1]].length == groupManager.memberIDs.length) console.log("GroupManager received all FPC states");
-            console.log(groupManager.priceChangeStates[msg.msgData[1]]);
-            //don't need to send message to market, so just return
-            return;
-         }
+         // changed to SYNC_FP message protocol
+         // if(msg.msgType == "FPC_S") {
+         //     if (groupManager.priceChangeStates[msg.msgData[1]] === undefined) groupManager.priceChangeStates[msg.msgData[1]] = [];
+         //    groupManager.priceChangeStates[msg.msgData[1]].push(msg.msgData[0]);
+         //    if (groupManager.priceChangeStates[msg.msgData[1]].length == groupManager.memberIDs.length) console.log("GroupManager received all FPC states");
+         //    console.log(groupManager.priceChangeStates[msg.msgData[1]]);
+         //    //don't need to send message to market, so just return
+         //    return;
+         // }
 
          //FOR TESTING ONLY
          if(msg.msgType == "EBUY"){

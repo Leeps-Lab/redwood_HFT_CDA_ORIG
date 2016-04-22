@@ -6,6 +6,9 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
       marketAlgorithm.latency = 1000;
       marketAlgorithm.spread = 5;   //NEEDS TO UPDATED BY SPREAD
+      marketAlgorithm.using_speed = false;
+      marketAlgorithm.state = "state_out";
+
       //Create the logger for this start.js page
       marketAlgorithm.logger = new MessageLogger("Market Algorithm", "#FF5555", "subject-log");
       marketAlgorithm.groupData = groupData;
@@ -41,19 +44,21 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
             this.fundementalPrice = msg.msgData[1];
 
             //send player state to group manager
-            //messageData is empty for now, will be implemented later
-            var nMsg3 = new Message ("ITCH", "FPC_S", [this.groupData.myId, msg.msgData[2]]);
-            this.sendMessage(nMsg3);
-
-            //See if there are existing orders that need to be updated
-            if(this.dataHistory.curBuyOffer != null){
-               var nMsg = new Message("OUTCH", "UBUY", [this.groupData.myId, this.fundementalPrice - this.spread/2] );
-               this.sendMessage(nMsg);
+            var nMsg3;
+            if (this.state == "state_out") {
+               nMsg3 = new Message ("SYNC_FP", "NONE", [this.groupData.myId, this.using_speed, msg.msgData[2]]);
             }
-            if(this.dataHistory.curSellOffer != null){
-               var nMsg2 = new Message("OUTCH", "USELL", [this.groupData.myId, this.fundementalPrice + this.spread/2] );
-               this.sendMessage(nMsg2);
+            else if (this.state == "state_maker") {
+               nMsg3 = new Message ("SYNC_FP", "UOFFERS", [this.groupData.myId, this.using_speed, msg.msgData[2], this.spread]);
             }
+            else if (this.state == "state_snipe") {
+               nMsg3 = new Message ("SYNC_FP", "SNIPE", [this.groupData.myId, this.using_speed, msg.msgData[2]]);
+            }
+            else {
+               console.error("invalid state");
+               return;
+            }
+            this.sendMessage (nMsg3);
          }
 
          // User Sent Signal to Enter Market
