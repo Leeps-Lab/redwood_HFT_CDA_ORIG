@@ -9,7 +9,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.investorIndex = 0;
       groupManager.market = market;
       groupManager.memberIDs = memberIDs;
-      groupManager.priceChangeStates = [];
+      groupManager.synchFpArray = [];
       console.log(groupManager.memberIDs);
 
       groupManager.rssend = function (key, value) {
@@ -26,11 +26,20 @@ Redwood.factory("GroupManager", function () {
       };
 
       // maps user id to the correct index in the synchronized array
-      groupManager.mapIdToIndex(uid){
-        for(var i = 0; i < memberIDs.length; i++){
-          
+      groupManager.mapIdToIndex = function(uid){
+
+        // look for index of memberIDs at which this id resides
+        for(var i = 0; i < this.memberIDs.length; i++){
+          if(uid == this.memberIDs[i]){
+            return i;
+          }
         }
-      }
+
+        // error if id was not found
+        console.error("No member with id:" + String(uid) + " was found in group manager.");
+      };
+
+
 
       // handles message from subject and passes it on to market algorithm
       groupManager.recvFromSubject = function(msg){
