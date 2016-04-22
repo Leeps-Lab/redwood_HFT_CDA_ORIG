@@ -50,7 +50,7 @@ Redwood.factory("GroupManager", function () {
         if(msg.protocol == "USER"){
           return;
         }
-        
+
         // synchronized message in response to fundemental price change
         if(msg.protocol == "SYNCH_FP"){
 
