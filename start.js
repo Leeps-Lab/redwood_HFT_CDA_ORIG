@@ -23,7 +23,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.spread = 0;
     $scope.sendWaitListToGroupManager = [];
     $scope.sendWaitListToMarketAlg = [];
-    $scope.maxLatency = 500
+    $scope.maxLatency = 500;
     $scope.latency = $scope.maxLatency;
 
 
@@ -110,35 +110,36 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         });
 
         // Parse config.groups for information - provides these variables:
-        // $scope.myId      -> id of this subject
-        // $scope.groupId   -> id of the group that this subject is in
-        // $scope.group     -> array of id's of ALL SUBJECTS in this subject's group
-        // $scope.others    -> array of id's of ALL OTHER SUBJECTS in this subject's group
-        // $scope.groupRoot -> id of the root subject of this group
-        // $scope.iAmRoot   -> boolean reflecting if this subject is the root subject for this group
-        $scope.myId = rs.user_id;
+        // $scope.groupData.mIyd      -> id of this subject
+        // $scope.groupData.groupId   -> id of the group that this subject is in
+        // $scope.groupData.group     -> array of id's of ALL SUBJECTS in this subject's group
+        // $scope.groupData.others    -> array of id's of ALL OTHER SUBJECTS in this subject's group
+        // $scope.groupData.groupRoot -> id of the root subject of this group
+        // $scope.groupData.iAmRoot   -> boolean reflecting if this subject is the root subject for this group
+        $scope.groupData = {};
+        $scope.groupData.myId = rs.user_id;
         var i = 1;
         var j = 0;
         for(i; i < $scope.config.groups.length + 1; i++){
             for(j = 0; j < $scope.config.groups[i-1].length; j++){
-                if($scope.config.groups[i-1][j] == $scope.myId){
-                    $scope.groupId = i;
-                    $scope.group = $scope.config.groups[i-1].slice();
-                    $scope.groupRoot = $scope.group[0];
-                    $scope.others = [];
+                if($scope.config.groups[i-1][j] == $scope.groupData.myId){
+                    $scope.groupData.groupId = i;
+                    $scope.groupData.group = $scope.config.groups[i-1].slice();
+                    $scope.groupData.groupRoot = $scope.groupData.group[0];
+                    $scope.groupData.others = [];
                     var z = 0;
-                    for(z; z < $scope.group.length; z++){
-                        if($scope.myId != $scope.group[z]){
-                            $scope.others.push($scope.group[z]);
+                    for(z; z < $scope.groupData.group.length; z++){
+                        if($scope.groupData.myId != $scope.groupData.group[z]){
+                            $scope.groupData.others.push($scope.groupData.group[z]);
                         }
                     }
-                    $scope.iAmRoot = $scope.myId == $scope.groupRoot;
+                    $scope.groupData.iAmRoot = $scope.groupData.myId == $scope.groupData.groupRoot;
                 }
             }
         } // End of parsing config.groups
 
         //Create the logger for this start.js page
-        $scope.logger = new MessageLogger("Subject Manager" + String($scope.myId), "yellow", "subject-log");
+        $scope.logger = new MessageLogger("Subject Manager" + String($scope.groupData.myId), "yellow", "subject-log");
 
         // log.init("hello-world");
         // log.log("hi");
@@ -153,7 +154,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
         //Create market algorithm object with ability to attatch messages to the message waiting list
         $scope.dHistory = dataHistory.createDataHistory();
-        $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm($scope.myId, recvFromMarketAlg, $scope.dHistory);
+        $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm($scope.groupData, recvFromMarketAlg, $scope.dHistory);
         $scope.tradingGraph = graphing.makeTradingGraph("graph1");
         $scope.tradingGraph.init();
 
@@ -161,7 +162,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         rs.synchronizationBarrier ("group_ready").then (function (){
             var msg = new Message("USER", "UREADY", [-1]);
             $scope.sendToGroupManager(msg, 0);
-            if ($scope.iAmRoot)
+            if ($scope.groupData.iAmRoot)
                 rs.send ("start_group");
         });
     });
@@ -204,7 +205,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                 // Functions for handling messages sent to group manager
                 // moved to admin page
                 // function handleMsgToGM(message){
-                //     if($scope.iAmRoot){
+                //     if($scope.groupData.iAmRoot){
                 //         $scope.groupManager.recvFromSubject(message);
                 //     }
                 // }

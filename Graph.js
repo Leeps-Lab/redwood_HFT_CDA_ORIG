@@ -163,6 +163,33 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
 
+      graph.drawStep = function(graphRefr, historyDataSet, curentData, styleClassName){
+         
+         this.svg.selectAll("line." + styleClassName)
+            .data(historyDataSet)
+            .enter()
+            .append("line")
+            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0]); })
+            .attr("x2", function(d){ return graphRefr.mapTimeToXAxis(d[1]); })
+            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
+            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
+            .attr("class", styleClassName);
+         
+         if(curentData != null)
+         this.svg.append("line")
+            .attr("x1", this.mapTimeToXAxis(curentData[0]) )
+            .attr("x2", this.curTimeX)
+            .attr("y1", this.mapPriceToYAxis(curentData[1]) )
+            .attr("y2", this.mapPriceToYAxis(curentData[1]) )
+            .attr("class", styleClassName);
+      };
+
+      graph.drawOffers = function(graphRefr, dataHistory){
+         this.drawStep(graphRefr, dataHistory.pastBuyOffers, dataHistory.curBuyOffer, "buy-offer");
+         this.drawStep(graphRefr, dataHistory.pastSellOffers, dataHistory.curSellOffer, "sell-offer");
+      };
+
+/*
       // If current buy offer exists, draw it on the graph
       graph.drawCurBuyOffer = function(graphRefr, dataHistory){
          if(dataHistory.curBuyOffer != null)
@@ -207,7 +234,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
             .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
             .attr("class", "past-sell-offer");
-      };
+      };*/
 
  /*     graph.drawMinSpread = function(graphRefr, drawData){
          //Draw the spread over the price line
@@ -288,10 +315,11 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.drawTimeGridLines(graphRefr);
          this.drawPriceGridLines(graphRefr);
          this.drawPriceLine(graphRefr, dataHistory);
-         this.drawCurBuyOffer(graphRefr, dataHistory);
-         this.drawCurSellOffer(graphRefr, dataHistory);
-         this.drawPastBuyOffers(graphRefr, dataHistory);
-         this.drawPastSellOffers(graphRefr, dataHistory);
+         this.drawOffers(graphRefr, dataHistory);
+         //this.drawCurBuyOffer(graphRefr, dataHistory);
+         //this.drawCurSellOffer(graphRefr, dataHistory);
+         //this.drawPastBuyOffers(graphRefr, dataHistory);
+         //this.drawPastSellOffers(graphRefr, dataHistory);
          //this.drawMarketEvents(graphRefr, drawData);
          //this.drawMinSpread(graphRefr, drawData);
          this.drawPriceAxis(graphRefr);

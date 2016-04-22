@@ -1,14 +1,14 @@
 RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
    var api = {};
 
-   api.createMarketAlgorithm = function(uid, sendToSubjectManager, dataHistory){
+   api.createMarketAlgorithm = function(groupData, sendToSubjectManager, dataHistory){
       var marketAlgorithm = {};
 
       marketAlgorithm.latency = 1000;
       marketAlgorithm.spread = 5;   //NEEDS TO UPDATED BY SPREAD
       //Create the logger for this start.js page
       marketAlgorithm.logger = new MessageLogger("Market Algorithm", "#FF5555", "subject-log");
-      marketAlgorithm.uid = uid;
+      marketAlgorithm.groupData = groupData;
       marketAlgorithm.sendToSubjectManager = sendToSubjectManager;   //Sends message to subject manager, function obtained as parameter
       marketAlgorithm.fundementalPrice = 15;   //TODO: THIS NEEDS TO BE SET BY START MESSAGE
       marketAlgorithm.dataHistory = dataHistory;
@@ -42,32 +42,32 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
             //send player state to group manager
             //messageData is empty for now, will be implemented later
-            var nMsg3 = new Message ("ITCH", "FPC_S", [uid, msg.msgData[2]]);
+            var nMsg3 = new Message ("ITCH", "FPC_S", [this.groupData.myId, msg.msgData[2]]);
             this.sendMessage(nMsg3);
 
             //See if there are existing orders that need to be updated
             if(this.dataHistory.curBuyOffer != null){
-               var nMsg = new Message("OUTCH", "UBUY", [this.uid, this.fundementalPrice - this.spread/2] );
+               var nMsg = new Message("OUTCH", "UBUY", [this.groupData.myId, this.fundementalPrice - this.spread/2] );
                this.sendMessage(nMsg);
             }
             if(this.dataHistory.curSellOffer != null){
-               var nMsg2 = new Message("OUTCH", "USELL", [this.uid, this.fundementalPrice + this.spread/2] );
+               var nMsg2 = new Message("OUTCH", "USELL", [this.groupData.myId, this.fundementalPrice + this.spread/2] );
                this.sendMessage(nMsg2);
             }
          }
 
          // User Sent Signal to Enter Market
          if(msg.msgType == "UENTM"){
-            var nMsg = new Message("OUTCH", "EBUY", [this.uid, this.fundementalPrice - this.spread/2] );
-            var nMsg2 = new Message("OUTCH", "ESELL", [this.uid, this.fundementalPrice + this.spread/2] );
+            var nMsg = new Message("OUTCH", "EBUY", [this.groupData.myId, this.fundementalPrice - this.spread/2] );
+            var nMsg2 = new Message("OUTCH", "ESELL", [this.groupData.myId, this.fundementalPrice + this.spread/2] );
             this.sendMessage(nMsg);
             this.sendMessage(nMsg2);
          }
 
          // User Sent Signal to Exit Market
          if(msg.msgType == "UEXTM"){
-            var nMsg = new Message("OUTCH", "RBUY", [this.uid] );
-            var nMsg2 = new Message("OUTCH", "RSELL", [this.uid] );
+            var nMsg = new Message("OUTCH", "RBUY", [this.groupData.myId] );
+            var nMsg2 = new Message("OUTCH", "RSELL", [this.groupData.myId] );
             this.sendMessage(nMsg);
             this.sendMessage(nMsg2);
          }
@@ -78,18 +78,18 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
             //See if there are existing orders that need to be updated
             if(this.dataHistory.curBuyOffer != null){
-               var nMsg = new Message("OUTCH", "UBUY", [this.uid, this.fundementalPrice - this.spread/2] );
+               var nMsg = new Message("OUTCH", "UBUY", [this.groupData.myId, this.fundementalPrice - this.spread/2] );
                this.sendMessage(nMsg);
             }
             if(this.dataHistory.curSellOffer != null){
-               var nMsg2 = new Message("OUTCH", "USELL", [this.uid, this.fundementalPrice + this.spread/2] );
+               var nMsg2 = new Message("OUTCH", "USELL", [this.groupData.myId, this.fundementalPrice + this.spread/2] );
                this.sendMessage(nMsg2);
             }
          }
 
          // Confirmation that a buy offer has been placed in market
          if(msg.msgType == "C_EBUY"){
-            if(msg.msgData[0] == this.uid){
+            if(msg.msgData[0] == this.groupData.myId){
                this.logger.logString("My buy offer confirmed at time: " + millisToTime(msg.msgData[2]) );
                this.dataHistory.recordBuyOffer(msg);
             }
@@ -97,7 +97,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
          // Confirmation that a sell offer has been placed in market
          if(msg.msgType == "C_ESELL"){
-            if(msg.msgData[0] == this.uid){
+            if(msg.msgData[0] == this.groupData.myId){
                this.logger.logString("My sell offer confirmed at time: " + millisToTime(msg.msgData[2]) );
                this.dataHistory.recordSellOffer(msg);
             }
@@ -105,7 +105,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
          // Confirmation that a buy offer has been removed from market
          if(msg.msgType == "C_RBUY"){
-            if(msg.msgData[0] == this.uid){
+            if(msg.msgData[0] == this.groupData.myId){
                this.logger.logString("My buy offer removed at time: " + millisToTime(msg.msgData[1]) );
                this.dataHistory.storeBuyOffer(msg.msgData[1]);
             }
@@ -113,7 +113,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
          // Confirmation that a sell offer has been placed in market
          if(msg.msgType == "C_RSELL"){
-            if(msg.msgData[0] == this.uid){
+            if(msg.msgData[0] == this.groupData.myId){
                this.logger.logString("My sell offer removed at time: " + millisToTime(msg.msgData[1]) );
                this.dataHistory.storeSellOffer(msg.msgData[1]);
             }
@@ -121,7 +121,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
          // Confirmation that a buy offer has been updated
          if(msg.msgType == "C_UBUY"){
-            if(msg.msgData[0] == this.uid){
+            if(msg.msgData[0] == this.groupData.myId){
                this.logger.logString("My buy offer updated at time: " + millisToTime(msg.msgData[2]) );
                this.dataHistory.recordBuyOffer(msg);
             }
@@ -129,7 +129,7 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
 
          // Confirmation that a sell offer has been updated
          if(msg.msgType == "C_USELL"){
-            if(msg.msgData[0] == this.uid){
+            if(msg.msgData[0] == this.groupData.myId){
                this.logger.logString("My sell offer updated at time: " + millisToTime(msg.msgData[2]) );
                this.dataHistory.recordSellOffer(msg);
             }

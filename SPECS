@@ -1,4 +1,11 @@
+**********    DAWING W/GRAPH   **************
 
+Drawing a step dataset onto grpah:
+   i.e. where all lines are constant horizontal and values change by jumping
+Use graph.drawStep(historyDataSet, curentData, styleClassName);
+   historyDataSet -> 2Darray of all steps in history. each entry in first array looks like [startTime, endTime, price]
+   curentData     -> curent status of the step graph. looks like: [startTime, price] or Null if currently graph is empty.
+   styleClassName -> string identifier for the css class that should be used to draw lines of this graph.
 
 
 **********  MESSAGE STRUCTURE  **************
