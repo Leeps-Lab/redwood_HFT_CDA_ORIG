@@ -5,13 +5,12 @@ Redwood.factory("GroupManager", function () {
       var groupManager = {};
       groupManager.priceChanges = priceLinesArray;
       groupManager.investorArrivals = investorArrivalsArray;
-      groupManager.outBoundMessages = [];
-      groupManager.inBoundMessages = [];
       groupManager.priceIndex = 0;
       groupManager.investorIndex = 0;
       groupManager.market = market;
       groupManager.memberIDs = memberIDs;
       groupManager.priceChangeStates = [];
+      console.log(groupManager.memberIDs);
 
       groupManager.rssend = function (key, value) {
           sendFunction (key, value, "admin", 1, groupNumber);
@@ -21,90 +20,38 @@ Redwood.factory("GroupManager", function () {
       $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group ' + groupNumber + ' Message Log</div><div id="group-' + groupNumber + '-log" class="terminal"></div></div>');
       groupManager.logger = new MessageLogger("Group Manager", "#5555FF", "group-" + groupNumber + "-log");
 
-      //changed to accept a pre-processed price changes array
-
       //Initialize functions
       groupManager.sendToSubjects = function(message){
          this.rssend("From_Group_Manager", message);
       };
 
+      // maps user id to the correct index in the synchronized array
+      groupManager.mapIdToIndex(uid){
+        for(var i = 0; i < memberIDs.length; i++){
+          
+        }
+      }
+
+      // handles message from subject and passes it on to market algorithm
       groupManager.recvFromSubject = function(msg){
          updateMsgTime(msg);
          this.logger.logRecv(msg, "subjects");
 
-         //if this is a user message, handle it and don't send it to market
-         if(msg.protocol == "USER"){
-            return;
-          }
+        // if this is a user message, handle it and don't send it to market
+        if(msg.protocol == "USER"){
+          return;
+        }
+        
+        // synchronized message in response to fundemental price change
+        if(msg.protocol == "SYNCH_FP"){
 
-         if(msg.msgType == "FPC_S") {
-             if (groupManager.priceChangeStates[msg.msgData[1]] === undefined) groupManager.priceChangeStates[msg.msgData[1]] = [];
-            groupManager.priceChangeStates[msg.msgData[1]].push(msg.msgData[0]);
-            if (groupManager.priceChangeStates[msg.msgData[1]].length == groupManager.memberIDs.length) console.log("GroupManager received all FPC states");
-            console.log(groupManager.priceChangeStates[msg.msgData[1]]);
-         }
+        }
 
-         //FOR TESTING ONLY
-         if(msg.msgType == "EBUY"){
-            var nMsg = new Message("ITCH", "C_EBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
-            this.sendToSubjects(nMsg);
-         }
-         //FOR TESTING ONLY
-         if(msg.msgType == "ESELL"){
-            var nMsg = new Message("ITCH", "C_ESELL", [msg.msgData[0], msg.msgData[1], Date.now()]);
-            this.sendToSubjects(nMsg);
-         }
-         //FOR TESTING ONLY
-         if(msg.msgType == "RBUY"){
-            var nMsg = new Message("ITCH", "C_RBUY", [msg.msgData[0], Date.now()]);
-            this.sendToSubjects(nMsg);
-         }
-         //FOR TESTING ONLY
-         if(msg.msgType == "RSELL"){
-            var nMsg = new Message("ITCH", "C_RSELL", [msg.msgData[0], Date.now()]);
-            this.sendToSubjects(nMsg);
-         }
-         //FOR TESTING ONLY
-         if(msg.msgType == "UBUY"){
-            var nMsg = new Message("ITCH", "C_UBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
-            this.sendToSubjects(nMsg);
+        // general message that needs to be passed on to marketManager
+        if(msg.protocol == "OUCH"){
 
-         }
-         else{
+        }
 
-           groupManager.market.recvMessage (msg);
-
-           //FOR TESTING ONLY
-           if(msg.msgType == "EBUY"){
-              var nMsg = new Message("ITCH", "C_EBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
-              this.sendToSubjects(nMsg);
-           }
-           //FOR TESTING ONLY
-           if(msg.msgType == "ESELL"){
-              var nMsg = new Message("ITCH", "C_ESELL", [msg.msgData[0], msg.msgData[1], Date.now()]);
-              this.sendToSubjects(nMsg);
-           }
-           //FOR TESTING ONLY
-           if(msg.msgType == "RBUY"){
-              var nMsg = new Message("ITCH", "C_RBUY", [msg.msgData[0], Date.now()]);
-              this.sendToSubjects(nMsg);
-           }
-           //FOR TESTING ONLY
-           if(msg.msgType == "RSELL"){
-              var nMsg = new Message("ITCH", "C_RSELL", [msg.msgData[0], Date.now()]);
-              this.sendToSubjects(nMsg);
-           }
-           //FOR TESTING ONLY
-           if(msg.msgType == "UBUY"){
-              var nMsg = new Message("ITCH", "C_UBUY", [msg.msgData[0], msg.msgData[1], Date.now()]);
-              this.sendToSubjects(nMsg);
-           }
-           //FOR TESTING ONLY
-           if(msg.msgType == "USELL"){
-              var nMsg = new Message("ITCH", "C_USELL", [msg.msgData[0], msg.msgData[1], Date.now()]);
-              this.sendToSubjects(nMsg);
-           }
-         }
       };
 
       //Looks for change in fundamental price and sends message if change is found
