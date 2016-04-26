@@ -2,16 +2,30 @@ Redwood.factory("MarketManager", function () {
    var api = {};
 
    //Creates the market manager, pass var's that you need for creation in here.
-   api.createMarketManager = function(){
+   api.createMarketManager = function(sendFunction, groupNumber){
       var market = {};
 
       market.CDABook = {};
 
+      // captures the redwood admin send function
+      market.rssend = function (key, value) {
+          sendFunction (key, value, "admin", 1, groupNumber);
+      };
+
+      // abstracts send function so that there is single msg argument
+      market.sendToSubjects = function(message){
+         this.rssend("From_Group_Manager", message);
+         console.log("msg sent");
+      };
+
       market.recvMessage = function(message){
         message.timestamp = Date.now();
+        console.log("hello");
         switch (message.msgType) {
             case "EBUY":
                 market.CDABook.insertBuy (message.msgData[0], message.msgData[1], message.timestamp);
+                var msg = new Message("ITCH", "C_EBUY", [message.msgData[0], message.msgData[1], Date.now()]);
+                this.sendToSubjects(msg);
                 break;
             case "ESELL":
                 market.CDABook.insertSell (message.msgData[0], message.msgData[1], message.timestamp);
@@ -31,7 +45,7 @@ Redwood.factory("MarketManager", function () {
             default:
                 console.error("marketManager: invalid message type:" + message.msgType);
         }
-      }
+      };
 
       market.makeTransaction = function (transactionType) {
           if (transactionType == 0) {
@@ -41,7 +55,7 @@ Redwood.factory("MarketManager", function () {
               return market.CDABook.sellOrders.pop();
           }
           else console.error("marketManager: tried to make invalid transaction type");
-      }
+      };
 
       //array to hold buyOrders
       market.CDABook.buyOrders = [];

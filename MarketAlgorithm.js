@@ -19,19 +19,19 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
       marketAlgorithm.sendMessage = function(msg){
          this.logger.logSend(msg, "Subject Manager");
          this.sendToSubjectManager(msg);
-      }
+      };
 
       marketAlgorithm.enterMarket = function(){
 
-      }
+      };
 
       marketAlgorithm.leaveMarket = function(){
 
-      }
+      };
 
       marketAlgorithm.updateSpread = function(){
 
-      }
+      };
 
       // Handle message sent to the market algorithm
       marketAlgorithm.recvMessage = function(msg){

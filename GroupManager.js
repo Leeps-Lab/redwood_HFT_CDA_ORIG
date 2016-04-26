@@ -39,7 +39,7 @@ Redwood.factory("GroupManager", function () {
         console.error("No member with id:" + String(uid) + " was found in group manager.");
       };
 
-      // s
+      // check if the Synchronized Fundemental Price Change array is ready to process 
       groupManager.syncFpReady = function() {
         for(var i = 0; i < syncFpArray.length; i++){
           if(syncFpArray[i] === null){
@@ -65,7 +65,7 @@ Redwood.factory("GroupManager", function () {
         }
 
         // general message that needs to be passed on to marketManager
-        if(msg.protocol === "OUCH"){
+        if(msg.protocol === "OUTCH"){
           groupManager.market.recvMessage(msg);
         }
 

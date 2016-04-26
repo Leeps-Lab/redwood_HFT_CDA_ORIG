@@ -201,7 +201,8 @@ Redwood.controller("AdminCtrl",
             var groups = ra.get_config (1, 0).groups;
             for (var currGroup = 0; currGroup < groups.length; currGroup++) {
                 //just use first period for now, will have to fix for other periods later
-                $scope.groupManagers[currGroup] = gm.createGroupManager ($scope.priceChanges, $scope.investorArrivals, ra.sendCustom, currGroup + 1, mm.createMarketManager(), groups[currGroup]);
+                var market = mm.createMarketManager(ra.sendCustom, currGroup + 1);
+                $scope.groupManagers[currGroup] = gm.createGroupManager ($scope.priceChanges, $scope.investorArrivals, ra.sendCustom, currGroup + 1, market, groups[currGroup]);
             }
 
             //FOR TESTING- Produces messages that simulate changes in the fundamental value

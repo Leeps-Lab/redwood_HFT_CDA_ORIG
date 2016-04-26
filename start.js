@@ -230,6 +230,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
                 rs.recv ("From_Group_Manager", function (uid, msg){
                     handleMsgFromGM(msg);
+                    debugger;
                 });
     }
 
