@@ -18,30 +18,57 @@ Redwood.factory("MarketManager", function () {
          console.log("msg sent");
       };
 
+      // handle message from subjects
       market.recvMessage = function(message){
         message.timestamp = Date.now();
         console.log("hello");
+
+        // handle message based on type. Send reply once message has been handled
         switch (message.msgType) {
+
+            // enter buy offer
             case "EBUY":
                 market.CDABook.insertBuy (message.msgData[0], message.msgData[1], message.timestamp);
                 var msg = new Message("ITCH", "C_EBUY", [message.msgData[0], message.msgData[1], Date.now()]);
                 this.sendToSubjects(msg);
                 break;
+
+            // enter sell offer
             case "ESELL":
                 market.CDABook.insertSell (message.msgData[0], message.msgData[1], message.timestamp);
+                var msg = new Message("ITCH", "C_ESELL", [message.msgData[0], message.msgData[1], Date.now()]);
+                this.sendToSubjects(msg);
                 break;
+
+            // remove buy offer
             case "RBUY":
                 market.CDABook.removeBuy (message.msgData[0]);
+                var msg = new Message("ITCH", "C_RBUY", [message.msgData[0], Date.now()]);
+                this.sendToSubjects(msg);
                 break;
+
+            // remove sell offer
             case "RSELL":
                 market.CDABook.removeSell (message.msgData[0]);
+                var msg = new Message("ITCH", "C_RSELL", [message.msgData[0], Date.now()]);
+                this.sendToSubjects(msg);
                 break;
+
+            // update buy offer
             case "UBUY":
                 market.CDABook.updateBuy (message.msgData[0], message.msgData[1]);
+                var msg = new Message("ITCH", "C_UBUY", [message.msgData[0], message.msgData[1], Date.now()]);
+                this.sendToSubjects(msg);
                 break;
+
+            // update sell offer
             case "USELL":
                 market.CDABook.updateSell (message.msgData[0], message.msgData[1]);
+                var msg = new Message("ITCH", "C_USELL", [message.msgData[0], message.msgData[1], Date.now()]);
+                this.sendToSubjects(msg);
                 break;
+
+            // message not recognized
             default:
                 console.error("marketManager: invalid message type:" + message.msgType);
         }
