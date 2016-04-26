@@ -9,7 +9,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.investorIndex = 0;
       groupManager.market = market;
       groupManager.memberIDs = memberIDs;
-      groupManager.synchFpArray = [];
+      groupManager.syncFpArray = [];
       console.log(groupManager.memberIDs);
 
       groupManager.rssend = function (key, value) {
@@ -30,7 +30,7 @@ Redwood.factory("GroupManager", function () {
 
         // look for index of memberIDs at which this id resides
         for(var i = 0; i < this.memberIDs.length; i++){
-          if(uid == this.memberIDs[i]){
+          if(uid === this.memberIDs[i]){
             return i;
           }
         }
@@ -39,7 +39,15 @@ Redwood.factory("GroupManager", function () {
         console.error("No member with id:" + String(uid) + " was found in group manager.");
       };
 
-
+      // s
+      groupManager.syncFpReady = function() {
+        for(var i = 0; i < syncFpArray.length; i++){
+          if(syncFpArray[i] === null){
+            return false;
+          }
+        }
+        return true;
+      };
 
       // handles message from subject and passes it on to market algorithm
       groupManager.recvFromSubject = function(msg){
@@ -47,18 +55,18 @@ Redwood.factory("GroupManager", function () {
          this.logger.logRecv(msg, "subjects");
 
         // if this is a user message, handle it and don't send it to market
-        if(msg.protocol == "USER"){
+        if(msg.protocol === "USER"){
           return;
         }
 
         // synchronized message in response to fundemental price change
-        if(msg.protocol == "SYNCH_FP"){
-
+        if(msg.protocol === "SYNC_FP"){
+          this.logger.logString(String(msg.msgData[0]));
         }
 
         // general message that needs to be passed on to marketManager
-        if(msg.protocol == "OUCH"){
-
+        if(msg.protocol === "OUCH"){
+          groupManager.market.recvMessage(msg);
         }
 
       };
@@ -77,8 +85,8 @@ Redwood.factory("GroupManager", function () {
                && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
             var returned = market.makeTransaction (this.investorArrivals[this.investorIndex][1])
             if (returned !== undefined) {
-                var seller = (this.investorArrivals[this.investorIndex][1] == "sell" ? 0 : returned.id);
-                var buyer = (this.investorArrivals[this.investorIndex][1] == "buy" ? 0 : returned.id);
+                var seller = (this.investorArrivals[this.investorIndex][1] === "sell" ? 0 : returned.id);
+                var buyer = (this.investorArrivals[this.investorIndex][1] === "buy" ? 0 : returned.id);
                 var msg = new Message ("ITCH", "C_TRA", [returned.timestamp, buyer, seller, returned.price]);
                 this.logger.logSend(msg, "subjects");
                 this.rssend("From_Group_Manager", msg);
