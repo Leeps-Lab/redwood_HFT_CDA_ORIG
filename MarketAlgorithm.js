@@ -64,7 +64,9 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
          // User Sent Signal to Enter Market
          if(msg.msgType == "UENTM"){
             var nMsg = new Message("OUTCH", "EBUY", [this.groupData.myId, this.fundementalPrice - this.spread/2] );
+            nMsg.delay = !this.using_speed;
             var nMsg2 = new Message("OUTCH", "ESELL", [this.groupData.myId, this.fundementalPrice + this.spread/2] );
+            nMsg2.delay = !this.using_speed;
             this.sendMessage(nMsg);
             this.sendMessage(nMsg2);
          }
@@ -72,7 +74,9 @@ RedwoodHighFrequencyTrading.factory("MarketAlgorithm", function () {
          // User Sent Signal to Exit Market
          if(msg.msgType == "UEXTM"){
             var nMsg = new Message("OUTCH", "RBUY", [this.groupData.myId] );
+            nMsg.delay = !this.using_speed;
             var nMsg2 = new Message("OUTCH", "RSELL", [this.groupData.myId] );
+            nMsg2.delay = !this.using_speed;
             this.sendMessage(nMsg);
             this.sendMessage(nMsg2);
          }
