@@ -30,12 +30,16 @@ Redwood.factory("GroupManager", function () {
       // this sends message to market with specified amount of delay
       groupManager.sendToMarket = function(msg){
         
+        console.log("message");
+        console.log(msg.delay);
+
         //If no delay send msg now, otherwise push it onto wait list with tag for what time msg should be sent
-        if(!msg.delay){
-          this.market.recvMessage(msg);
+
+        if(msg.delay){
+          this.msgWaitList.push([Date.now() + this.delay, msg]);
         }
         else{
-          this.msgWaitList.push([Date.now() + this.delay, msg]);
+          this.market.recvMessage(msg);
         }
       };
 
@@ -80,7 +84,7 @@ Redwood.factory("GroupManager", function () {
 
         // general message that needs to be passed on to marketManager
         if(msg.protocol === "OUTCH"){
-          groupManager.market.recvMessage(msg);
+          groupManager.sendToMarket(msg);
         }
 
       };
@@ -91,7 +95,9 @@ Redwood.factory("GroupManager", function () {
         // check if msgs on wait list need to be sent
         if(this.msgWaitList.length > 0){
           while(this.msgWaitList[0][0] < Date.now()){
-            this.market.recvMessage(msgWaitList[0][1]);
+            console.log("sent message with delay");
+            this.market.recvMessage(this.msgWaitList[0][1]);
+            this.msgWaitList.shift();
             if(this.msgWaitList.length === 0){
               break;
             }
