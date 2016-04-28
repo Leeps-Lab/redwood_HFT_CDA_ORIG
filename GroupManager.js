@@ -10,6 +10,8 @@ Redwood.factory("GroupManager", function () {
       groupManager.market = market;
       groupManager.memberIDs = memberIDs;
       groupManager.syncFpArray = [];
+      groupManager.msgWaitList = [];
+      groupManager.delay = 500;
       console.log(groupManager.memberIDs);
 
       groupManager.rssend = function (key, value) {
@@ -23,6 +25,18 @@ Redwood.factory("GroupManager", function () {
       //Initialize functions
       groupManager.sendToSubjects = function(message){
          this.rssend("From_Group_Manager", message);
+      };
+
+      // this sends message to market with specified amount of delay
+      groupManager.sendToMarket = function(msg){
+        
+        //If no delay send msg now, otherwise push it onto wait list with tag for what time msg should be sent
+        if(!msg.delay){
+          this.market.recvMessage(msg);
+        }
+        else{
+          this.msgWaitList.push([Date.now() + this.delay, msg]);
+        }
       };
 
       // maps user id to the correct index in the synchronized array
@@ -73,6 +87,17 @@ Redwood.factory("GroupManager", function () {
 
       //Looks for change in fundamental price and sends message if change is found
       groupManager.update = function(){
+         
+        // check if msgs on wait list need to be sent
+        if(this.msgWaitList.length > 0){
+          while(this.msgWaitList[0][0] < Date.now()){
+            this.market.recvMessage(msgWaitList[0][1]);
+            if(this.msgWaitList.length === 0){
+              break;
+            }
+          }
+        }
+
          while(this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
             var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);

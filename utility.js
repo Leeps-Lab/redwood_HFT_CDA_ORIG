@@ -1,6 +1,7 @@
 // Message object. Used to communicate between group manager, subject manager, and market algorithm
 function Message(protocol, msgType, msgData){
    this.protocol = protocol;
+   this.delay = false;
    this.timeStamp = Date.now();
    this.msgType = msgType;
    this.msgData = msgData;
