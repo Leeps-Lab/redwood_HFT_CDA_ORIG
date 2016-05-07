@@ -12,8 +12,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
  //"Logger",
  function ($scope, $interval, rs, dataHistory, marketAlgorithm, graphing, groupManager, configManager, stopWatch, $http) {
 
-    var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
-
+    var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in ms delay between ticks
+    
     $scope.speed_button_text = "Turn On Speed";
     $scope.marketEvents = [];   // Buy and sell offers stored here -> [[offerTime, offerType], ...etc]
     $scope.priceChanges = [];   // Price events stored here -> [[time, newPrice], ...etc]
@@ -21,6 +21,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.state = "state_out";
     $scope.using_speed = false;
     $scope.spread = 0;
+    $scope.profit;
     //$scope.sendWaitListToGroupManager = [];
     //$scope.sendWaitListToMarketAlg = [];
     //$scope.maxLatency = 500;
@@ -32,6 +33,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.update = function(){
         $scope.tradingGraph.draw($scope.dHistory);
+
+        if ($scope.using_speed) {
+           $scope.profit -= CLOCK_FREQUENCY * $scope.config.speedCost / 1000
+        }
 
         // latency is moved to group manager
 
@@ -108,6 +113,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         var userIndex = (parseInt(rs.user_id) - 1) % 2;
         $scope.config = configManager.loadPerSubject(rs, {
             startingWealth: "100",
+            speedCost: "5",
             marketEventsURL: null,
             priceChangesURL: null
         });
@@ -158,8 +164,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         //Create market algorithm object with ability to attatch messages to the message waiting list
         $scope.dHistory = dataHistory.createDataHistory();
         $scope.mAlgorithm = marketAlgorithm.createMarketAlgorithm($scope.groupData, recvFromMarketAlg, $scope.dHistory);
-        $scope.tradingGraph = graphing.makeTradingGraph("graph1");
+        $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2", CLOCK_FREQUENCY);
         $scope.tradingGraph.init();
+
+        //set initial profit equal to value set in config
+        $scope.dHistory.curProfitSegment = [Date.now(), $scope.config.startingWealth, 0];
+        $scope.profit = $scope.config.startingWealth;
 
         // Communicate with the group manager to start this round
         rs.synchronizationBarrier ("group_ready").then (function (){
@@ -259,6 +269,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.using_speed = !$scope.using_speed;
         $scope.mAlgorithm.using_speed = $scope.using_speed;
         $scope.speed_button_text = $scope.using_speed ? "Turn Off Speed" : "Turn On Speed";
+
+        $scope.dHistory.recordProfitSegment ($scope.profit, Date.now(), $scope.using_speed ? $scope.config.speedCost : 0);
         //$scope.latency = $scope.using_speed ? 0 : $scope.maxLatency;
     });
 

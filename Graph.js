@@ -9,14 +9,17 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
    var api = {};
 
    // Returns new grpah object - pass in id of svg element on which graph will be drawn
-   api.makeTradingGraph = function(svgElementID){
+   api.makeTradingGraph = function(marketSVGElementID, profitSVGElementID, tickDelayMs){
       var graph = {};
 
-      graph.elementId = svgElementID;  //id of the svg element
-      graph.elementWidth = 0;          //Width and Height of svg element
+      graph.tickDelayMs = tickDelayMs;
+      graph.marketElementId = marketSVGElementID;  //id of the market graph svg element
+      graph.profitElementId = profitSVGElementID;  //id of the profit graph svg element
+      graph.elementWidth = 0;          //Width and Height of both svg elements
       graph.elementHeight = 0;         //    (use calculateSize to determine)
       graph.axisLabelWidth = 40;       //Width of area where price axis labels are drawn
-      graph.svg = d3.select('#'+ graph.elementId); //svg element
+      graph.marketSVG = d3.select('#'+ graph.marketElementId); //market svg element
+      graph.profitSVG = d3.select('#'+ graph.profitElementId); //profit svg element
       graph.minPrice = 85;              //min price on price axis
       graph.maxPrice = 115;             //max price on price axis
       graph.priceGridIncriment = 5;    //amount between each line on price axis
@@ -35,8 +38,8 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
       graph.calculateSize = function(){
-         this.elementWidth = $('#'+ this.elementId).width();
-         this.elementHeight = $('#'+ this.elementId).height();
+         this.elementWidth = $('#'+ this.marketElementId).width();
+         this.elementHeight = $('#'+ this.marketElementId).height();
          this.curTimeX = this.elementWidth - this.axisLabelWidth;
       };
 
@@ -63,7 +66,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          var seconds = parseInt(x % 60);
          x /= 60;
          var minutes = parseInt(x % 60);
-         
+
          x /= 60;
          var hours = parseInt(x % 24);
          return hours + ":" + minutes + ":" + seconds;
@@ -97,9 +100,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
 
-      graph.drawTimeGridLines = function(graphRefr){
+      graph.drawTimeGridLines = function(graphRefr, svgToUpdate){
          //Draw rectangles for time gridlines
-         this.svg.selectAll("rect")
+         svgToUpdate.selectAll("rect")
             .data(this.timeLines)
             .enter()
             .append("rect")
@@ -110,7 +113,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("class", function(d){return graphRefr.getTimeGridClass(d);});
          //If necisarry, draw the dark gray space to signify the "dead zone" before exp. started
          if(this.currentTime < this.startTime + this.timeInterval * 1000){
-            this.svg.append("rect")
+            svgToUpdate.append("rect")
             .attr("x", 0)
             .attr("y", 0)
             .attr("width", this.mapTimeToXAxis(this.startTime))
@@ -118,7 +121,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("class", "dead-zone");
          }
          //Draw labels for time gridlines
-         this.svg.selectAll("text.time-grid-line-text")
+         svgToUpdate.selectAll("text.time-grid-line-text")
             .data(this.timeLines)
             .enter()
             .append("text")
@@ -132,7 +135,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
       graph.drawPriceGridLines = function(graphRefr){
          //Draw the lines for the price gridlines
-         this.svg.selectAll("line.price-grid-line")
+         this.marketSVG.selectAll("line.price-grid-line")
             .data(this.priceLines)
             .enter()
             .append("line")
@@ -146,7 +149,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
       graph.drawPriceLine = function(graphRefr, dataHistory){
          //Draw the price line
-         this.svg.selectAll("line.price-line")
+         this.marketSVG.selectAll("line.price-line")
             .data(dataHistory.fundementalPrices)
             .enter()
             .append("line")
@@ -163,130 +166,44 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
 
-      graph.drawStep = function(graphRefr, historyDataSet, curentData, styleClassName){
-         
-         this.svg.selectAll("line." + styleClassName)
+      graph.drawStep = function(graphRefr, historyDataSet, currentData, styleClassName, svgToUpdate){
+
+         svgToUpdate.selectAll("line." + styleClassName)
             .data(historyDataSet)
             .enter()
             .append("line")
             .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0]); })
             .attr("x2", function(d){ return graphRefr.mapTimeToXAxis(d[1]); })
             .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
-            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
+            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[3]); })
             .attr("class", styleClassName);
-         
-         if(curentData != null)
-         this.svg.append("line")
-            .attr("x1", this.mapTimeToXAxis(curentData[0]) )
-            .attr("x2", this.curTimeX)
-            .attr("y1", this.mapPriceToYAxis(curentData[1]) )
-            .attr("y2", this.mapPriceToYAxis(curentData[1]) )
-            .attr("class", styleClassName);
+
+         if(currentData != null) {
+            var pricefinal = currentData[1] - ((Date.now() - currentData[0]) * currentData[2] / 1000); //determines how far down the line has moved
+            svgToUpdate.append("line")
+               .attr("x1", this.mapTimeToXAxis(currentData[0]) )
+               .attr("x2", this.curTimeX)
+               .attr("y1", this.mapPriceToYAxis(currentData[1]) )
+               .attr("y2", this.mapPriceToYAxis(pricefinal) )
+               .attr("class", styleClassName);
+         }
       };
 
       graph.drawOffers = function(graphRefr, dataHistory){
-         this.drawStep(graphRefr, dataHistory.pastBuyOffers, dataHistory.curBuyOffer, "buy-offer");
-         this.drawStep(graphRefr, dataHistory.pastSellOffers, dataHistory.curSellOffer, "sell-offer");
+         this.drawStep(graphRefr, dataHistory.pastBuyOffers, dataHistory.curBuyOffer, "buy-offer", this.marketSVG);
+         this.drawStep(graphRefr, dataHistory.pastSellOffers, dataHistory.curSellOffer, "sell-offer", this.marketSVG);
       };
 
-/*
-      // If current buy offer exists, draw it on the graph
-      graph.drawCurBuyOffer = function(graphRefr, dataHistory){
-         if(dataHistory.curBuyOffer != null)
-         this.svg.append("line")
-            .attr("x1", this.mapTimeToXAxis(dataHistory.curBuyOffer[0]) )
-            .attr("x2", this.curTimeX)
-            .attr("y1", this.mapPriceToYAxis(dataHistory.curBuyOffer[1]) )
-            .attr("y2", this.mapPriceToYAxis(dataHistory.curBuyOffer[1]) )
-            .attr("class", "cur-buy-offer");
-      };
-
-      // If current buy offer exists, draw it on the graph
-      graph.drawCurSellOffer = function(graphRefr, dataHistory){
-         if(dataHistory.curSellOffer != null)
-         this.svg.append("line")
-            .attr("x1", this.mapTimeToXAxis(dataHistory.curSellOffer[0]) )
-            .attr("x2", this.curTimeX)
-            .attr("y1", this.mapPriceToYAxis(dataHistory.curSellOffer[1]) )
-            .attr("y2", this.mapPriceToYAxis(dataHistory.curSellOffer[1]) )
-            .attr("class", "cur-sell-offer");
-      };
-
-      graph.drawPastBuyOffers = function(graphRefr, dataHistory){
-         this.svg.selectAll("line.past-buy-offer")
-            .data(dataHistory.pastBuyOffers)
-            .enter()
-            .append("line")
-            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0]); })
-            .attr("x2", function(d){ return graphRefr.mapTimeToXAxis(d[1]); })
-            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
-            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
-            .attr("class", "past-buy-offer");
-      };
-
-      graph.drawPastSellOffers = function(graphRefr, dataHistory){
-         this.svg.selectAll("line.past-sell-offer")
-            .data(dataHistory.pastSellOffers)
-            .enter()
-            .append("line")
-            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0]); })
-            .attr("x2", function(d){ return graphRefr.mapTimeToXAxis(d[1]); })
-            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
-            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[2]); })
-            .attr("class", "past-sell-offer");
-      };*/
-
- /*     graph.drawMinSpread = function(graphRefr, drawData){
-         //Draw the spread over the price line
-         this.svg.selectAll("rect.spread")
-            .data(drawData)
-            .enter()
-            .append("rect")
-            .attr("x", function(d){ return graphRefr.mapTimeToXAxis( d.price[0] + graphRefr.startTime ); })
-            .attr("width", function(d, i){
-               var startLoc = graphRefr.mapTimeToXAxis( d.price[0] + graphRefr.startTime );
-               if (i != drawData.length-1) {
-                  return graphRefr.mapTimeToXAxis( drawData[i+1].price[0] + graphRefr.startTime ) - startLoc;
-               }
-               else {
-                  return 0;
-               }
-            })
-            .attr("y", function(d){ return graphRefr.mapPriceToYAxis(d.price[1]) - 2 * graphRefr.priceUnit(); })
-            .attr("height", 4 * graphRefr.priceUnit())
-            .attr("class", "spread");
-      }
-
-      graph.drawMySpread = function(graphRefr){
-         
-      }
-*/
-/*
-      graph.drawMarketEvents = function(graphRefr){
-            
-         //Draw all of the buys
-         this.svg.selectAll("line.buy-line")
-            .data(this.dataObj.buyOffers)
-            .enter()
-            .append("line")
-            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0] + graphRefr.startTime); })
-            .attr("x2", function(d){ return graphRefr.mapTimeToXAxis(d[0] + graphRefr.startTime); })
-            .attr("y1", function(d){ return graphRefr.mapPriceToYAxis(d[1]); })
-            .attr("y2", function(d){ return graphRefr.mapPriceToYAxis(d[1]) + graphRefr.priceUnit() * d[2]; })
-            .attr("class", "buy-line");
-      }*/
-
-
-      graph.drawPriceAxis = function(graphRefr){
+      graph.drawPriceAxis = function(graphRefr, svgToUpdate){
          //Draw rectangle on right side for price axis
-         this.svg.append("rect")
+         svgToUpdate.append("rect")
             .attr("x", this.elementWidth - this.axisLabelWidth)
             .attr("y", 0)
             .attr("width", this.axisLabelWidth)
             .attr("height", this.elementHeight)
             .attr("class", "price-axis-box");
          //Draw the text that goes along with the price gridlines and axis
-         this.svg.selectAll("text.price-grid-line-text")
+         svgToUpdate.selectAll("text.price-grid-line-text")
             .data(this.priceLines)
             .enter()
             .append("text")
@@ -299,8 +216,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
 
       graph.draw = function(dataHistory){
-         //Clear the svg element
-         this.svg.selectAll("*").remove();
+         //Clear the svg elements
+         this.marketSVG.selectAll("*").remove();
+         this.profitSVG.selectAll("*").remove();
 
          var graphRefr = this;
 
@@ -312,17 +230,17 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          }
 
          //Invoke all of the draw functions
-         this.drawTimeGridLines(graphRefr);
+         this.drawTimeGridLines(graphRefr, this.marketSVG);
+         this.drawTimeGridLines(graphRefr, this.profitSVG);
+
          this.drawPriceGridLines(graphRefr);
          this.drawPriceLine(graphRefr, dataHistory);
          this.drawOffers(graphRefr, dataHistory);
-         //this.drawCurBuyOffer(graphRefr, dataHistory);
-         //this.drawCurSellOffer(graphRefr, dataHistory);
-         //this.drawPastBuyOffers(graphRefr, dataHistory);
-         //this.drawPastSellOffers(graphRefr, dataHistory);
-         //this.drawMarketEvents(graphRefr, drawData);
-         //this.drawMinSpread(graphRefr, drawData);
-         this.drawPriceAxis(graphRefr);
+
+         this.drawPriceAxis(graphRefr, this.marketSVG);
+         this.drawPriceAxis(graphRefr, this.profitSVG);
+
+         this.drawStep (graphRefr, dataHistory.pastProfitSegments, dataHistory.curProfitSegment, "profit-line", this.profitSVG);
       };
 
       graph.init = function(){

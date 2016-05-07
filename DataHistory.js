@@ -2,7 +2,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
    var api = {};
 
    api.createDataHistory = function(groupData){
-      
+
       //Variables
       dataHistory = {};
       dataHistory.groupData = groupData;
@@ -12,6 +12,8 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.pastBuyOffers = [];
       dataHistory.pastSellOffers = [];
       dataHistory.groupOffers = [];
+      dataHistory.curProfitSegment = null;
+      dataHistory.pastProfitSegments = []
 /*
       var i = 0;
       for(i; i<dataHistory.groupData.others.length; i++){
@@ -44,7 +46,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
             this.storeBuyOffer(buyMsg.msgData[2]);
          }
          //Push on new buy offer
-         this.curBuyOffer = [buyMsg.msgData[2], buyMsg.msgData[1]];   // [timestamp, price]
+         this.curBuyOffer = [buyMsg.msgData[2], buyMsg.msgData[1], 0];   // [timestamp, price, slope]
       };
 
       // Records a new Sell offer
@@ -54,7 +56,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
             this.storeSellOffer(sellMsg.msgData[2]);
          }
          //Push on new sell offer
-         this.curSellOffer = [sellMsg.msgData[2], sellMsg.msgData[1]];   // [timestamp, price]
+         this.curSellOffer = [sellMsg.msgData[2], sellMsg.msgData[1], 0];   // [timestamp, price, slope]
       };
 
       // Shifts buy offer from currently being active into the history
@@ -62,7 +64,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          if(this.curBuyOffer == null){
             throw "Cannot shift buy offer because it is null";
          }
-         this.pastBuyOffers.push( [this.curBuyOffer[0], endTime, this.curBuyOffer[1]] );  // [startTimestamp, endTimestamp, price]
+         this.pastBuyOffers.push( [this.curBuyOffer[0], endTime, this.curBuyOffer[1], this.curBuyOffer[1]] );  // [startTimestamp, endTimestamp, startPrice, endPrice]
          this.curBuyOffer = null;
       };
 
@@ -71,9 +73,24 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          if(this.curSellOffer == null){
             throw "Cannot shift sell offer because it is null";
          }
-         this.pastSellOffers.push( [this.curSellOffer[0], endTime, this.curSellOffer[1]] );  // [startTimestamp, endTimestamp, price]
+         this.pastSellOffers.push( [this.curSellOffer[0], endTime, this.curSellOffer[1], this.curSellOffer[1]] );  // [startTimestamp, endTimestamp, startPrice, endPrice]
          this.curSellOffer = null;
       };
+
+      dataHistory.recordProfitSegment = function(price, startTime, slope) {
+         if (this.curProfitSegment != null){
+            this.storeProfitSegment (startTime, price);
+         }
+         this.curProfitSegment = [startTime, price, slope];
+      }
+
+      dataHistory.storeProfitSegment = function(endTime, endPrice) {
+         if(this.curProfitSegment == null){
+            throw "Cannot store current profit segment because it is null";
+         }
+         this.pastProfitSegments.push ([this.curProfitSegment[0], endTime, this.curProfitSegment[1], endPrice]);
+         this.curProfitSegment = null;
+      }
 
       return dataHistory;
    }
