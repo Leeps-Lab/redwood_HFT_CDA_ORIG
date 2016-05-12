@@ -25,15 +25,15 @@
           <!--Bottom left screen-->
           <div class="col-xs-4" style="height:320px; padding-right:20px">
             <div class="bottom-left-screen screen">
-              
+
               <div id="buttons-container">
-                
+
                 <div class="button-container">
                   <button id="speed" class="btn btn-warning" type="button">
                     {{speed_button_text}}
                   </button>
                 </div>
-                
+
                 <div class="button-container">
                   <button id="state_out" ng-disabled="state=='state_out'" class="btn btn-info" type="button">
                     Out
@@ -45,7 +45,7 @@
                     Maker
                   </button>
                 </div>
-              
+
               </div>
 
               <div id="slider-container">
@@ -58,8 +58,9 @@
 
 
           <!--Bottom right screen-->
-          <div class="col-xs-8 screen" style="height:320px; background-color:yellow;">
-              <button id="send_spread" class="btn btn-primary" type="button">Send Spread</button>
+          <div class="col-xs-8 screen market-graph" style="height:320px; background-color:yellow;">
+             <svg width="100%" height="100%" id="graph2">
+             </svg>
           </div>
         </div>
         <!--End Screens-->

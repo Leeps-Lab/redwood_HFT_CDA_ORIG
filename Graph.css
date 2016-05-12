@@ -77,3 +77,7 @@
    stroke:rgb(80, 50, 30);
    stroke-width:1;
 }
+.profit-line{
+   stroke:rgb(0, 100, 0);
+   stroke-width:3;
+}
