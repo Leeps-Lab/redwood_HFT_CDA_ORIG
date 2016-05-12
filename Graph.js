@@ -25,7 +25,6 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.currentTime = 0;           //Time displayed on graph
       graph.priceLines = [];           //
       graph.timeLines = [];
-      graph.startTime = 0;
       graph.pricesArray = [];
       graph.dataObj = {
          prices: [],
@@ -97,7 +96,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
 
-      graph.drawTimeGridLines = function(graphRefr){
+      graph.drawTimeGridLines = function(graphRefr, dataHistory){
          //Draw rectangles for time gridlines
          this.svg.selectAll("rect")
             .data(this.timeLines)
@@ -109,11 +108,11 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("height", this.elementHeight)
             .attr("class", function(d){return graphRefr.getTimeGridClass(d);});
          //If necisarry, draw the dark gray space to signify the "dead zone" before exp. started
-         if(this.currentTime < this.startTime + this.timeInterval * 1000){
+         if(this.currentTime < dataHistory.startTime + this.timeInterval * 1000){
             this.svg.append("rect")
             .attr("x", 0)
             .attr("y", 0)
-            .attr("width", this.mapTimeToXAxis(this.startTime))
+            .attr("width", this.mapTimeToXAxis(dataHistory.startTime))
             .attr("height", this.elementHeight)
             .attr("class", "dead-zone");
          }
@@ -312,7 +311,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          }
 
          //Invoke all of the draw functions
-         this.drawTimeGridLines(graphRefr);
+         this.drawTimeGridLines(graphRefr, dataHistory);
          this.drawPriceGridLines(graphRefr);
          this.drawPriceLine(graphRefr, dataHistory);
          this.drawOffers(graphRefr, dataHistory);
@@ -326,17 +325,13 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
       graph.init = function(){
-
-         //FOR NOW USE THIS TIME AS START TIME Eventually will get this from admin page
-         this.startTime = Date.now();
-
          this.calculateSize();
          this.priceLines = this.calcPriceGridLines();
          this.timeLines = this.calcTimeGridLines(Date.now());
       };
 
       return graph;
-   }
+   };
 
 
 

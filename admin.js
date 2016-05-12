@@ -4,9 +4,10 @@ Redwood.controller("AdminCtrl",
  "Admin",
  "MarketManager",
  "GroupManager",
+ "MarketAlgorithm",
  "$http",
  "$interval",
- function($rootScope, $scope, ra, mm, gm, $http, $interval) {
+ function($rootScope, $scope, ra, marketManager, groupManager, marketAlgorithm, $http, $interval) {
    var Display = { //Display controller
 
       initialize: function() {
@@ -121,13 +122,13 @@ Redwood.controller("AdminCtrl",
 
    var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in hz
 
-   $scope.groupManagers = [];
+   $scope.groupManagers = {};
 
    $scope.updateGroupManagers = function() {
        $scope.groupManagers.forEach (function (entry) {
            entry.update();
-       })
-   }
+       });
+   };
 
    var resetGroups = function() {
       var config = ra.get_config(1, 0) || {};
@@ -157,28 +158,24 @@ Redwood.controller("AdminCtrl",
 
       $scope.priceChanges = [];
       var priceURL = ra.get_config(1, 0).priceChangesURL;
-      console.log(priceURL);
       $http.get(priceURL).then(function(response) {
          var rows = response.data.split("\n");
 
          //Parse price changes CSV
-         for (var i = 0; i < rows.length-2; i++) {
+         for (let i = 0; i < rows.length-2; i++) {
             $scope.priceChanges[i] = [];
          }
 
-         for (var i = 0; i < rows.length-2; i++) {
+         for (let i = 0; i < rows.length-2; i++) {
             if (rows[i + 1] === "") continue;
             var cells = rows[i + 1].split(",");
-            for (var j = 0; j < cells.length; j++) {
+            for (let j = 0; j < cells.length; j++) {
                $scope.priceChanges[i][j] = parseFloat(cells[j]);
             }
          }
 
-         console.log($scope.priceChanges);
-
          $scope.investorArrivals = [];
          var arrivalURL = ra.get_config(1, 0).marketEventsURL;
-         console.log(arrivalURL);
          $http.get(arrivalURL).then(function(response) {
             var rows = response.data.split("\n");
 
@@ -195,26 +192,40 @@ Redwood.controller("AdminCtrl",
                }
             }
 
-            console.log($scope.investorArrivals);
+            //******************** seting up groups **************************
 
-            //create a group manager for each group and put them in an array
-            var groups = ra.get_config (1, 0).groups;
-            for (var currGroup = 0; currGroup < groups.length; currGroup++) {
-                //just use first period for now, will have to fix for other periods later
-                var market = mm.createMarketManager(ra.sendCustom, currGroup + 1);
-                $scope.groupManagers[currGroup] = gm.createGroupManager ($scope.priceChanges, $scope.investorArrivals, ra.sendCustom, currGroup + 1, market, groups[currGroup]);
+            // Fetch groups array from config file and create wraper for accessing groups
+            $scope.groups = ra.get_config (1, 0).groups;
+            $scope.getGroup = function(groupNum){
+               return $scope.groups[groupNum-1];
+            };
+
+            // create synchronize arrays for starting each group and also map subject id to their group
+            $scope.idToGroup = {};        // maps every id to thier corresponding group
+            $scope.startSyncArrays = {};  // synchronized array for ensuring that all subjects in a group start together
+            for(var groupNum = 1; groupNum <= $scope.groups.length; groupNum++){
+               var group = $scope.getGroup(groupNum); // fetch group from array
+               $scope.startSyncArrays[groupNum] = new synchronizeArray(group);
+               for(var subject of group){
+                  $scope.idToGroup[subject] = groupNum;
+               }
             }
 
-            //FOR TESTING- Produces messages that simulate changes in the fundamental value
-            $("body").append('<button type="button" id="genpc" class="btn btn-default" style="margin-top:20px">Generate Price Change</button>');
-            $ ("#genpc")
-           .button()
-           .click (function (event) {
-               var newPrice = 10 + Math.random()*10;
-               var msg = new Message("ITCH", "FPC", [Date.now(), newPrice]);
-               console.log(msg.asString);
-               ra.sendCustom("From_Group_Manager", msg, 0, 1, 1);
-           })
+            // loop through groups and create thier groupManager, market, and marketAlgorithms
+            for (var groupNum = 1; groupNum <= $scope.groups.length; groupNum++) {
+
+                var group = $scope.getGroup(groupNum); // fetch group from array
+                
+                //just use first period for now, will have to fix for other periods later
+                $scope.groupManagers[groupNum] = groupManager.createGroupManager ($scope.priceChanges, $scope.investorArrivals, ra.sendCustom, groupNum, group);
+                $scope.groupManagers[groupNum].market = marketManager.createMarketManager(ra.sendCustom, groupNum, $scope.groupManagers[groupNum]);
+                for(var subjectNum of group){
+                  $scope.idToGroup[subjectNum] = groupNum;  // map subject number to group number
+                  $scope.groupManagers[groupNum].marketAlgorithms[subjectNum] = marketAlgorithm.createMarketAlgorithm(subjectNum, groupNum, $scope.groupManagers[groupNum], ra.sendCustom);
+                }
+            }
+            //********************************************************************
+
          });
 
       });
@@ -238,18 +249,29 @@ Redwood.controller("AdminCtrl",
       ra.start_session();
    });
 
-   ra.recv ("start_group", function(uid) {
-       $scope.groupManagers[ra.groups[uid] - 1].startExperiment();
+   ra.recv ("Subject_Ready", function(uid) {
+
+      // get group number
+      var groupNum = $scope.idToGroup[uid];
+
+      // mark subject as ready
+      $scope.startSyncArrays[groupNum].markReady(uid);
+
+      // start experiment if all subjects are marked ready
+      if($scope.startSyncArrays[groupNum].allReady()){
+         var startTime = Date.now();
+         var group = $scope.getGroup(groupNum);
+
+         //send out start message with start time and information about group then start groupManager
+         ra.sendCustom ("Experiment_Begin", [startTime, groupNum, group], "admin", 1, groupNum);
+         $scope.groupManagers[groupNum].startTime = startTime;
+         $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
+      }
    });
 
-   ra.on ("Experiment_Begin", function (msg) {
-       //for some reason, groupManagers.update's this value is the window instead of the groupManager object
-       //fixing it for now with bind
-       $interval($scope.groupManagers[msg.group - 1].update.bind($scope.groupManagers[msg.group - 1]), CLOCK_FREQUENCY);
-   });
-
-   ra.recv ("To_Group_Manager", function (uid, msg) {
-       $scope.groupManagers[ra.groups[uid] - 1].recvFromSubject (msg);
+   ra.recv("To_Group_Manager", function(uid, msg){
+      var groupNum = $scope.idToGroup[uid];
+      $scope.groupManagers[groupNum].recvFromSubject(msg);
    });
 
    ra.on("pause", function() {

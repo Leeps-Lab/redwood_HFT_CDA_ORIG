@@ -1,17 +1,20 @@
 RedwoodHighFrequencyTrading.factory("DataHistory", function () {
    var api = {};
 
-   api.createDataHistory = function(groupData){
+   api.createDataHistory = function(startTime, myId, group){
       
       //Variables
       dataHistory = {};
-      dataHistory.groupData = groupData;
+      dataHistory.startTime = startTime;
+      dataHistory.myId = myId;
+      dataHistory.group = group;
       dataHistory.fundementalPrices = [[Date.now(), 15]];  //Cheating right now by recording initial FV
       dataHistory.curBuyOffer = null;
       dataHistory.curSellOffer = null;
       dataHistory.pastBuyOffers = [];
       dataHistory.pastSellOffers = [];
       dataHistory.groupOffers = [];
+      dataHistory.logger = new MessageLogger("Data History " + String(myId), "orange", "subject-log");
 /*
       var i = 0;
       for(i; i<dataHistory.groupData.others.length; i++){
@@ -30,6 +33,21 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
             }
          }
       };*/
+
+      dataHistory.recvMessage = function(msg){
+         this.logger.logRecv(msg, "Market Algorithm");
+
+         switch(msg.msgType){
+            case "FPC"     : this.recordFPCchange(msg);           break;
+            case "C_UBUY"  :
+            case "C_EBUY"  : this.recordBuyOffer(msg);            break;
+            case "C_USELL" :
+            case "C_ESELL" : this.recordSellOffer(msg);           break;
+            case "C_RBUY"  : this.storeBuyOffer(msg.msgData[1]);  break;
+            case "C_RSELL" : this.storeSellOffer(msg.msgData[1]); break;
+         }
+
+      };
 
       // Functions
       // Adds fundemental price change to history

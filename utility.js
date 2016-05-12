@@ -43,7 +43,7 @@ function MessageLogger(name, nameColor, elementId){
          + millisToTime(msg.timeStamp) + '</span> <span> containing:</span> <span class="message">'
          + msg.msgType + '</span></div>');
       this.scrollDown();
-   }
+   };
 
    this.logRecv = function(msg, sender){
       this.element.append('<div class="log-line"><span style="color:' 
@@ -52,7 +52,7 @@ function MessageLogger(name, nameColor, elementId){
          + millisToTime(msg.timeStamp) + '</span> <span> containing:</span> <span class="message">'
          + msg.msgType + '</span></div>');
       this.scrollDown();
-   }
+   };
 
    this.logSendWait = function(msg){
       this.element.append('<div class="log-line"><span style="color:' 
@@ -62,7 +62,7 @@ function MessageLogger(name, nameColor, elementId){
          + String(msg.delay) + '</span> <span> containing:</span> <span class="message">'
          + msg.msgType + '</span></div>');
       this.scrollDown();
-   }
+   };
 
    this.logRecvWait = function(msg){
       this.element.append('<div class="log-line"><span style="color:' 
@@ -72,16 +72,40 @@ function MessageLogger(name, nameColor, elementId){
          + String(msg.delay) + '</span> <span> containing:</span> <span class="message">'
          + msg.msgType + '</span></div>');
       this.scrollDown();
-   }
+   };
 
    this.logString = function(str){
       this.element.append('<div class="log-line"><span style="color:' 
          + this.nameColor + '"> ' + this.name 
          + '</span> <span>' + str + '</span></div>');
       this.scrollDown();
-   }
+   };
 
    this.scrollDown = function(){
       this.element.scrollTop(this.element[0].scrollHeight);
+   };
+}
+
+// array for synchronizing events. Initialize with an array holding all of the keys, then
+// mark each key ready one at a time using markReady. All keys are marked when allReady returns true.
+function synchronizeArray(key_array){
+   this.readyFlags = {};
+   this.readyCount = 0;
+   this.targetReadyCount = key_array.length;
+   for(var key of key_array){
+      this.readyFlags[key] = false;
    }
+   this.markReady = function(key){
+      if(this.readyFlags[key] === undefined){
+         console.error("did not find element with key: " + String(key) + " in synchronizing array.");
+         return;
+      }
+      if(!this.readyFlags[key]){
+         this.readyCount++;
+         this.readyFlags[key] = true;
+      }
+   };
+   this.allReady = function(){
+      return this.readyCount === this.targetReadyCount;
+   };
 }

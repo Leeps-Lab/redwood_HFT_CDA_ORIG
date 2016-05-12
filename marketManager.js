@@ -2,10 +2,13 @@ Redwood.factory("MarketManager", function () {
    var api = {};
 
    //Creates the market manager, pass var's that you need for creation in here.
-   api.createMarketManager = function(sendFunction, groupNumber){
+   api.createMarketManager = function(sendFunction, groupNumber, groupManager){
       var market = {};
 
       market.CDABook = {};
+      market.groupManager = groupManager;
+      market.logger = new MessageLogger("Market " + String(groupNumber), "#55FF55", "group-" + groupNumber + "-log");
+
 
       // captures the redwood admin send function
       market.rssend = function (key, value) {
@@ -13,15 +16,14 @@ Redwood.factory("MarketManager", function () {
       };
 
       // abstracts send function so that there is single msg argument
-      market.sendToSubjects = function(message){
-         this.rssend("From_Group_Manager", message);
-         console.log("msg sent");
+      market.sendToGroupManager = function(message){
+         this.groupManager.recvFromMarket(message);
       };
 
       // handle message from subjects
       market.recvMessage = function(message){
         message.timestamp = Date.now();
-        console.log("hello");
+        this.logger.logRecv(message, "Group Manager");
 
         // handle message based on type. Send reply once message has been handled
         switch (message.msgType) {
@@ -30,42 +32,42 @@ Redwood.factory("MarketManager", function () {
             case "EBUY":
                 market.CDABook.insertBuy (message.msgData[0], message.msgData[1], message.timestamp);
                 var msg = new Message("ITCH", "C_EBUY", [message.msgData[0], message.msgData[1], Date.now()]);
-                this.sendToSubjects(msg);
+                this.sendToGroupManager(msg);
                 break;
 
             // enter sell offer
             case "ESELL":
                 market.CDABook.insertSell (message.msgData[0], message.msgData[1], message.timestamp);
                 var msg = new Message("ITCH", "C_ESELL", [message.msgData[0], message.msgData[1], Date.now()]);
-                this.sendToSubjects(msg);
+                this.sendToGroupManager(msg);
                 break;
 
             // remove buy offer
             case "RBUY":
                 market.CDABook.removeBuy (message.msgData[0]);
                 var msg = new Message("ITCH", "C_RBUY", [message.msgData[0], Date.now()]);
-                this.sendToSubjects(msg);
+                this.sendToGroupManager(msg);
                 break;
 
             // remove sell offer
             case "RSELL":
                 market.CDABook.removeSell (message.msgData[0]);
                 var msg = new Message("ITCH", "C_RSELL", [message.msgData[0], Date.now()]);
-                this.sendToSubjects(msg);
+                this.sendToGroupManager(msg);
                 break;
 
             // update buy offer
             case "UBUY":
                 market.CDABook.updateBuy (message.msgData[0], message.msgData[1]);
                 var msg = new Message("ITCH", "C_UBUY", [message.msgData[0], message.msgData[1], Date.now()]);
-                this.sendToSubjects(msg);
+                this.sendToGroupManager(msg);
                 break;
 
             // update sell offer
             case "USELL":
                 market.CDABook.updateSell (message.msgData[0], message.msgData[1]);
                 var msg = new Message("ITCH", "C_USELL", [message.msgData[0], message.msgData[1], Date.now()]);
-                this.sendToSubjects(msg);
+                this.sendToGroupManager(msg);
                 break;
 
             // message not recognized

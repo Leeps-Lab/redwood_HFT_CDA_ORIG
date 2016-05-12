@@ -1,81 +1,41 @@
 Redwood.factory("GroupManager", function () {
    var api = {};
 
-   api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, market, memberIDs){
+   api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, memberIDs){
       var groupManager = {};
-      groupManager.priceChanges = priceLinesArray;
-      groupManager.investorArrivals = investorArrivalsArray;
-      groupManager.priceIndex = 0;
-      groupManager.investorIndex = 0;
-      groupManager.market = market;
-      groupManager.memberIDs = memberIDs;
-      groupManager.syncFpArray = [];
-      groupManager.msgWaitList = [];
-      groupManager.delay = 500;
-      console.log(groupManager.memberIDs);
 
-      groupManager.rssend = function (key, value) {
-          sendFunction (key, value, "admin", 1, groupNumber);
-      };
+      groupManager.marketAlgorithms = {};   // reference to all market algorithms in this group, mapped by subject id ---> marketAlgorithms[subjectID]
+      groupManager.market = {};             // reference to the market object for this group
+      
+      groupManager.priceChanges = priceLinesArray;            // array of all price changes that will occur
+      groupManager.investorArrivals = investorArrivalsArray;  // array of all investor arrivals that will occur
+      groupManager.priceIndex = 0;                            // index of last price index to occur
+      groupManager.investorIndex = 0;                         // index of last investor arrival to occur
+      
+      groupManager.memberIDs = memberIDs;   // array that contains id number for each subject in this group
+      groupManager.syncFpArray = [];        // buffer that holds onto messages until recved msg from all subjects
+      groupManager.msgWaitList = [];        // buffer that holds onto outgoing messages for an amount of delay to simulate latency
+      groupManager.delay = 500;             // # of milliseconds that will be delayed by latency simulation
 
-      //Add the logging terminal to the ui section of the html
+      // add the logging terminal to the ui section of the html
       $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group ' + groupNumber + ' Message Log</div><div id="group-' + groupNumber + '-log" class="terminal"></div></div>');
-      groupManager.logger = new MessageLogger("Group Manager", "#5555FF", "group-" + groupNumber + "-log");
+      groupManager.logger = new MessageLogger("Group Manager " + String(groupNumber), "#5555FF", "group-" + groupNumber + "-log");
 
-      //Initialize functions
-      groupManager.sendToSubjects = function(message){
-         this.rssend("From_Group_Manager", message);
+      // wrapper for the redwood send function
+      groupManager.rssend = function (key, value) {
+        sendFunction (key, value, "admin", 1, groupNumber);
       };
 
-      // this sends message to market with specified amount of delay
-      groupManager.sendToMarket = function(msg){
-        
-        console.log("message");
-        console.log(msg.delay);
-
-        //If no delay send msg now, otherwise push it onto wait list with tag for what time msg should be sent
-
-        if(msg.delay){
-          this.msgWaitList.push([Date.now() + this.delay, msg]);
-        }
-        else{
-          this.market.recvMessage(msg);
+      // sends a message to all of the market algorithms in this group
+      groupManager.sendToMarketAlgorithms = function(msg){
+        for(var memberID of this.memberIDs){
+          this.marketAlgorithms[memberID].recvFromGroupManager(msg);
         }
       };
 
-      // maps user id to the correct index in the synchronized array
-      groupManager.mapIdToIndex = function(uid){
-
-        // look for index of memberIDs at which this id resides
-        for(var i = 0; i < this.memberIDs.length; i++){
-          if(uid === this.memberIDs[i]){
-            return i;
-          }
-        }
-
-        // error if id was not found
-        console.error("No member with id:" + String(uid) + " was found in group manager.");
-      };
-
-      // check if the Synchronized Fundemental Price Change array is ready to process 
-      groupManager.syncFpReady = function() {
-        for(var i = 0; i < syncFpArray.length; i++){
-          if(syncFpArray[i] === null){
-            return false;
-          }
-        }
-        return true;
-      };
-
-      // handles message from subject and passes it on to market algorithm
-      groupManager.recvFromSubject = function(msg){
-         updateMsgTime(msg);
-         this.logger.logRecv(msg, "subjects");
-
-        // if this is a user message, handle it and don't send it to market
-        if(msg.protocol === "USER"){
-          return;
-        }
+      // recv a message from a single market algorithm in this group
+      groupManager.recvFromMarketAlgorithm = function(msg){
+        this.logger.logRecv(msg, "Market Algorithm");
 
         // synchronized message in response to fundemental price change
         if(msg.protocol === "SYNC_FP"){
@@ -86,12 +46,46 @@ Redwood.factory("GroupManager", function () {
         if(msg.protocol === "OUTCH"){
           groupManager.sendToMarket(msg);
         }
+      };
 
+      // this sends message to market with specified amount of delay
+      groupManager.sendToMarket = function(msg){
+        //If no delay send msg now, otherwise push it onto wait list with tag for what time msg should be sent
+        if(msg.delay){
+          this.msgWaitList.push([Date.now() + this.delay, msg]);
+        }
+        else{
+          this.market.recvMessage(msg);
+        }
+      };
+
+      // handles a message from the market
+      groupManager.recvFromMarket = function(msg){
+        this.logger.logRecv(msg, "Market");
+        switch (msg.msgType){
+          case "C_EBUY"  :
+          case "C_ESELL" :
+          case "C_RBUY"  :
+          case "C_RSELL" :
+          case "C_UBUY"  :
+          case "C_USELL" : this.marketAlgorithms[msg.msgData[0]].recvFromGroupManager(msg); break;
+          case "C_TRA"   : this.sendToMarketAlgorithms(msg);
+        }
+      };
+
+      // handles message from subject and passes it on to market algorithm
+      groupManager.recvFromSubject = function(msg){
+         this.logger.logRecv(msg, "Subjects");
+
+        // if this is a user message, handle it and don't send it to market
+        if(msg.protocol === "USER"){
+          var subjectID = msg.msgData[0];
+          this.marketAlgorithms[subjectID].recvFromGroupManager(msg);
+        }
       };
 
       //Looks for change in fundamental price and sends message if change is found
       groupManager.update = function(){
-         
         // check if msgs on wait list need to be sent
         if(this.msgWaitList.length > 0){
           while(this.msgWaitList[0][0] < Date.now()){
@@ -107,34 +101,25 @@ Redwood.factory("GroupManager", function () {
          while(this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
             var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);
-            this.logger.logSend(msg, "subjects");
-            this.rssend("From_Group_Manager", msg);
+            this.sendToMarketAlgorithms(msg);
             this.priceIndex++;
          }
 
          while(this.investorIndex < this.investorArrivals.length
                && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
-            var returned = market.makeTransaction (this.investorArrivals[this.investorIndex][1])
+            var returned = this.market.makeTransaction (this.investorArrivals[this.investorIndex][1]);
             if (returned !== undefined) {
                 var seller = (this.investorArrivals[this.investorIndex][1] === "sell" ? 0 : returned.id);
                 var buyer = (this.investorArrivals[this.investorIndex][1] === "buy" ? 0 : returned.id);
-                var msg = new Message ("ITCH", "C_TRA", [returned.timestamp, buyer, seller, returned.price]);
-                this.logger.logSend(msg, "subjects");
-                this.rssend("From_Group_Manager", msg);
+                //var msg = new Message ("ITCH", "C_TRA", [returned.timestamp, buyer, seller, returned.price]);
+                //this.sendToMarketAlgorithms(msg);
             }
             this.investorIndex++;
          }
       };
 
-      //function to send out the message that starts the experiment
-      groupManager.startExperiment = function() {
-          groupManager.startTime = Date.now();
-          var msg = {time : groupManager.startTime, group : groupNumber};
-          groupManager.rssend("Experiment_Begin", msg);
-      };
-
       return groupManager;
-   }
+   };
 
    return api;
 });
