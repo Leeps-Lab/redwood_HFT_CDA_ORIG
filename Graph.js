@@ -229,6 +229,17 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .text(function(d) {return d;});
       };
 
+      graph.drawTransactions = function(graphRefr, historyDataSet) {
+         graphRefr.marketSVG.selectAll("line.my-transactions line.other-transactions")
+            .data(historyDataSet)
+            .enter()
+            .append("line")
+            .attr("x1", function(d) {return graphRefr.mapTimeToXAxis(d[0])})
+            .attr("x2", function(d) {return graphRefr.mapTimeToXAxis(d[0])})
+            .attr("y1", 0)
+            .attr("y2", graphRefr.elementHeight)
+            .attr("class", function(d) {return d[1] ? "my-transactions" : "other-transactions"})
+      }
 
       graph.draw = function(dataHistory){
          //Clear the svg elements
@@ -253,6 +264,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
          this.drawPriceLine(graphRefr, dataHistory);
          this.drawOffers(graphRefr, dataHistory);
+         this.drawTransactions(graphRefr, dataHistory.transactions);
 
          this.drawPriceAxis(graphRefr, this.marketPriceLines, this.marketSVG, this.mapMarketPriceToYAxis);
          this.drawPriceAxis(graphRefr, this.profitPriceLines, this.profitSVG, this.mapProfitPriceToYAxis);

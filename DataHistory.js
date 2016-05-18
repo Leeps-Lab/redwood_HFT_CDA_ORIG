@@ -14,7 +14,9 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.pastSellOffers = [];
       dataHistory.groupOffers = [];
       dataHistory.curProfitSegment = null;
-      dataHistory.pastProfitSegments = []
+      dataHistory.pastProfitSegments = [];
+      dataHistory.transactions = [];    //entries look like [timestamp, myTransaction]
+      dataHistory.profit;
 
       dataHistory.logger = new MessageLogger("Data History " + String(myId), "orange", "subject-log");
 
@@ -29,6 +31,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
             case "C_ESELL" : this.recordSellOffer(msg);           break;
             case "C_RBUY"  : this.storeBuyOffer(msg.msgData[1]);  break;
             case "C_RSELL" : this.storeSellOffer(msg.msgData[1]); break;
+            case "C_TRA"   : this.storeTransaction(msg);          break;
          }
 
       };
@@ -77,15 +80,26 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          this.curSellOffer = null;
       };
 
+      dataHistory.storeTransaction = function(msg) {
+         if (msg.msgData[1] == this.myId || msg.msgData[2] == this.myId) {
+            this.transactions.push([msg.msgData[0], true]);
+            this.profit += msg.msgData[3];
+            this.recordProfitSegment(this.profit, msg.msgData[0], this.curProfitSegment[2]);
+         }
+         else this.transactions.push([msg.msgData[0], false]);
+      }
+
       dataHistory.recordProfitSegment = function(price, startTime, slope) {
          if (this.curProfitSegment != null){
-            this.storeProfitSegment (startTime, price);
+            this.storeProfitSegment (startTime);
          }
          this.curProfitSegment = [startTime, price, slope];
          console.log(this.curProfitSegment);
       };
 
-      dataHistory.storeProfitSegment = function(endTime, endPrice) {
+      dataHistory.storeProfitSegment = function(endTime) {
+         //find end price by subtracting how far graph has descended from start price
+         var endPrice = this.curProfitSegment[1] - ((endTime - this.curProfitSegment[0]) * this.curProfitSegment[2] / 1000);
          if(this.curProfitSegment == null){
             throw "Cannot store current profit segment because it is null";
          }

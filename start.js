@@ -9,13 +9,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
  function ($scope, $interval, rs, dataHistory, graphing, stopWatch, $http) {
 
     var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in ms delay between ticks
-    
+
     $scope.speed_button_text = "Turn On Speed";
     $scope.sliderVal = 5;
     $scope.state = "state_out";
     $scope.using_speed = false;
     $scope.spread = 0;
-    $scope.profit;
     $scope.startingWealth = 100;
     $scope.speedCost = 5;
 
@@ -24,7 +23,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.tradingGraph.draw($scope.dHistory);
 
         if ($scope.using_speed) {
-           $scope.profit -= CLOCK_FREQUENCY * $scope.speedCost / 1000
+           $scope.dHistory.profit -= CLOCK_FREQUENCY * $scope.speedCost / 1000
         }
     };
 
@@ -80,7 +79,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
         //set initial profit equal to value set in config
         $scope.dHistory.curProfitSegment = [startTime, $scope.startingWealth, 0];
-        $scope.profit = $scope.startingWealth;
+        $scope.dHistory.profit = $scope.startingWealth;
 
         // start looping the update function
         $interval($scope.update, CLOCK_FREQUENCY);
@@ -101,7 +100,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         .click(function (event){
             $scope.using_speed = !$scope.using_speed;
             $scope.speed_button_text = $scope.using_speed ? "Turn Off Speed" : "Turn On Speed";
-            $scope.dHistory.recordProfitSegment ($scope.profit, Date.now(), $scope.using_speed ? $scope.speedCost : 0);
+            $scope.dHistory.recordProfitSegment ($scope.dHistory.profit, Date.now(), $scope.using_speed ? $scope.speedCost : 0);
             var msg = new Message("USER", "USPEED", [rs.user_id, $scope.using_speed]);
             console.log(msg);
             $scope.sendToGroupManager(msg);
@@ -157,6 +156,22 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.state = newState;
         $("#"+$scope.state).css("border", "2px solid yellow");
     };
+
+    $("#test1")
+      .button()
+      .click (function (event) {
+         var transactionPrice = 15;
+         var msg = new Message("ITCH", "C_TRA", [Date.now(), -1, rs.user_id, transactionPrice]);
+         $scope.dHistory.recvMessage(msg);
+      });
+
+   $("#test2")
+     .button()
+     .click (function (event) {
+        var transactionPrice = 15;
+        var msg = new Message("ITCH", "C_TRA", [Date.now(), -1, -1, transactionPrice]);
+        $scope.dHistory.recvMessage(msg);
+     });
 
     // recieve message from market algorithm to the data history object
     rs.recv ("To_Data_History_" + String(rs.user_id), function (uid, msg){

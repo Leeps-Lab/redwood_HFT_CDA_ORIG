@@ -81,3 +81,13 @@
    stroke:rgb(0, 100, 0);
    stroke-width:3;
 }
+
+.my-transactions{
+   stroke:green;
+   stroke-width: 1;
+}
+
+.other-transactions{
+   stroke:red;
+   stroke-width: 1;
+}
