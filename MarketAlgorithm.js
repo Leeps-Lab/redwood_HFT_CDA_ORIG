@@ -29,12 +29,8 @@ Redwood.factory("MarketAlgorithm", function () {
 
       // sends out buy and sell offer for entering market
       marketAlgorithm.enterMarket = function(){
-         var nMsg = new Message("OUTCH", "EBUY", [this.myId, this.fundementalPrice - this.spread/2] );
-         nMsg.delay = !this.using_speed;
-         var nMsg2 = new Message("OUTCH", "ESELL", [this.myId, this.fundementalPrice + this.spread/2] );
-         nMsg2.delay = !this.using_speed;
-         this.sendToGroupManager(nMsg);
-         this.sendToGroupManager(nMsg2);
+         this.sendToGroupManager(this.enterBuyOfferMsg());
+         this.sendToGroupManager(this.enterSellOfferMsg());
          this.buyEntered = true;
          this.sellEntered = true;
       };
@@ -63,26 +59,32 @@ Redwood.factory("MarketAlgorithm", function () {
             // update fundemental price variable
             this.fundementalPrice = msg.msgData[1];
 
-            // send message to data history recording price change
-            var nmsg = new Message("DATA", "FPC", msg.msgData);
-            this.sendToDataHistory(nmsg);
-/*
             //send player state to group manager
             var nMsg3;
             if (this.state == "state_out") {
-               nMsg3 = new Message ("SYNC_FP", "NONE", [this.myId, this.using_speed, msg.msgData[2]]);
+               nMsg3 = new Message ("SYNC_FP", "NONE", [this.myId, this.using_speed, [] ]);
             }
             else if (this.state == "state_maker") {
-               nMsg3 = new Message ("SYNC_FP", "UOFFERS", [this.myId, this.using_speed, msg.msgData[2], this.spread]);
+               nMsg3 = new Message ("SYNC_FP", "UOFFERS", [this.myId, this.using_speed, [] ]);
+               if(this.buyEntered){
+                  nMsg3.msgData[2].push(this.updateBuyOfferMsg());
+               }
+               if(this.sellEntered){
+                  nMsg3.msgData[2].push(this.updateSellOfferMsg());
+               }
             }
             else if (this.state == "state_snipe") {
-               nMsg3 = new Message ("SYNC_FP", "SNIPE", [this.myId, this.using_speed, msg.msgData[2]]);
+               nMsg3 = new Message ("SYNC_FP", "SNIPE", [this.myId, this.using_speed, [] ]);
             }
             else {
                console.error("invalid state");
                return;
             }
-            this.sendToGroupManager (nMsg3);*/
+            this.sendToGroupManager (nMsg3);
+
+            // send message to data history recording price change
+            var nmsg = new Message("DATA", "FPC", msg.msgData);
+            this.sendToDataHistory(nmsg);
          }
 
          // user sent signal to change state to market maker. Need to enter market.
@@ -117,14 +119,10 @@ Redwood.factory("MarketAlgorithm", function () {
 
             //See if there are existing orders that need to be updated
             if(this.buyEntered){
-               var nMsg = new Message("OUTCH", "UBUY", [this.myId, this.fundementalPrice - this.spread/2] );
-               nMsg.delay = !this.using_speed;
-               this.sendToGroupManager(nMsg);
+               this.sendToGroupManager(this.updateBuyOfferMsg());
             }
             if(this.sellEntered){
-               var nMsg2 = new Message("OUTCH", "USELL", [this.myId, this.fundementalPrice + this.spread/2] );
-               nMsg2.delay = !this.using_speed;
-               this.sendToGroupManager(nMsg2);
+               this.sendToGroupManager(this.updateSellOfferMsg());
             }
          }
 
@@ -182,7 +180,43 @@ Redwood.factory("MarketAlgorithm", function () {
             }
          }
 
+         // Confirmation that a transaction has taken place
+         if(msg.msgType == "C_TRA"){
+            if(msg.msgData[1] === this.myId){   // check if I was the buyer
+               if(this.state === "state_maker"){
+                  this.sendToGroupManager(this.enterBuyOfferMsg());
+               }
+            }
+            if(msg.msgData[2] === this.myId){   // check if I was the seller
+               if(this.state === "state_maker"){
+                  this.sendToGroupManager(this.enterSellOfferMsg());
+               }
+            }
+         }
+      };
 
+      marketAlgorithm.enterBuyOfferMsg = function(){
+         var nMsg = new Message("OUTCH", "EBUY", [this.myId, this.fundementalPrice - this.spread/2] );
+         nMsg.delay = !this.using_speed;
+         return nMsg;
+      };
+
+      marketAlgorithm.enterSellOfferMsg = function(){
+         var nMsg = new Message("OUTCH", "ESELL", [this.myId, this.fundementalPrice + this.spread/2] );
+         nMsg.delay = !this.using_speed;
+         return nMsg;
+      };
+
+      marketAlgorithm.updateBuyOfferMsg = function(){
+         var nMsg = new Message("OUTCH", "UBUY", [this.myId, this.fundementalPrice - this.spread/2] );
+         nMsg.delay = !this.using_speed;
+         return nMsg;
+      };
+
+      marketAlgorithm.updateSellOfferMsg = function(){
+         var nMsg = new Message("OUTCH", "USELL", [this.myId, this.fundementalPrice + this.spread/2] );
+         nMsg.delay = !this.using_speed;
+         return nMsg;
       };
 
       return marketAlgorithm;

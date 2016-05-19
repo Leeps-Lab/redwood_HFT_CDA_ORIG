@@ -17,6 +17,9 @@ Redwood.factory("GroupManager", function () {
       groupManager.msgWaitList = [];        // buffer that holds onto outgoing messages for an amount of delay to simulate latency
       groupManager.delay = 500;             // # of milliseconds that will be delayed by latency simulation
 
+      groupManager.syncFPArray = new synchronizeArray(groupManager.memberIDs);
+      groupManager.FPMsgList = [];
+
       // add the logging terminal to the ui section of the html
       $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group ' + groupNumber + ' Message Log</div><div id="group-' + groupNumber + '-log" class="terminal"></div></div>');
       groupManager.logger = new MessageLogger("Group Manager " + String(groupNumber), "#5555FF", "group-" + groupNumber + "-log");
@@ -39,7 +42,28 @@ Redwood.factory("GroupManager", function () {
 
         // synchronized message in response to fundemental price change
         if(msg.protocol === "SYNC_FP"){
-          this.logger.logString(String(msg.msgData[0]));
+
+          //mark that this user sent msg
+          this.syncFPArray.markReady(msg.msgData[0]);
+          this.FPMsgList.push(msg);
+
+          // check if every user has sent a response
+          if(this.syncFPArray.allReady()){
+
+            // shuffle the order of messages sitting in the arrays
+            this.FPMsgList = this.FPMsgList.shuffle();
+
+            // send msgs in new shuffled order
+            for(var smsg of this.FPMsgList){
+              for(var rmsg of smsg.msgData[2]){
+                this.sendToMarket(rmsg);
+              }
+            }
+
+            // reset arrays for the next fundemental price change
+            this.FPMsgList = [];
+            this.syncFPArray = new synchronizeArray(this.memberIDs);
+          }
         }
 
         // general message that needs to be passed on to marketManager
@@ -111,8 +135,8 @@ Redwood.factory("GroupManager", function () {
             if (returned !== undefined) {
                 var seller = (this.investorArrivals[this.investorIndex][1] === "sell" ? 0 : returned.id);
                 var buyer = (this.investorArrivals[this.investorIndex][1] === "buy" ? 0 : returned.id);
-                //var msg = new Message ("ITCH", "C_TRA", [returned.timestamp, buyer, seller, returned.price]);
-                //this.sendToMarketAlgorithms(msg);
+                var msg = new Message ("ITCH", "C_TRA", [returned.timestamp, buyer, seller, returned.price]);
+                this.sendToMarketAlgorithms(msg);
             }
             this.investorIndex++;
          }
