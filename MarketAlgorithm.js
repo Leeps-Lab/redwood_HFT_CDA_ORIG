@@ -192,6 +192,7 @@ Redwood.factory("MarketAlgorithm", function () {
                   this.sendToGroupManager(this.enterSellOfferMsg());
                }
             }
+            this.sendToDataHistory(msg);
          }
       };
 
