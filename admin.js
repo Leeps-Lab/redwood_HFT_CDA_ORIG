@@ -177,6 +177,8 @@ Redwood.controller("AdminCtrl",
             }
          }
 
+         console.log($scope.priceChanges);
+
          $scope.investorArrivals = [];
          var arrivalURL = ra.get_config(1, 0).marketEventsURL;
          $http.get(arrivalURL).then(function(response) {

@@ -85,6 +85,8 @@ Redwood.factory("MarketAlgorithm", function () {
                console.error("invalid state");
                return;
             }
+
+            console.log(nMsg3);
             this.sendToGroupManager (nMsg3);
 
             // send message to data history recording price change

@@ -75,7 +75,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $scope.groupNum = data[1];
         $scope.group = data[2];
 
-        console.log(data);
         //Create the logger for this start.js page
         $scope.debugMode = data[3];
         if($scope.debugMode){

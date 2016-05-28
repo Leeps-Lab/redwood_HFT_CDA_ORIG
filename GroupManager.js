@@ -57,12 +57,18 @@ Redwood.factory("GroupManager", function () {
           // check if every user has sent a response
           if(this.syncFPArray.allReady()){
 
+            console.log(this.FPMsgList);
+
             // shuffle the order of messages sitting in the arrays
-            this.FPMsgList = this.FPMsgList.shuffle();
+            var indexOrder = this.getRandomMsgOrder(this.FPMsgList.length);
+            console.log(indexOrder);
+            //this.FPMsgList = this.FPMsgList.shuffle();
+
+            console.log(this.FPMsgList);
 
             // send msgs in new shuffled order
-            for(var smsg of this.FPMsgList){
-              for(var rmsg of smsg.msgData[2]){
+            for(var index of indexOrder){
+              for(var rmsg of this.FPMsgList[index].msgData[2]){
                 console.log(rmsg);
                 this.sendToMarket(rmsg);
               }
@@ -121,6 +127,25 @@ Redwood.factory("GroupManager", function () {
           var subjectID = msg.msgData[0];
           this.marketAlgorithms[subjectID].recvFromGroupManager(msg);
         }
+      };
+
+      // creates an array from 0 to size-1 that are shuffled in random order
+      groupManager.getRandomMsgOrder = function(size){
+        
+        // init indices from 0 to size-1
+        var indices = [];
+        var rand;
+        var temp;
+        for(var i = 0; i < size; i++){ indices.push(i); }
+
+        // shuffle
+        for(i = size-1; i > 0; i--){
+          rand = Math.floor(Math.random() * size);
+          temp = indices[i];
+          indices[i] = indices[rand];
+          indices[rand] = temp;
+        }
+        return indices;
       };
 
       //Looks for change in fundamental price and sends message if change is found
