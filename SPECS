@@ -123,7 +123,7 @@ Specific Message Structures:
       User Update Spread:
          protocol    -> "USER"
          msgType     -> "UUSPR"
-         msgData     -> [new-spread-value]
+         msgData     -> [user_id, new-spread-value]
 
 
 

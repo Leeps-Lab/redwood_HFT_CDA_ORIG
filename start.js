@@ -124,7 +124,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                         $scope.sendToGroupManager(msg);
                     }
             },
-            value : 5,
+            value: $scope.sliderVal,
             max : 10
         });
 
