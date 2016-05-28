@@ -8,6 +8,9 @@ Redwood.controller("AdminCtrl",
  "$http",
  "$interval",
  function($rootScope, $scope, ra, marketManager, groupManager, marketAlgorithm, $http, $interval) {
+   
+   var debugMode = true;   // change this to switch all the message loggers on and off
+
    var Display = { //Display controller
 
       initialize: function() {
@@ -217,11 +220,11 @@ Redwood.controller("AdminCtrl",
                 var group = $scope.getGroup(groupNum); // fetch group from array
                 
                 //just use first period for now, will have to fix for other periods later
-                $scope.groupManagers[groupNum] = groupManager.createGroupManager ($scope.priceChanges, $scope.investorArrivals, ra.sendCustom, groupNum, group);
+                $scope.groupManagers[groupNum] = groupManager.createGroupManager ($scope.priceChanges, $scope.investorArrivals, ra.sendCustom, groupNum, group, debugMode);
                 $scope.groupManagers[groupNum].market = marketManager.createMarketManager(ra.sendCustom, groupNum, $scope.groupManagers[groupNum]);
                 for(var subjectNum of group){
                   $scope.idToGroup[subjectNum] = groupNum;  // map subject number to group number
-                  $scope.groupManagers[groupNum].marketAlgorithms[subjectNum] = marketAlgorithm.createMarketAlgorithm(subjectNum, groupNum, $scope.groupManagers[groupNum], ra.sendCustom);
+                  $scope.groupManagers[groupNum].marketAlgorithms[subjectNum] = marketAlgorithm.createMarketAlgorithm(subjectNum, groupNum, $scope.groupManagers[groupNum], ra.sendCustom, debugMode);
                 }
             }
             //********************************************************************
@@ -263,7 +266,7 @@ Redwood.controller("AdminCtrl",
          var group = $scope.getGroup(groupNum);
 
          //send out start message with start time and information about group then start groupManager
-         ra.sendCustom ("Experiment_Begin", [startTime, groupNum, group], "admin", 1, groupNum);
+         ra.sendCustom ("Experiment_Begin", [startTime, groupNum, group, debugMode], "admin", 1, groupNum);
          $scope.groupManagers[groupNum].startTime = startTime;
          $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
       }

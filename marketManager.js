@@ -2,13 +2,16 @@ Redwood.factory("MarketManager", function () {
    var api = {};
 
    //Creates the market manager, pass var's that you need for creation in here.
-   api.createMarketManager = function(sendFunction, groupNumber, groupManager){
+   api.createMarketManager = function(sendFunction, groupNumber, groupManager, debugMode){
       var market = {};
 
       market.CDABook = {};
       market.groupManager = groupManager;
-      market.logger = new MessageLogger("Market " + String(groupNumber), "#55FF55", "group-" + groupNumber + "-log");
 
+      market.debugMode = debugMode;
+      if(debugMode){
+        market.logger = new MessageLogger("Market " + String(groupNumber), "#55FF55", "group-" + groupNumber + "-log");
+      }
 
       // captures the redwood admin send function
       market.rssend = function (key, value) {
@@ -23,7 +26,10 @@ Redwood.factory("MarketManager", function () {
       // handle message from subjects
       market.recvMessage = function(message){
         message.timestamp = Date.now();
-        this.logger.logRecv(message, "Group Manager");
+        
+        if(this.debugMode){
+          this.logger.logRecv(message, "Group Manager");
+        }
 
         // handle message based on type. Send reply once message has been handled
         switch (message.msgType) {
@@ -105,16 +111,16 @@ Redwood.factory("MarketManager", function () {
       market.CDABook.insertBuy = function (newId, newPrice, timestamp) {
           market.CDABook.buyOrders.push ({id : newId, price : newPrice, timestamp : timestamp});
           market.CDABook.buyOrders.sort (buyComparator);
-          console.log("player " + newId + " inserted buy at price " + newPrice);
-          console.log(market.CDABook.buyOrders);
+          //console.log("player " + newId + " inserted buy at price " + newPrice);
+          //console.log(market.CDABook.buyOrders);
       }
 
       //inserts sell into sell orders array
       market.CDABook.insertSell = function (newId, newPrice, timestamp) {
           market.CDABook.sellOrders.push ({id : newId, price : newPrice, timestamp : timestamp});
           market.CDABook.sellOrders.sort (sellComparator);
-          console.log("player " + newId + " inserted sell at price " + newPrice);
-          console.log(market.CDABook.sellOrders);
+          //console.log("player " + newId + " inserted sell at price " + newPrice);
+          //console.log(market.CDABook.sellOrders);
       }
 
       //removes buy order associated with a user id from the order book and returns it

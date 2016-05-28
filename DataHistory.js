@@ -1,7 +1,7 @@
 RedwoodHighFrequencyTrading.factory("DataHistory", function () {
    var api = {};
 
-   api.createDataHistory = function(startTime, myId, group){
+   api.createDataHistory = function(startTime, myId, group, debugMode){
       //Variables
       dataHistory = {};
       dataHistory.startTime = startTime;
@@ -18,10 +18,15 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.transactions = [];    //entries look like [timestamp, myTransaction]
       dataHistory.profit;
 
-      dataHistory.logger = new MessageLogger("Data History " + String(myId), "orange", "subject-log");
+      dataHistory.debugMode = debugMode;
+      if(debugMode){
+         dataHistory.logger = new MessageLogger("Data History " + String(myId), "orange", "subject-log");
+      }
 
       dataHistory.recvMessage = function(msg){
-         this.logger.logRecv(msg, "Market Algorithm");
+         if(this.debugMode){
+            this.logger.logRecv(msg, "Market Algorithm");
+         }
 
          switch(msg.msgType){
             case "FPC"     : this.recordFPCchange(msg);           break;

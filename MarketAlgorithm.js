@@ -1,21 +1,25 @@
 Redwood.factory("MarketAlgorithm", function () {
    var api = {};
 
-   api.createMarketAlgorithm = function(myId, groupId, groupManager, redwoodSend){
+   api.createMarketAlgorithm = function(myId, groupId, groupManager, redwoodSend, debugMode){
       var marketAlgorithm = {};
 
-      marketAlgorithm.spread = 5;
-      marketAlgorithm.using_speed = false;
-      marketAlgorithm.state = "state_out";
-      marketAlgorithm.buyEntered = false;
+      marketAlgorithm.spread = 5;            // record of this user's spread value
+      marketAlgorithm.using_speed = false;   
+      marketAlgorithm.state = "state_out";   // user's state - can be "state_out", "state_maker", or "state_snipe"
+      marketAlgorithm.buyEntered = false;    // flags for if this user has buy/sell orders still in the book
       marketAlgorithm.sellEntered = false;
 
-      //Create the logger for this start.js page
-      marketAlgorithm.logger = new MessageLogger("Market Algorithm " + String(myId), "#FF5555", "group-" + groupId + "-log");
       marketAlgorithm.myId = myId;
       marketAlgorithm.groupId = groupId;
       marketAlgorithm.groupManager = groupManager;   //Sends message to group manager, function obtained as parameter
       marketAlgorithm.fundementalPrice = 15;
+
+      marketAlgorithm.debugMode = debugMode;
+      if(debugMode){
+         //Create the logger for this start.js page
+         marketAlgorithm.logger = new MessageLogger("Market Algorithm " + String(myId), "#FF5555", "group-" + groupId + "-log");
+      }
 
       // sends a message to the group manager via direct reference
       marketAlgorithm.sendToGroupManager = function(msg){
@@ -50,8 +54,9 @@ Redwood.factory("MarketAlgorithm", function () {
       // Handle message sent to the market algorithm
       marketAlgorithm.recvFromGroupManager = function(msg){
 
-         this.logger.logRecv(msg, "Group Manager");
-         
+         if(this.debugMode){
+           this.logger.logRecv(msg, "Group Manager");
+         }      
 
          // Fundemental Price Change
          if(msg.msgType === "FPC"){
@@ -129,7 +134,6 @@ Redwood.factory("MarketAlgorithm", function () {
          // Confirmation that a buy offer has been placed in market
          if(msg.msgType == "C_EBUY"){
             if(msg.msgData[0] == this.myId){
-               this.logger.logString("My buy offer confirmed at time: " + millisToTime(msg.msgData[2]) );
                var nMsg = new Message("DATA", "C_EBUY", msg.msgData);
                this.sendToDataHistory(nMsg);
             }
@@ -138,7 +142,6 @@ Redwood.factory("MarketAlgorithm", function () {
          // Confirmation that a sell offer has been placed in market
          if(msg.msgType == "C_ESELL"){
             if(msg.msgData[0] == this.myId){
-               this.logger.logString("My sell offer confirmed at time: " + millisToTime(msg.msgData[2]) );
                var nMsg = new Message("DATA", "C_ESELL", msg.msgData);
                this.sendToDataHistory(nMsg);
             }
@@ -147,7 +150,6 @@ Redwood.factory("MarketAlgorithm", function () {
          // Confirmation that a buy offer has been removed from market
          if(msg.msgType == "C_RBUY"){
             if(msg.msgData[0] == this.myId){
-               this.logger.logString("My buy offer removed at time: " + millisToTime(msg.msgData[1]) );
                var nMsg = new Message("DATA", "C_RBUY", msg.msgData);
                this.sendToDataHistory(nMsg);
             }
@@ -156,7 +158,6 @@ Redwood.factory("MarketAlgorithm", function () {
          // Confirmation that a sell offer has been placed in market
          if(msg.msgType == "C_RSELL"){
             if(msg.msgData[0] == this.myId){
-               this.logger.logString("My sell offer removed at time: " + millisToTime(msg.msgData[1]) );
                var nMsg = new Message("DATA", "C_RSELL", msg.msgData);
                this.sendToDataHistory(nMsg);
             }
@@ -165,7 +166,6 @@ Redwood.factory("MarketAlgorithm", function () {
          // Confirmation that a buy offer has been updated
          if(msg.msgType == "C_UBUY"){
             if(msg.msgData[0] == this.myId){
-               this.logger.logString("My buy offer updated at time: " + millisToTime(msg.msgData[2]) );
                var nMsg = new Message("DATA", "C_UBUY", msg.msgData);
                this.sendToDataHistory(nMsg);
             }
@@ -174,7 +174,6 @@ Redwood.factory("MarketAlgorithm", function () {
          // Confirmation that a sell offer has been updated
          if(msg.msgType == "C_USELL"){
             if(msg.msgData[0] == this.myId){
-               this.logger.logString("My sell offer updated at time: " + millisToTime(msg.msgData[2]) );
                var nMsg = new Message("DATA", "C_USELL", msg.msgData);
                this.sendToDataHistory(nMsg);
             }

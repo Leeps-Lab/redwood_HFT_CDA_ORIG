@@ -1,7 +1,7 @@
 Redwood.factory("GroupManager", function () {
    var api = {};
 
-   api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, memberIDs){
+   api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, memberIDs, debugMode){
       var groupManager = {};
 
       groupManager.marketAlgorithms = {};   // reference to all market algorithms in this group, mapped by subject id ---> marketAlgorithms[subjectID]
@@ -20,9 +20,13 @@ Redwood.factory("GroupManager", function () {
       groupManager.syncFPArray = new synchronizeArray(groupManager.memberIDs);
       groupManager.FPMsgList = [];
 
-      // add the logging terminal to the ui section of the html
-      $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group ' + groupNumber + ' Message Log</div><div id="group-' + groupNumber + '-log" class="terminal"></div></div>');
-      groupManager.logger = new MessageLogger("Group Manager " + String(groupNumber), "#5555FF", "group-" + groupNumber + "-log");
+      groupManager.debugMode = debugMode;   //indicates if message logger should be used
+
+      if(debugMode){
+        // add the logging terminal to the ui section of the html
+        $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group ' + groupNumber + ' Message Log</div><div id="group-' + groupNumber + '-log" class="terminal"></div></div>');
+        groupManager.logger = new MessageLogger("Group Manager " + String(groupNumber), "#5555FF", "group-" + groupNumber + "-log");
+      }
 
       // wrapper for the redwood send function
       groupManager.rssend = function (key, value) {
@@ -38,7 +42,10 @@ Redwood.factory("GroupManager", function () {
 
       // recv a message from a single market algorithm in this group
       groupManager.recvFromMarketAlgorithm = function(msg){
-        this.logger.logRecv(msg, "Market Algorithm");
+        
+        if(this.debugMode){
+          this.logger.logRecv(msg, "Market Algorithm");
+        }
 
         // synchronized message in response to fundemental price change
         if(msg.protocol === "SYNC_FP"){
@@ -56,6 +63,7 @@ Redwood.factory("GroupManager", function () {
             // send msgs in new shuffled order
             for(var smsg of this.FPMsgList){
               for(var rmsg of smsg.msgData[2]){
+                console.log(rmsg);
                 this.sendToMarket(rmsg);
               }
             }
@@ -85,7 +93,11 @@ Redwood.factory("GroupManager", function () {
 
       // handles a message from the market
       groupManager.recvFromMarket = function(msg){
-        this.logger.logRecv(msg, "Market");
+        
+        if(this.debugMode){
+          this.logger.logRecv(msg, "Market");
+        }
+
         switch (msg.msgType){
           case "C_EBUY"  :
           case "C_ESELL" :
@@ -99,7 +111,10 @@ Redwood.factory("GroupManager", function () {
 
       // handles message from subject and passes it on to market algorithm
       groupManager.recvFromSubject = function(msg){
-         this.logger.logRecv(msg, "Subjects");
+         
+        if(this.debugMode){
+          this.logger.logRecv(msg, "Subjects");
+        }
 
         // if this is a user message, handle it and don't send it to market
         if(msg.protocol === "USER"){
@@ -110,10 +125,10 @@ Redwood.factory("GroupManager", function () {
 
       //Looks for change in fundamental price and sends message if change is found
       groupManager.update = function(){
+
         // check if msgs on wait list need to be sent
         if(this.msgWaitList.length > 0){
           while(this.msgWaitList[0][0] < Date.now()){
-            console.log("sent message with delay");
             this.market.recvMessage(this.msgWaitList[0][1]);
             this.msgWaitList.shift();
             if(this.msgWaitList.length === 0){
