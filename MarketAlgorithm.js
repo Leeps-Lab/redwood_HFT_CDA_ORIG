@@ -115,7 +115,7 @@ Redwood.factory("MarketAlgorithm", function () {
 
          //User updated their spread
          if(msg.msgType === "UUSPR"){
-            this.spread = msg.msgData[0];
+            this.spread = msg.msgData[1];
 
             //See if there are existing orders that need to be updated
             if(this.buyEntered){

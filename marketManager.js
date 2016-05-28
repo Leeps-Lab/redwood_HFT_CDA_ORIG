@@ -77,10 +77,10 @@ Redwood.factory("MarketManager", function () {
       };
 
       market.makeTransaction = function (transactionType) {
-          if (transactionType == 0) {
+          if (transactionType === 0) {
               return market.CDABook.buyOrders.pop();
           }
-          else if (transactionType == 1){
+          else if (transactionType === 1){
               return market.CDABook.sellOrders.pop();
           }
           else console.error("marketManager: tried to make invalid transaction type");
@@ -155,6 +155,7 @@ Redwood.factory("MarketManager", function () {
              return;
           }
           market.CDABook.buyOrders[index].price = newPrice;
+          console.log("player " + idToUpdate + " updated buy to " + newPrice);
       }
 
       //updates a sell order to a new price
@@ -167,6 +168,7 @@ Redwood.factory("MarketManager", function () {
              return;
           }
           market.CDABook.sellOrders[index].price = newPrice;
+          console.log("player " + idToUpdate + " updated sell to " + newPrice);
       }
 
       return market;
