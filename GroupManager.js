@@ -150,7 +150,6 @@ Redwood.factory("GroupManager", function () {
         return indices;
       };
 
-      //Looks for change in fundamental price and sends message if change is found
       groupManager.update = function(){
 
         // check if msgs on wait list need to be sent
@@ -164,6 +163,7 @@ Redwood.factory("GroupManager", function () {
           }
         }
 
+        //Looks for change in fundamental price and sends message if change is found
          while(this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
             var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);
@@ -171,13 +171,13 @@ Redwood.factory("GroupManager", function () {
             this.priceIndex++;
          }
 
+         //looks for investor arrivals and sends message if one has occured
          while(this.investorIndex < this.investorArrivals.length
                && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
             var returned = this.market.makeTransaction (this.investorArrivals[this.investorIndex][1]);
             if (returned !== undefined) {console.log(this.investorArrivals[this.investorIndex][1]);
                 var seller = (this.investorArrivals[this.investorIndex][1] === 0 ? 0 : returned.id);
                 var buyer = (this.investorArrivals[this.investorIndex][1] === 1 ? 0 : returned.id);
-                console.log("buyer=" + buyer + " seller=" + seller);
                 var msg = new Message ("ITCH", "C_TRA", [Date.now(), buyer, seller, returned.price]);
                 this.sendToMarketAlgorithms(msg);
             }

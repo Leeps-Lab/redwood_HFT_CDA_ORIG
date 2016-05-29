@@ -100,7 +100,6 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
             this.storeProfitSegment (startTime);
          }
          this.curProfitSegment = [startTime, price, slope];
-         console.log(this.curProfitSegment);
       };
 
       dataHistory.storeProfitSegment = function(endTime) {
