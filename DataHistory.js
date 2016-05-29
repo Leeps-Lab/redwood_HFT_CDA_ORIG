@@ -86,6 +86,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       };
 
       dataHistory.storeTransaction = function(msg) {
+          console.log(msg);
          if (msg.msgData[1] == this.myId || msg.msgData[2] == this.myId) {
             this.transactions.push([msg.msgData[0], true]);
             this.profit += msg.msgData[3];
