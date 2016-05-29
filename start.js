@@ -83,7 +83,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         }
 
         //Create data history and graph objects
-        $scope.dHistory = dataHistory.createDataHistory(data.startTime, rs.user_id, $scope.group, $scope.isDebug);
+        $scope.dHistory = dataHistory.createDataHistory(data.startTime, data.startFP, rs.user_id, $scope.group, $scope.isDebug);
         $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2");
         $scope.tradingGraph.init();
 

@@ -59,19 +59,12 @@ Redwood.factory("GroupManager", function () {
           // check if every user has sent a response
           if(this.syncFPArray.allReady()){
 
-            console.log(this.FPMsgList);
-
             // shuffle the order of messages sitting in the arrays
             var indexOrder = this.getRandomMsgOrder(this.FPMsgList.length);
-            console.log(indexOrder);
-            //this.FPMsgList = this.FPMsgList.shuffle();
-
-            console.log(this.FPMsgList);
 
             // send msgs in new shuffled order
             for(var index of indexOrder){
               for(var rmsg of this.FPMsgList[index].msgData[2]){
-                console.log(rmsg);
                 this.sendToMarket(rmsg);
               }
             }
@@ -183,6 +176,12 @@ Redwood.factory("GroupManager", function () {
             }
             this.investorIndex++;
          }
+      };
+
+      // pulls out the initial fundemental price for this group and removes that element from the fundemental price array
+      groupManager.getStartFP = function(){
+        var temp = this.priceChanges.shift();
+        return temp[1];
       };
 
       return groupManager;
