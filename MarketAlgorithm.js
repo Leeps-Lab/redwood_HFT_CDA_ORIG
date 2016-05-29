@@ -1,7 +1,7 @@
 Redwood.factory("MarketAlgorithm", function () {
    var api = {};
 
-   api.createMarketAlgorithm = function(myId, groupId, groupManager, redwoodSend, debugMode){
+   api.createMarketAlgorithm = function(subjectArgs, groupManager, redwoodSend){
       var marketAlgorithm = {};
 
       marketAlgorithm.spread = 5;            // record of this user's spread value
@@ -10,15 +10,15 @@ Redwood.factory("MarketAlgorithm", function () {
       marketAlgorithm.buyEntered = false;    // flags for if this user has buy/sell orders still in the book
       marketAlgorithm.sellEntered = false;
 
-      marketAlgorithm.myId = myId;
-      marketAlgorithm.groupId = groupId;
+      marketAlgorithm.myId = subjectArgs.myId;
+      marketAlgorithm.groupId = subjectArgs.groupId;
       marketAlgorithm.groupManager = groupManager;   //Sends message to group manager, function obtained as parameter
       marketAlgorithm.fundementalPrice = 15;
 
-      marketAlgorithm.debugMode = debugMode;
-      if(debugMode){
+      marketAlgorithm.isDebug = subjectArgs.isDebug;
+      if(marketAlgorithm.isDebug){
          //Create the logger for this start.js page
-         marketAlgorithm.logger = new MessageLogger("Market Algorithm " + String(myId), "#FF5555", "group-" + groupId + "-log");
+         marketAlgorithm.logger = new MessageLogger("Market Algorithm " + String(marketAlgorithm.myId), "#FF5555", "group-" + marketAlgorithm.groupId + "-log");
       }
 
       // sends a message to the group manager via direct reference
@@ -54,7 +54,7 @@ Redwood.factory("MarketAlgorithm", function () {
       // Handle message sent to the market algorithm
       marketAlgorithm.recvFromGroupManager = function(msg){
 
-         if(this.debugMode){
+         if(this.isDebug){
            this.logger.logRecv(msg, "Group Manager");
          }      
 

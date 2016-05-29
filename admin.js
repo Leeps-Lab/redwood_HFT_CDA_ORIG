@@ -219,15 +219,31 @@ Redwood.controller("AdminCtrl",
             // loop through groups and create thier groupManager, market, and marketAlgorithms
             for (var groupNum = 1; groupNum <= $scope.groups.length; groupNum++) {
 
-                var group = $scope.getGroup(groupNum); // fetch group from array
+               var group = $scope.getGroup(groupNum); // fetch group from array
                 
-                //just use first period for now, will have to fix for other periods later
-                $scope.groupManagers[groupNum] = groupManager.createGroupManager ($scope.priceChanges, $scope.investorArrivals, ra.sendCustom, groupNum, group, debugMode);
-                $scope.groupManagers[groupNum].market = marketManager.createMarketManager(ra.sendCustom, groupNum, $scope.groupManagers[groupNum]);
-                for(var subjectNum of group){
-                  $scope.idToGroup[subjectNum] = groupNum;  // map subject number to group number
-                  $scope.groupManagers[groupNum].marketAlgorithms[subjectNum] = marketAlgorithm.createMarketAlgorithm(subjectNum, groupNum, $scope.groupManagers[groupNum], ra.sendCustom, debugMode);
-                }
+               // package arguments into an object
+               var groupArgs = {
+                  priceChanges     : $scope.priceChanges, 
+                  investorArrivals : $scope.investorArrivals, 
+                  groupNumber      : groupNum, 
+                  memberIDs        : group, 
+                  isDebug          : debugMode
+               };
+               $scope.groupManagers[groupNum] = groupManager.createGroupManager (groupArgs, ra.sendCustom);
+               $scope.groupManagers[groupNum].market = marketManager.createMarketManager(ra.sendCustom, groupNum, $scope.groupManagers[groupNum]);
+               for(var subjectNum of group){
+                  
+                  // map subject number to group number
+                  $scope.idToGroup[subjectNum] = groupNum;
+
+                  // package market algorithm arguments into an object then create market algorithm
+                  var subjectArgs = {
+                     myId    : subjectNum,
+                     groupId : groupNum,
+                     isDebug : debugMode
+                  };
+                  $scope.groupManagers[groupNum].marketAlgorithms[subjectNum] = marketAlgorithm.createMarketAlgorithm(subjectArgs, $scope.groupManagers[groupNum], ra.sendCustom);
+               }
             }
             //********************************************************************
 
@@ -268,7 +284,13 @@ Redwood.controller("AdminCtrl",
          var group = $scope.getGroup(groupNum);
 
          //send out start message with start time and information about group then start groupManager
-         ra.sendCustom ("Experiment_Begin", [startTime, groupNum, group, debugMode], "admin", 1, groupNum);
+         var beginData = {
+            startTime  : startTime,
+            groupNumber: groupNum,
+            group      : group,
+            isDebug    : debugMode
+         };
+         ra.sendCustom ("Experiment_Begin", beginData, "admin", 1, groupNum);
          $scope.groupManagers[groupNum].startTime = startTime;
          $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
       }
