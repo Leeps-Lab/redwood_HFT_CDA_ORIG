@@ -1,36 +1,38 @@
 Redwood.factory("GroupManager", function () {
    var api = {};
 
-   api.createGroupManager = function(priceLinesArray, investorArrivalsArray, sendFunction, groupNumber, memberIDs, debugMode){
+   api.createGroupManager = function(groupArgs, sendFunction){
       var groupManager = {};
 
       groupManager.marketAlgorithms = {};   // reference to all market algorithms in this group, mapped by subject id ---> marketAlgorithms[subjectID]
       groupManager.market = {};             // reference to the market object for this group
       
-      groupManager.priceChanges = priceLinesArray;            // array of all price changes that will occur
-      groupManager.investorArrivals = investorArrivalsArray;  // array of all investor arrivals that will occur
-      groupManager.priceIndex = 0;                            // index of last price index to occur
-      groupManager.investorIndex = 0;                         // index of last investor arrival to occur
+      groupManager.priceChanges = groupArgs.priceChanges;         // array of all price changes that will occur
+      groupManager.investorArrivals = groupArgs.investorArrivals; // array of all investor arrivals that will occur
+      groupManager.priceIndex = 0;                                // index of last price index to occur
+      groupManager.investorIndex = 0;                             // index of last investor arrival to occur
       
-      groupManager.memberIDs = memberIDs;   // array that contains id number for each subject in this group
-      groupManager.syncFpArray = [];        // buffer that holds onto messages until recved msg from all subjects
-      groupManager.msgWaitList = [];        // buffer that holds onto outgoing messages for an amount of delay to simulate latency
-      groupManager.delay = 500;             // # of milliseconds that will be delayed by latency simulation
+      groupManager.groupNumber = groupArgs.groupNumber;
+      groupManager.memberIDs = groupArgs.memberIDs; // array that contains id number for each subject in this group
+      groupManager.syncFpArray = [];                // buffer that holds onto messages until recved msg from all subjects
+      groupManager.msgWaitList = [];                // buffer that holds onto outgoing messages for an amount of delay to simulate latency
+      groupManager.delay = 500;                     // # of milliseconds that will be delayed by latency simulation
 
       groupManager.syncFPArray = new synchronizeArray(groupManager.memberIDs);
       groupManager.FPMsgList = [];
 
-      groupManager.debugMode = debugMode;   //indicates if message logger should be used
+      groupManager.isDebug = groupArgs.isDebug;     //indicates if message logger should be used
 
-      if(debugMode){
+      if(groupManager.isDebug){
         // add the logging terminal to the ui section of the html
-        $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group ' + groupNumber + ' Message Log</div><div id="group-' + groupNumber + '-log" class="terminal"></div></div>');
-        groupManager.logger = new MessageLogger("Group Manager " + String(groupNumber), "#5555FF", "group-" + groupNumber + "-log");
+        $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Group ' + groupManager.groupNumber + 
+          ' Message Log</div><div id="group-' + groupManager.groupNumber + '-log" class="terminal"></div></div>');
+        groupManager.logger = new MessageLogger("Group Manager " + String(groupManager.groupNumber), "#5555FF", "group-" + groupManager.groupNumber + "-log");
       }
 
       // wrapper for the redwood send function
       groupManager.rssend = function (key, value) {
-        sendFunction (key, value, "admin", 1, groupNumber);
+        sendFunction (key, value, "admin", 1, this.groupNumber);
       };
 
       // sends a message to all of the market algorithms in this group
@@ -43,7 +45,7 @@ Redwood.factory("GroupManager", function () {
       // recv a message from a single market algorithm in this group
       groupManager.recvFromMarketAlgorithm = function(msg){
         
-        if(this.debugMode){
+        if(this.isDebug){
           this.logger.logRecv(msg, "Market Algorithm");
         }
 
@@ -100,7 +102,7 @@ Redwood.factory("GroupManager", function () {
       // handles a message from the market
       groupManager.recvFromMarket = function(msg){
         
-        if(this.debugMode){
+        if(this.isDebug){
           this.logger.logRecv(msg, "Market");
         }
 
@@ -118,7 +120,7 @@ Redwood.factory("GroupManager", function () {
       // handles message from subject and passes it on to market algorithm
       groupManager.recvFromSubject = function(msg){
          
-        if(this.debugMode){
+        if(this.isDebug){
           this.logger.logRecv(msg, "Subjects");
         }
 

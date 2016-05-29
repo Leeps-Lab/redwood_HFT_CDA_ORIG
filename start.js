@@ -41,7 +41,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     // Sends a message to the Market Algorithm
     $scope.sendToMarketAlg = function(msg, delay){
         if(delay == 0) {
-            if($scope.debugMode){
+            if($scope.isDebug){
                 $scope.logger.logSend(msg, "Market Algorithm");
             }
             $scope.mAlgorithm.recvMessage(msg);
@@ -49,7 +49,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         }
         else {
             var packedMsg = packMsg(msg, delay);
-            if($scope.debugMode){
+            if($scope.isDebug){
                 $scope.logger.logSendWait(packedMsg.msg);
             }
             $scope.sendWaitListToMarketAlg.push(packedMsg);
@@ -59,7 +59,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     // Sends a message to the Group Manager
     $scope.sendToGroupManager = function(msg, delay){
-        if($scope.debugMode){
+        if($scope.isDebug){
             $scope.logger.logSend(msg, "Group Manager");
         }
         rs.send("To_Group_Manager", msg);
@@ -71,24 +71,24 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     });
 
     //Initializes experiment
-    rs.recv ("Experiment_Begin", function (uid, data){  // data = [startTime, groupNum, group, debugMode]
-        $scope.groupNum = data[1];
-        $scope.group = data[2];
+    rs.recv ("Experiment_Begin", function (uid, data){
+        $scope.groupNum = data.groupNumber;
+        $scope.group = data.group;
 
         //Create the logger for this start.js page
-        $scope.debugMode = data[3];
-        if($scope.debugMode){
+        $scope.isDebug = data.isDebug;
+        if($scope.isDebug){
             $("#ui").append('<div class="terminal-wrap"><div class="terminal-head">Subject Message Log</div><div id="subject-log" class="terminal"></div></div>');
             $scope.logger = new MessageLogger("Subject Manager " + String(rs.user_id), "yellow", "subject-log");
         }
 
         //Create data history and graph objects
-        $scope.dHistory = dataHistory.createDataHistory(data[0], rs.user_id, $scope.group, $scope.debugMode);
+        $scope.dHistory = dataHistory.createDataHistory(data.startTime, rs.user_id, $scope.group, $scope.isDebug);
         $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2");
         $scope.tradingGraph.init();
 
         //set initial profit equal to value set in config
-        $scope.dHistory.curProfitSegment = [data[0], $scope.startingWealth, 0];
+        $scope.dHistory.curProfitSegment = [data.startTime, $scope.startingWealth, 0];
         $scope.dHistory.profit = $scope.startingWealth;
 
         // start looping the update function
@@ -181,7 +181,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     // recieve message from market algorithm to the data history object
     rs.recv ("To_Data_History_" + String(rs.user_id), function (uid, msg){
-        if($scope.debugMode){
+        if($scope.isDebug){
             $scope.logger.logRecv(msg, "Market Algorithm");
         }
         $scope.dHistory.recvMessage(msg);
