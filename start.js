@@ -163,22 +163,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         $("#"+$scope.state).css("border", "2px solid yellow");
     };
 
-    $("#test1")
-      .button()
-      .click (function (event) {
-         var transactionPrice = 15;
-         var msg = new Message("ITCH", "C_TRA", [Date.now(), -1, rs.user_id, transactionPrice]);
-         $scope.dHistory.recvMessage(msg);
-      });
-
-   $("#test2")
-     .button()
-     .click (function (event) {
-        var transactionPrice = 15;
-        var msg = new Message("ITCH", "C_TRA", [Date.now(), -1, -1, transactionPrice]);
-        $scope.dHistory.recvMessage(msg);
-     });
-
     // recieve message from market algorithm to the data history object
     rs.recv ("To_Data_History_" + String(rs.user_id), function (uid, msg){
         if($scope.isDebug){

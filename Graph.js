@@ -215,11 +215,11 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .data(historyDataSet)
             .enter()
             .append("line")
-            .attr("x1", function(d) {return graphRefr.mapTimeToXAxis(d[0])})
-            .attr("x2", function(d) {return graphRefr.mapTimeToXAxis(d[0])})
-            .attr("y1", 0)
-            .attr("y2", graphRefr.elementHeight)
-            .attr("class", function(d) {return d[1] ? "my-transactions" : "other-transactions"});
+            .attr("x1", function(d) {return graphRefr.mapTimeToXAxis(d[0]); })
+            .attr("x2", function(d) {return graphRefr.mapTimeToXAxis(d[0]); })
+            .attr("y1", function(d) {return graphRefr.mapMarketPriceToYAxis(d[3]); })
+            .attr("y2", function(d) {return graphRefr.mapMarketPriceToYAxis(d[4]); })
+            .attr("class", function(d) {return d[1] !== "none" ? "my-transactions" : "other-transactions"});
       };
 
       graph.draw = function(dataHistory){

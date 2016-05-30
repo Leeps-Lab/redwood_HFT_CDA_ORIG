@@ -96,14 +96,12 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       };
 
       dataHistory.storeTransaction = function(msg) {
-          console.log(msg);
-         if (msg.msgData[1] == this.myId || msg.msgData[2] == this.myId) {
-            this.transactions.push([msg.msgData[0], true]);
-            this.profit += msg.msgData[3];
+         if (msg.msgData[1] !== "none") {
+            this.profit += msg.msgData[2];
             this.recordProfitSegment(this.profit, msg.msgData[0], this.curProfitSegment[2]);
          }
-         else this.transactions.push([msg.msgData[0], false]);
-      }
+         this.transactions.push(msg.msgData);
+      };
 
       dataHistory.recordProfitSegment = function(price, startTime, slope) {
          if (this.curProfitSegment != null){

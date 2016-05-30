@@ -9,7 +9,7 @@ Redwood.controller("AdminCtrl",
  "$interval",
  function($rootScope, $scope, ra, marketManager, groupManager, marketAlgorithm, $http, $interval) {
    
-   var debugMode = true;   // change this to switch all the message loggers on and off
+   var debugMode = false;   // change this to switch all the message loggers on and off
 
    var Display = { //Display controller
 
