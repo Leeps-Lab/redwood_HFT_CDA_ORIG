@@ -86,7 +86,10 @@ Redwood.factory("MarketAlgorithm", function () {
                return;
             }
 
+<<<<<<< HEAD
             //console.log(nMsg3);
+=======
+>>>>>>> fd546c51b230773a1b8436c094abde9ed9ca0dec
             this.sendToGroupManager (nMsg3);
 
             // send message to data history recording price change
@@ -187,7 +190,8 @@ Redwood.factory("MarketAlgorithm", function () {
                if(this.state === "state_maker"){
                   this.sendToGroupManager(this.enterBuyOfferMsg());
                }
-               var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], msg.msgData[1], msg.msgData[2], this.fundementalPrice - msg.msgData[3]]);
+               var profit = this.fundementalPrice - msg.msgData[3];
+               var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], "buyer", profit, msg.msgData[3], this.fundementalPrice]);
                this.sendToDataHistory(nMsg);
                //console.log(nMsg);
             }
@@ -195,12 +199,13 @@ Redwood.factory("MarketAlgorithm", function () {
                if(this.state === "state_maker"){
                   this.sendToGroupManager(this.enterSellOfferMsg());
                }
-               var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], msg.msgData[1], msg.msgData[2], msg.msgData[3] - this.fundementalPrice]);
+               var profit = msg.msgData[3] - this.fundementalPrice;
+               var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], "seller", profit, msg.msgData[3], this.fundementalPrice]);
                this.sendToDataHistory(nMsg);
                //console.log(nMsg);
             }
             else {    // I wasn't involved in this transaction
-              var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], msg.msgData[1], msg.msgData[2]]);
+              var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], "none", 0, msg.msgData[3], this.fundementalPrice]);
               this.sendToDataHistory(nMsg);
             }
          }

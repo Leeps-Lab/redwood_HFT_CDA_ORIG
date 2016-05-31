@@ -119,7 +119,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("height", this.elementHeight)
             .attr("class", function(d){return graphRefr.getTimeGridClass(d);});
          //If necisarry, draw the dark gray space to signify the "dead zone" before exp. started
-         if(this.currentTime < this.startTime + this.timeInterval * 1000){
+         if(this.currentTime < dataHistory.startTime + this.timeInterval * 1000){
             svgToUpdate.append("rect")
             .attr("x", 0)
             .attr("y", 0)
@@ -154,25 +154,6 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("y1", function(d) {return priceMapFunction(d);})
             .attr("y2", function(d) {return priceMapFunction(d);})
             .attr("class", "price-grid-line");
-      };
-
-
-      graph.drawPriceLine = function(graphRefr, dataHistory){
-         //Draw the price line
-         this.marketSVG.selectAll("line.price-line")
-            .data(dataHistory.fundementalPrices)
-            .enter()
-            .append("line")
-            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis( d[0] ); })
-            .attr("x2", function(d, i){
-               if(i != dataHistory.fundementalPrices.length-1)
-                  return graphRefr.mapTimeToXAxis( dataHistory.fundementalPrices[i+1][0] );
-               else
-                  return graphRefr.elementWidth - graphRefr.axisLabelWidth;
-            })
-            .attr("y1", function(d){ return graphRefr.mapMarketPriceToYAxis(d[1]); })
-            .attr("y2", function(d){ return graphRefr.mapMarketPriceToYAxis(d[1]); })
-            .attr("class", "price-line");
       };
 
 
@@ -234,12 +215,12 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .data(historyDataSet)
             .enter()
             .append("line")
-            .attr("x1", function(d) {return graphRefr.mapTimeToXAxis(d[0])})
-            .attr("x2", function(d) {return graphRefr.mapTimeToXAxis(d[0])})
-            .attr("y1", 0)
-            .attr("y2", graphRefr.elementHeight)
-            .attr("class", function(d) {return d[1] ? "my-transactions" : "other-transactions"})
-      }
+            .attr("x1", function(d) {return graphRefr.mapTimeToXAxis(d[0]); })
+            .attr("x2", function(d) {return graphRefr.mapTimeToXAxis(d[0]); })
+            .attr("y1", function(d) {return graphRefr.mapMarketPriceToYAxis(d[3]); })
+            .attr("y2", function(d) {return graphRefr.mapMarketPriceToYAxis(d[4]); })
+            .attr("class", function(d) {return d[1] !== "none" ? "my-transactions" : "other-transactions"});
+      };
 
       graph.draw = function(dataHistory){
          //Clear the svg elements
@@ -262,7 +243,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.drawPriceGridLines(graphRefr, this.marketPriceLines, this.marketSVG, this.mapMarketPriceToYAxis);
          this.drawPriceGridLines(graphRefr, this.profitPriceLines, this.profitSVG, this.mapProfitPriceToYAxis);
 
-         this.drawPriceLine(graphRefr, dataHistory);
+         this.drawStep(graphRefr, dataHistory.pastFundPrices, dataHistory.curFundPrice, "price-line", this.marketSVG, this.mapMarketPriceToYAxis);
          this.drawOffers(graphRefr, dataHistory);
          this.drawTransactions(graphRefr, dataHistory.transactions);
 

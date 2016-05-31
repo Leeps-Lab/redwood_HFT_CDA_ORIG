@@ -1,13 +1,14 @@
 RedwoodHighFrequencyTrading.factory("DataHistory", function () {
    var api = {};
 
-   api.createDataHistory = function(startTime, myId, group, debugMode){
+   api.createDataHistory = function(startTime, startFP, myId, group, debugMode){
       //Variables
       dataHistory = {};
       dataHistory.startTime = startTime;
       dataHistory.myId = myId;
       dataHistory.group = group;
-      dataHistory.fundementalPrices = [[Date.now(), 15]];  //Cheating right now by recording initial FV
+      dataHistory.curFundPrice = [startTime, startFP, 0];
+      dataHistory.pastFundPrices = [];
       dataHistory.curBuyOffer = null;
       dataHistory.curSellOffer = null;
       dataHistory.pastBuyOffers = [];
@@ -44,8 +45,17 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       // Functions
       // Adds fundemental price change to history
       dataHistory.recordFPCchange = function(fpcMsg) {
-         this.fundementalPrices.push([fpcMsg.msgData[0], fpcMsg.msgData[1]]); // index 0 = timestamp, index 1 = new price value
+         //this.fundementalPrices.push([fpcMsg.msgData[0], fpcMsg.msgData[1]]); // index 0 = timestamp, index 1 = new price value
+         this.storeFundPrice(fpcMsg.msgData[0]);
+         this.curFundPrice = [fpcMsg.msgData[0], fpcMsg.msgData[1], 0];
+ //        console.log(this);
+ //        debugger;
       };
+
+      dataHistory.storeFundPrice = function(endTime){
+         this.pastFundPrices.push( [this.curFundPrice[0], endTime, this.curFundPrice[1], this.curFundPrice[1]] );
+         this.curFundPrice = null;
+      }
 
       // Records a new buy offer
       dataHistory.recordBuyOffer = function(buyMsg) {
@@ -86,14 +96,12 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       };
 
       dataHistory.storeTransaction = function(msg) {
-          console.log(msg);
-         if (msg.msgData[1] == this.myId || msg.msgData[2] == this.myId) {
-            this.transactions.push([msg.msgData[0], true]);
-            this.profit += msg.msgData[3];
+         if (msg.msgData[1] !== "none") {
+            this.profit += msg.msgData[2];
             this.recordProfitSegment(this.profit, msg.msgData[0], this.curProfitSegment[2]);
          }
-         else this.transactions.push([msg.msgData[0], false]);
-      }
+         this.transactions.push(msg.msgData);
+      };
 
       dataHistory.recordProfitSegment = function(price, startTime, slope) {
          if (this.curProfitSegment != null){

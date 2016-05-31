@@ -9,7 +9,7 @@ Redwood.controller("AdminCtrl",
  "$interval",
  function($rootScope, $scope, ra, marketManager, groupManager, marketAlgorithm, $http, $interval) {
    
-   var debugMode = true;   // change this to switch all the message loggers on and off
+   var debugMode = false;   // change this to switch all the message loggers on and off
 
    var Display = { //Display controller
 
@@ -177,8 +177,6 @@ Redwood.controller("AdminCtrl",
             }
          }
 
-         console.log($scope.priceChanges);
-
          $scope.investorArrivals = [];
          var arrivalURL = ra.get_config(1, 0).marketEventsURL;
          $http.get(arrivalURL).then(function(response) {
@@ -282,10 +280,12 @@ Redwood.controller("AdminCtrl",
       if($scope.startSyncArrays[groupNum].allReady()){
          var startTime = Date.now();
          var group = $scope.getGroup(groupNum);
+         var startFP = $scope.groupManagers[groupNum].getStartFP();
 
          //send out start message with start time and information about group then start groupManager
          var beginData = {
             startTime  : startTime,
+            startFP   : startFP,
             groupNumber: groupNum,
             group      : group,
             isDebug    : debugMode

@@ -1,7 +1,3 @@
-.market-graph{
-   background-color: rgb(230,230,230);
-}
-
 .price-axis-box{
    fill: rgb(200,200,200);
 }
@@ -88,6 +84,6 @@
 }
 
 .other-transactions{
-   stroke:red;
+   stroke:gray;
    stroke-width: 1;
 }
