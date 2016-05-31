@@ -7,6 +7,18 @@ Use graph.drawStep(historyDataSet, curentData, styleClassName);
    curentData     -> curent status of the step graph. looks like: [startTime, price, slope] or Null if currently graph is empty.
    styleClassName -> string identifier for the css class that should be used to draw lines of this graph.
 
+**********  MARKET FORMAT  **************
+
+Orders have a maximum price of 199,999.9900. If a price of 214,748.3647 is specified, then the order is considered a market order with limit infinity.
+These values come from the OUCH 4.2 specifications. If the IOC flag is specified, then if the transaction is not immediately completed the order is canceled.
+
+Order objects have the following format:
+
+{
+      price     -> int: order price
+      id        -> string: id of player who placed order
+      timestamp -> int: time at which order was placed
+}
 
 **********  MESSAGE STRUCTURE  **************
 
@@ -32,12 +44,12 @@ Specific Message Structures:
       Enter Buy Order:
          protocol    -> "OUCH"
          msgType     -> "EBUY"
-         msgData     -> [buyer-id, price]
+         msgData     -> [buyer-id, price, IOC]
 
       Enter Sell Order:
          protocol    -> "OUCH"
          msgType     -> "ESELL"
-         msgData     -> [seller-id, price]
+         msgData     -> [seller-id, price, IOC]
 
       Remove Buy Order:
          protocol    -> "OUCH"

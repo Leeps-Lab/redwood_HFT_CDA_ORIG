@@ -86,7 +86,7 @@ Redwood.factory("MarketAlgorithm", function () {
                return;
             }
 
-            console.log(nMsg3);
+            //console.log(nMsg3);
             this.sendToGroupManager (nMsg3);
 
             // send message to data history recording price change
@@ -207,13 +207,13 @@ Redwood.factory("MarketAlgorithm", function () {
       };
 
       marketAlgorithm.enterBuyOfferMsg = function(){
-         var nMsg = new Message("OUTCH", "EBUY", [this.myId, this.fundementalPrice - this.spread/2] );
+         var nMsg = new Message("OUTCH", "EBUY", [this.myId, this.fundementalPrice - this.spread/2, false] );
          nMsg.delay = !this.using_speed;
          return nMsg;
       };
 
       marketAlgorithm.enterSellOfferMsg = function(){
-         var nMsg = new Message("OUTCH", "ESELL", [this.myId, this.fundementalPrice + this.spread/2] );
+         var nMsg = new Message("OUTCH", "ESELL", [this.myId, this.fundementalPrice + this.spread/2, false] );
          nMsg.delay = !this.using_speed;
          return nMsg;
       };

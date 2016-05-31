@@ -1,0 +1,3 @@
+period,subject,groups,startingWealth,marketEventsURL,priceChangesURL
+1,default,"[[1,2,3,4]]",500,https://dl.dropboxusercontent.com/s/jpk5msjssq6x7dk/test_investorData.csv?dl=1,https://dl.dropboxusercontent.com/s/x4lgcwcjxtm11n6/test_one_fp.csv?dl=1
+2,default,,,,

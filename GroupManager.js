@@ -59,19 +59,19 @@ Redwood.factory("GroupManager", function () {
           // check if every user has sent a response
           if(this.syncFPArray.allReady()){
 
-            console.log(this.FPMsgList);
+            //console.log(this.FPMsgList);
 
             // shuffle the order of messages sitting in the arrays
             var indexOrder = this.getRandomMsgOrder(this.FPMsgList.length);
-            console.log(indexOrder);
+            //console.log(indexOrder);
             //this.FPMsgList = this.FPMsgList.shuffle();
 
-            console.log(this.FPMsgList);
+            //console.log(this.FPMsgList);
 
             // send msgs in new shuffled order
             for(var index of indexOrder){
               for(var rmsg of this.FPMsgList[index].msgData[2]){
-                console.log(rmsg);
+                //console.log(rmsg);
                 this.sendToMarket(rmsg);
               }
             }
@@ -172,17 +172,12 @@ Redwood.factory("GroupManager", function () {
          }
 
          //looks for investor arrivals and sends message if one has occured
-         while(this.investorIndex < this.investorArrivals.length
-               && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
-            var returned = this.market.makeTransaction (this.investorArrivals[this.investorIndex][1]);
-            if (returned !== undefined) {console.log(this.investorArrivals[this.investorIndex][1]);
-                var seller = (this.investorArrivals[this.investorIndex][1] === 0 ? 0 : returned.id);
-                var buyer = (this.investorArrivals[this.investorIndex][1] === 1 ? 0 : returned.id);
-                var msg = new Message ("ITCH", "C_TRA", [Date.now(), buyer, seller, returned.price]);
-                this.sendToMarketAlgorithms(msg);
-            }
-            this.investorIndex++;
-         }
+        //  while(this.investorIndex < this.investorArrivals.length
+        //        && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
+        //     var msg = new Message("OUCH", "EBUY", [0, 214748.3647, true]);
+        //     this.sendToMarket(msg);
+        //     this.investorIndex++;
+        //  }     
       };
 
       return groupManager;
