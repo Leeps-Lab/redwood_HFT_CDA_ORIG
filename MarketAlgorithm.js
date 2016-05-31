@@ -86,10 +86,6 @@ Redwood.factory("MarketAlgorithm", function () {
                return;
             }
 
-<<<<<<< HEAD
-            //console.log(nMsg3);
-=======
->>>>>>> fd546c51b230773a1b8436c094abde9ed9ca0dec
             this.sendToGroupManager (nMsg3);
 
             // send message to data history recording price change

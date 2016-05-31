@@ -127,7 +127,6 @@ Redwood.factory("MarketManager", function () {
 
       //inserts buy into buy orders data structure
       market.CDABook.insertBuy = function (newId, newPrice, timestamp) {
-          console.log("begin insertBuy");
           var rindex = 0;
           while (rindex < market.CDABook.buyPrices.length && market.CDABook.buyPrices[rindex] < newPrice) rindex++;
           if (rindex == market.CDABook.buyPrices.length || market.CDABook.buyPrices[rindex] != newPrice) {
@@ -137,12 +136,10 @@ Redwood.factory("MarketManager", function () {
           var cindex = 0;
           while (cindex < market.CDABook.buyContracts[rindex].length && market.CDABook.buyContracts[rindex][cindex].timestamp > timestamp) cindex++;
           market.CDABook.buyContracts[rindex].splice(cindex, 0, {price: newPrice, id: newId, timestamp: timestamp});
-          console.log("end insertBuy");
       }
 
       //inserts sell into sell orders data structure
       market.CDABook.insertSell = function (newId, newPrice, timestamp) {
-          console.log("begin insertSell");
           var rindex = 0;
           while (rindex < market.CDABook.sellPrices.length && market.CDABook.sellPrices[rindex] > newPrice) rindex++;
           if (rindex == market.CDABook.sellPrices.length || market.CDABook.sellPrices[rindex] != newPrice) {
@@ -152,13 +149,11 @@ Redwood.factory("MarketManager", function () {
           var cindex = 0;
           while (cindex < market.CDABook.sellContracts[rindex].length && market.CDABook.sellContracts[rindex][cindex].timestamp > timestamp) cindex++;
           market.CDABook.sellContracts[rindex].splice(cindex, 0, {price: newPrice, id: newId, timestamp: timestamp});
-          console.log("end insertSell");
       }
       
       //transacts market orders
       //assume market order is IOC
       market.CDABook.makeMarketBuyOrder = function (buyerId, timestamp) {
-          console.log("begin makeMarketBuyOrder");
           if (market.CDABook.sellContracts.length == 0) return;
           var order = market.CDABook.sellContracts[market.CDABook.sellContracts.length - 1].pop();
           if (market.CDABook.sellContracts[market.CDABook.sellContracts.length - 1].length == 0) {
@@ -167,7 +162,6 @@ Redwood.factory("MarketManager", function () {
           }
           var msg = new Message ("ITCH", "C_TRA", [Date.now(), buyerId, order.id, order.price]);
           market.sendToGroupManager(msg);
-          console.log("end makeMarketBuyOrder");
       }
       
       market.CDABook.makeMarketSellOrder = function () {
@@ -185,7 +179,6 @@ Redwood.factory("MarketManager", function () {
 
       //removes buy order associated with a user id from the order book and returns it
       market.CDABook.removeBuy = function (idToRemove) {
-          console.log("begin removeBuy");
           var rindex = 0;
           var cindex;
           while (rindex < market.CDABook.buyContracts.length) {
@@ -207,13 +200,11 @@ Redwood.factory("MarketManager", function () {
           else {
               toReturn = market.CDABook.buyContracts[rindex].splice(cindex, 1);
           }
-          console.log("end removeBuy");
           return toReturn;
       }
 
       //removes sell order associated with a user id from the order book and returns it
       market.CDABook.removeSell = function (idToRemove) {
-          console.log("begin removeSell");
           var rindex = 0;
           var cindex;
           while (rindex < market.CDABook.sellContracts.length) {
@@ -235,7 +226,6 @@ Redwood.factory("MarketManager", function () {
           else {
               toReturn = market.CDABook.sellContracts[rindex].splice(cindex, 1);
           }
-          console.log("end removeSell");
           return toReturn;
       }
 

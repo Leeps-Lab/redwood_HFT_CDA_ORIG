@@ -59,27 +59,14 @@ Redwood.factory("GroupManager", function () {
           // check if every user has sent a response
           if(this.syncFPArray.allReady()){
 
-<<<<<<< HEAD
-            //console.log(this.FPMsgList);
 
             // shuffle the order of messages sitting in the arrays
             var indexOrder = this.getRandomMsgOrder(this.FPMsgList.length);
-            //console.log(indexOrder);
-            //this.FPMsgList = this.FPMsgList.shuffle();
-
-            //console.log(this.FPMsgList);
-=======
-            // shuffle the order of messages sitting in the arrays
-            var indexOrder = this.getRandomMsgOrder(this.FPMsgList.length);
->>>>>>> fd546c51b230773a1b8436c094abde9ed9ca0dec
 
             // send msgs in new shuffled order
             for(var index of indexOrder){
               for(var rmsg of this.FPMsgList[index].msgData[2]){
-<<<<<<< HEAD
-                //console.log(rmsg);
-=======
->>>>>>> fd546c51b230773a1b8436c094abde9ed9ca0dec
+
                 this.sendToMarket(rmsg);
               }
             }
