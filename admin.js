@@ -292,7 +292,6 @@ Redwood.controller("AdminCtrl",
          };
          ra.sendCustom ("Experiment_Begin", beginData, "admin", 1, groupNum);
          $scope.groupManagers[groupNum].startTime = startTime;
-         $scope.groupManagers[groupNum].startMarket();
          for(var user of group) {
              $scope.groupManagers[groupNum].marketAlgorithms[user].fundementalPrice = startFP;
          }

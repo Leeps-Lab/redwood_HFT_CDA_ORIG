@@ -180,10 +180,6 @@ Redwood.factory("GroupManager", function () {
         var temp = this.priceChanges.shift();
         return temp[1];
       };
-      
-      groupManager.startMarket = function() {
-        this.market.syncInterval();
-      }
 
       return groupManager;
    };

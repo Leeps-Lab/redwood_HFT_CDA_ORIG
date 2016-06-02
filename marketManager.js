@@ -1,4 +1,4 @@
-Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
+Redwood.factory("MarketManager", function () {
    var api = {};
 
    //Creates the market manager, pass var's that you need for creation in here.
@@ -9,7 +9,6 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
 
       market.CDABook = {};
       market.groupManager = groupManager;
-      market.messageList = [];
 
       market.debugMode = debugMode;
       if(debugMode){
@@ -26,15 +25,6 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
          this.groupManager.recvFromMarket(message);
       };
       
-      // processes every message on the message list
-      // use this loop instead of interval to avoid async issues
-      market.syncInterval = function () {
-          while (market.messageList.length > 0) {
-              market.processMessage(market.messageList.pop());
-          }
-          $timeout(market.syncInterval, market.CLOCK_FREQUENCY);
-      }
-
       // handle message from subjects
       market.recvMessage = function(message){
         message.timestamp = Date.now();
@@ -42,13 +32,8 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
         if(this.debugMode){
           this.logger.logRecv(message, "Group Manager");
         }
-      
-        this.messageList.unshift(message);
-      }
-      
+        
       // handle message based on type. Send reply once message has been handled
-      market.processMessage = function (message) {
-                     
         switch (message.msgType) {
 
             // enter buy offer
@@ -203,6 +188,10 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
 
       //removes buy order associated with a user id from the order book and returns it
       market.CDABook.removeBuy = function (idToRemove) {
+          if(market.CDABook.buyContracts.length === 0) {
+              console.warn ("marketManager: attempted to remove a nonexistent sell order");
+              return null;
+          }
           var rindex = 0;
           var cindex;
           while (rindex < market.CDABook.buyContracts.length) {
@@ -212,6 +201,7 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
               if (cindex != -1) break;
               rindex++;
           }
+          try{
           if(cindex == -1) {
               console.warn ("marketManager: attempted to remove a nonexistent buy order");
               return null;
@@ -224,11 +214,19 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
           else {
               toReturn = market.CDABook.buyContracts[rindex].splice(cindex, 1);
           }
+          }
+          catch(e){
+              debugger;
+          }
           return toReturn;
       }
 
       //removes sell order associated with a user id from the order book and returns it
       market.CDABook.removeSell = function (idToRemove) {
+          if(market.CDABook.sellContracts.length === 0) {
+              console.warn ("marketManager: attempted to remove a nonexistent sell order");
+              return null;
+          }
           var rindex = 0;
           var cindex;
           while (rindex < market.CDABook.sellContracts.length) {
@@ -243,6 +241,7 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
               return null;
           }
           var toReturn;
+          try{
           if (market.CDABook.sellContracts[rindex].length == 1) {
               toReturn = market.CDABook.sellContracts.splice(rindex, 1)[0];
               market.CDABook.sellPrices.splice(rindex, 1);
@@ -250,13 +249,17 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
           else {
               toReturn = market.CDABook.sellContracts[rindex].splice(cindex, 1);
           }
+          }
+          catch(e){
+              debugger;
+          }
           return toReturn;
       }
 
       //updates a buy order to a new price
       market.CDABook.updateBuy = function (idToUpdate, newPrice, timestamp) {
           if(market.CDABook.removeBuy(idToUpdate) === null) {
-              console.warn ("marketManager: attempted to update a nonexistent buy order, id=" + idToUpdate);
+              console.warn ("marketManager: attempted to update a nonexistent buy order with id=" + idToUpdate);
               return;
           }
           market.CDABook.insertBuy(idToUpdate, newPrice, timestamp);
@@ -265,7 +268,7 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
       //updates a sell order to a new price
       market.CDABook.updateSell = function (idToUpdate, newPrice, timestamp) {
           if(market.CDABook.removeSell(idToUpdate) === null) {
-              console.warn ("marketManager: attempted to update a nonexistent buy order");
+              console.warn ("marketManager: attempted to update a nonexistent buy order with id=" + idToUpdate);
               return;
           }
           market.CDABook.insertSell(idToUpdate, newPrice, timestamp);
@@ -276,4 +279,4 @@ Redwood.factory("MarketManager", ["$timeout", function ($timeout) {
 
    return api;
 
-}]);
+});
