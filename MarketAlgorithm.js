@@ -13,7 +13,7 @@ Redwood.factory("MarketAlgorithm", function () {
       marketAlgorithm.myId = subjectArgs.myId;
       marketAlgorithm.groupId = subjectArgs.groupId;
       marketAlgorithm.groupManager = groupManager;   //Sends message to group manager, function obtained as parameter
-      marketAlgorithm.fundementalPrice = 15;
+      marketAlgorithm.fundementalPrice;
 
       marketAlgorithm.isDebug = subjectArgs.isDebug;
       if(marketAlgorithm.isDebug){
@@ -41,9 +41,9 @@ Redwood.factory("MarketAlgorithm", function () {
 
       // sends out remove buy and sell messages for exiting market
       marketAlgorithm.exitMarket = function(){
-         var nMsg = new Message("OUTCH", "RBUY", [this.myId] );
+         var nMsg = new Message("OUCH", "RBUY", [this.myId] );
          nMsg.delay = !this.using_speed;
-         var nMsg2 = new Message("OUTCH", "RSELL", [this.myId] );
+         var nMsg2 = new Message("OUCH", "RSELL", [this.myId] );
          nMsg2.delay = !this.using_speed;
          this.sendToGroupManager(nMsg);
          this.sendToGroupManager(nMsg2);
@@ -208,25 +208,25 @@ Redwood.factory("MarketAlgorithm", function () {
       };
 
       marketAlgorithm.enterBuyOfferMsg = function(){
-         var nMsg = new Message("OUTCH", "EBUY", [this.myId, this.fundementalPrice - this.spread/2, false] );
+         var nMsg = new Message("OUCH", "EBUY", [this.myId, this.fundementalPrice - this.spread/2, false] );
          nMsg.delay = !this.using_speed;
          return nMsg;
       };
 
       marketAlgorithm.enterSellOfferMsg = function(){
-         var nMsg = new Message("OUTCH", "ESELL", [this.myId, this.fundementalPrice + this.spread/2, false] );
+         var nMsg = new Message("OUCH", "ESELL", [this.myId, this.fundementalPrice + this.spread/2, false] );
          nMsg.delay = !this.using_speed;
          return nMsg;
       };
 
       marketAlgorithm.updateBuyOfferMsg = function(){
-         var nMsg = new Message("OUTCH", "UBUY", [this.myId, this.fundementalPrice - this.spread/2] );
+         var nMsg = new Message("OUCH", "UBUY", [this.myId, this.fundementalPrice - this.spread/2] );
          nMsg.delay = !this.using_speed;
          return nMsg;
       };
 
       marketAlgorithm.updateSellOfferMsg = function(){
-         var nMsg = new Message("OUTCH", "USELL", [this.myId, this.fundementalPrice + this.spread/2] );
+         var nMsg = new Message("OUCH", "USELL", [this.myId, this.fundementalPrice + this.spread/2] );
          nMsg.delay = !this.using_speed;
          return nMsg;
       };

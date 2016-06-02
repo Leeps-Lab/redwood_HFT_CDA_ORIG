@@ -78,7 +78,7 @@ Redwood.factory("GroupManager", function () {
         }
 
         // general message that needs to be passed on to marketManager
-        if(msg.protocol === "OUTCH"){
+        if(msg.protocol === "OUCH"){
           groupManager.sendToMarket(msg);
         }
       };
@@ -167,12 +167,12 @@ Redwood.factory("GroupManager", function () {
          }
 
          //looks for investor arrivals and sends message if one has occured
-        //  while(this.investorIndex < this.investorArrivals.length
-        //        && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
-        //     var msg = new Message("OUCH", "EBUY", [0, 214748.3647, true]);
-        //     this.sendToMarket(msg);
-        //     this.investorIndex++;
-        //  }     
+         while(this.investorIndex < this.investorArrivals.length
+               && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
+            var msg = new Message("OUCH", this.investorArrivals[this.investorIndex][1] == 1 ? "EBUY" : "ESELL", [0, 214748.3647, true]);
+            this.sendToMarket(msg);
+            this.investorIndex++;
+         }
       };
 
       // pulls out the initial fundemental price for this group and removes that element from the fundemental price array
@@ -180,6 +180,10 @@ Redwood.factory("GroupManager", function () {
         var temp = this.priceChanges.shift();
         return temp[1];
       };
+      
+      groupManager.startMarket = function() {
+        this.market.syncInterval();
+      }
 
       return groupManager;
    };
