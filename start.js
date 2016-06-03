@@ -15,14 +15,13 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $scope.using_speed = false;
     $scope.spread = 0;
     $scope.startingWealth = 100;
-    $scope.speedCost = 5;
 
     //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
     $scope.update = function(){
         $scope.tradingGraph.draw($scope.dHistory);
 
         if ($scope.using_speed) {
-           $scope.dHistory.profit -= CLOCK_FREQUENCY * $scope.speedCost / 1000
+           $scope.dHistory.profit -= CLOCK_FREQUENCY * $scope.dHistory.speedCost / 1000
         }
     };
 
@@ -99,10 +98,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     });
 
     $scope.setSpeed = function(value){
-        console.log("ran");
         if(value !== $scope.using_speed){
             $scope.using_speed = value;
-            $scope.dHistory.recordProfitSegment ($scope.dHistory.profit, Date.now(), $scope.using_speed ? $scope.speedCost : 0);
             var msg = new Message("USER", "USPEED", [rs.user_id, $scope.using_speed]);
             console.log(msg);
             $scope.sendToGroupManager(msg);

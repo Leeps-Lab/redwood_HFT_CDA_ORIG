@@ -18,6 +18,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.pastProfitSegments = [];
       dataHistory.transactions = [];    //entries look like [timestamp, myTransaction]
       dataHistory.profit;
+      dataHistory.speedCost = 5;
 
       dataHistory.debugMode = debugMode;
       if(debugMode){
@@ -30,14 +31,15 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          }
 
          switch(msg.msgType){
-            case "FPC"     : this.recordFPCchange(msg);           break;
-            case "C_UBUY"  :
-            case "C_EBUY"  : this.recordBuyOffer(msg);            break;
-            case "C_USELL" :
-            case "C_ESELL" : this.recordSellOffer(msg);           break;
-            case "C_RBUY"  : this.storeBuyOffer(msg.msgData[1]);  break;
-            case "C_RSELL" : this.storeSellOffer(msg.msgData[1]); break;
-            case "C_TRA"   : this.storeTransaction(msg);          break;
+            case "FPC"      : this.recordFPCchange(msg);           break;
+            case "C_UBUY"   :
+            case "C_EBUY"   : this.recordBuyOffer(msg);            break;
+            case "C_USELL"  :
+            case "C_ESELL"  : this.recordSellOffer(msg);           break;
+            case "C_RBUY"   : this.storeBuyOffer(msg.msgData[1]);  break;
+            case "C_RSELL"  : this.storeSellOffer(msg.msgData[1]); break;
+            case "C_TRA"    : this.storeTransaction(msg);          break;
+            case "C_USPEED" : this.storeSpeedChange(msg);          break;
          }
 
       };
@@ -102,6 +104,10 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          }
          this.transactions.push(msg.msgData);
       };
+      
+      dataHistory.storeSpeedChange = function(msg) {
+         this.recordProfitSegment (this.profit, msg.timeStamp, msg.msgData[1] ? this.speedCost : 0);
+      }
 
       dataHistory.recordProfitSegment = function(price, startTime, slope) {
          if (this.curProfitSegment != null){

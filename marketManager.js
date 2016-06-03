@@ -39,8 +39,9 @@ Redwood.factory("MarketManager", function () {
             // enter buy offer
             case "EBUY":
                 //if message is a market order
+                //call ioc buy with a limit greater than the max price
                 if (message.msgData[1] == 214748.3647) {
-                    market.CDABook.makeMarketBuyOrder(message.msgData[0], message.timestamp);
+                    market.CDABook.makeIOCBuy(message.msgData[0], 200000, message.timestamp);
                 }
                 //if order's price is out of bounds
                 else if (message.msgData[1] > 199999.9900 || message.msgData[1] <= 0) {
@@ -65,7 +66,7 @@ Redwood.factory("MarketManager", function () {
             // enter sell offer
             case "ESELL":
                 if (message.msgData[1] == 214748.3647) {
-                    market.CDABook.makeMarketSellOrder(message.msgData[0], message.timestamp);
+                    market.CDABook.makeIOCSell (message.msgData[0], 200000, message.timestamp);
                 }
                 else if (message.msgData[1] > 199999.9900 || message.msgData[1] <= 0) {
                     console.error("marketManager: invalid sell price of " + message.msgData[1]);
@@ -152,48 +153,38 @@ Redwood.factory("MarketManager", function () {
           while (cindex < market.CDABook.sellContracts[rindex].length && market.CDABook.sellContracts[rindex][cindex].timestamp > timestamp) cindex++;
           market.CDABook.sellContracts[rindex].splice(cindex, 0, {price: newPrice, id: newId, timestamp: timestamp});
       }
-      
-      //transacts market orders
-      //assume market order is IOC
-      market.CDABook.makeMarketBuyOrder = function (buyerId, timestamp) {
-          if (market.CDABook.sellContracts.length === 0) return;
-          var order = market.CDABook.sellContracts[market.CDABook.sellContracts.length - 1].pop();
-          if (market.CDABook.sellContracts[market.CDABook.sellContracts.length - 1].length === 0) {
-              market.CDABook.sellContracts.pop();
-              market.CDABook.sellPrices.pop();
-          }
-          var msg = new Message ("ITCH", "C_TRA", [timestamp, buyerId, order.id, order.price]);
-          market.sendToGroupManager(msg);
-      }
-      
-      market.CDABook.makeMarketSellOrder = function (sellerId, timestamp) {
-          if (market.CDABook.buyContracts.length === 0) return;
-          var order = market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].pop();
-          if (market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].length === 0) {
-              market.CDABook.buyContracts.pop();
-              market.CDABook.buyPrices.pop();
-          }
-          var msg = new Message ("ITCH", "C_TRA", [timestamp, order.id, sellerId, order.price]);
-          market.sendToGroupManager(msg);
-      }
-      
+            
       //transacts an IOC order
-      market.CDABook.makeIOCBuy = function () {
-          
+      market.CDABook.makeIOCBuy = function (buyerId, price, timestamp) {
+          if (market.CDABook.sellContracts.length === 0) return;
+          if (market.CDABook.sellPrices[market.CDABook.sellPrices.length - 1] < price) {
+              var order = market.CDABook.sellContracts[market.CDABook.sellContracts.length - 1].pop();
+              if (market.CDABook.sellContracts[market.CDABook.sellContracts.length - 1].length === 0) {
+                  market.CDABook.sellContracts.pop();
+                  market.CDABook.sellPrices.pop();
+              }
+              var msg = new Message("ITCH", "C_TRA", [timestamp, buyerId, order.id, order.price]);
+              market.sendToGroupManager(msg);
+          }
       }
       
-      market.CDABook.makeIOCSell = function () {
-          
+      market.CDABook.makeIOCSell = function (sellerId, price, timestamp) {
+          if (market.CDABook.buyContracts.length === 0) return;
+          if (market.CDABook.buyPrices[market.CDABook.buyPrices.length - 1] < price) {
+              var order = market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].pop();
+              if (market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].length === 0) {
+                  market.CDABook.buyContracts.pop();
+                  market.CDABook.buyPrices.pop();
+              }
+              var msg = new Message("ITCH", "C_TRA", [timestamp, order.id, sellerId, order.price]);
+              market.sendToGroupManager(msg);
+          }
       }
 
       //removes buy order associated with a user id from the order book and returns it
       market.CDABook.removeBuy = function (idToRemove) {
-          if(market.CDABook.buyContracts.length === 0) {
-              console.warn ("marketManager: attempted to remove a nonexistent sell order");
-              return null;
-          }
           var rindex = 0;
-          var cindex;
+          var cindex = -1;
           while (rindex < market.CDABook.buyContracts.length) {
               cindex = market.CDABook.buyContracts[rindex].findIndex(function (element){
                   return element.id == idToRemove;
@@ -223,12 +214,8 @@ Redwood.factory("MarketManager", function () {
 
       //removes sell order associated with a user id from the order book and returns it
       market.CDABook.removeSell = function (idToRemove) {
-          if(market.CDABook.sellContracts.length === 0) {
-              console.warn ("marketManager: attempted to remove a nonexistent sell order");
-              return null;
-          }
           var rindex = 0;
-          var cindex;
+          var cindex = -1
           while (rindex < market.CDABook.sellContracts.length) {
               cindex = market.CDABook.sellContracts[rindex].findIndex(function (element){
                   return element.id == idToRemove;
