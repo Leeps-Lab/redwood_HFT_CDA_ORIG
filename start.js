@@ -109,6 +109,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
     $ ("#slider")
         .slider ({
             orientation: "vertical",
+            step: .01,
             change: function (event, ui) {
                     var newVal = $("#slider").slider ("value");
                     if(newVal != $scope.sliderVal){
