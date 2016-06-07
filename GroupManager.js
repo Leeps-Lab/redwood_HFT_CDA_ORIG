@@ -51,22 +51,19 @@ Redwood.factory("GroupManager", function () {
 
         // synchronized message in response to fundemental price change
         if(msg.protocol === "SYNC_FP"){
-
           //mark that this user sent msg
           this.syncFPArray.markReady(msg.msgData[0]);
           this.FPMsgList.push(msg);
 
           // check if every user has sent a response
           if(this.syncFPArray.allReady()){
-
-
             // shuffle the order of messages sitting in the arrays
             var indexOrder = this.getRandomMsgOrder(this.FPMsgList.length);
 
+            console.log(indexOrder);
             // send msgs in new shuffled order
             for(var index of indexOrder){
               for(var rmsg of this.FPMsgList[index].msgData[2]){
-
                 this.sendToMarket(rmsg);
               }
             }

@@ -52,7 +52,7 @@ Redwood.factory("MarketManager", function () {
                 else {
                     //if IOC, then call IOC insert function
                     if(message.msgData[2]) {
-                        market.CDABook.makeIOCBuy();
+                        market.CDABook.makeIOCBuy(message.msgData[0], message.msgData[1], message.timestamp);
                     }
                     else {
                         market.CDABook.insertBuy (message.msgData[0], message.msgData[1], message.timestamp);
@@ -75,7 +75,7 @@ Redwood.factory("MarketManager", function () {
                 else {
                     //if IOC, then call IOC insert function
                     if(message.msgData[2]) {
-                        market.CDABook.makeIOCSell();
+                        market.CDABook.makeIOCSell(message.msgData[0], message.msgData[1], message.timestamp);
                     }
                     else {
                         market.CDABook.insertSell (message.msgData[0], message.msgData[1], message.timestamp);
@@ -170,7 +170,7 @@ Redwood.factory("MarketManager", function () {
       
       market.CDABook.makeIOCSell = function (sellerId, price, timestamp) {
           if (market.CDABook.buyContracts.length === 0) return;
-          if (market.CDABook.buyPrices[market.CDABook.buyPrices.length - 1] < price) {
+          if (market.CDABook.buyPrices[market.CDABook.buyPrices.length - 1] > price) {
               var order = market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].pop();
               if (market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].length === 0) {
                   market.CDABook.buyContracts.pop();

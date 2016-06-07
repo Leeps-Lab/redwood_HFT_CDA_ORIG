@@ -80,6 +80,12 @@ Redwood.factory("MarketAlgorithm", function () {
             }
             else if (this.state == "state_snipe") {
                nMsg3 = new Message ("SYNC_FP", "SNIPE", [this.myId, this.using_speed, [] ]);
+               snipeBuyMsg = new Message("OUCH", "EBUY", [this.myId, this.fundementalPrice, true]);
+               snipeBuyMsg.delay = !this.using_speed;
+               snipeSellMsg = new Message("OUCH", "ESELL", [this.myId, this.fundementalPrice, true]);
+               snipeSellMsg.delay = !this.using_speed;
+               nMsg3.msgData[2].push(snipeBuyMsg, snipeSellMsg);
+               console.log(nMsg3);
             }
             else {
                console.error("invalid state");
