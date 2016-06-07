@@ -9,7 +9,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
    var api = {};
 
    // Returns new grpah object - pass in id of svg element on which graph will be drawn
-   api.makeTradingGraph = function(marketSVGElementID, profitSVGElementID){
+   api.makeTradingGraph = function(marketSVGElementID, profitSVGElementID, adminStartTime){
       var graph = {};
 
       graph.marketElementId = marketSVGElementID;  //id of the market graph svg element
@@ -31,12 +31,18 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.marketPriceLines = [];           //
       graph.timeLines = [];
       graph.pricesArray = [];
+      graph.adminStartTime = adminStartTime;
+      graph.timeOffset;
       graph.dataObj = {
          prices: [],
          buyOffers: [[500,15,2]],
          sellOffers: [],
          drawData: []
       };
+      
+      graph.getCurOffsetTime = function(){
+            return Date.now() - this.timeOffset;
+      }
 
       graph.calculateSize = function(){
          this.elementWidth = $('#'+ this.marketElementId).width();
@@ -172,7 +178,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("class", styleClassName);
 
          if(currentData != null) {
-            var pricefinal = currentData[1] - ((Date.now() - currentData[0]) * currentData[2] / 1000); //determines how far down the line has moved
+            var pricefinal = currentData[1] - ((graphRefr.currentTime - currentData[0]) * currentData[2] / 1000); //determines how far down the line has moved
             svgToUpdate.append("line")
                .attr("x1", this.mapTimeToXAxis(currentData[0]) )
                .attr("x2", this.curTimeX)
@@ -229,7 +235,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
          var graphRefr = this;
 
-         this.currentTime = Date.now();
+         this.currentTime = this.getCurOffsetTime();
 
          //Check if it is necessary to recalculate timeLines
          if(this.currentTime > this.timeLines[0] + this.timeIncriment){
@@ -257,7 +263,8 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.calculateSize();
          this.marketPriceLines = this.calcPriceGridLines(this.maxPriceMarket, this.minPriceMarket, this.marketPriceGridIncriment);
          this.profitPriceLines = this.calcPriceGridLines(this.maxPriceProfit, this.minPriceProfit, this.profitPriceGridIncriment);
-         this.timeLines = this.calcTimeGridLines(Date.now());
+         this.timeLines = this.calcTimeGridLines(this.adminStartTime);
+         this.timeOffset = Date.now() - this.adminStartTime;
       };
 
       return graph;
