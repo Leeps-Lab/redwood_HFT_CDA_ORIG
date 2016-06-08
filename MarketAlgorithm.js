@@ -85,7 +85,6 @@ Redwood.factory("MarketAlgorithm", function () {
                snipeSellMsg = new Message("OUCH", "ESELL", [this.myId, this.fundementalPrice, true]);
                snipeSellMsg.delay = !this.using_speed;
                nMsg3.msgData[2].push(snipeBuyMsg, snipeSellMsg);
-               console.log(nMsg3);
             }
             else {
                console.error("invalid state");

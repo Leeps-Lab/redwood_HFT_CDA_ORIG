@@ -60,7 +60,6 @@ Redwood.factory("GroupManager", function () {
             // shuffle the order of messages sitting in the arrays
             var indexOrder = this.getRandomMsgOrder(this.FPMsgList.length);
 
-            console.log(indexOrder);
             // send msgs in new shuffled order
             for(var index of indexOrder){
               for(var rmsg of this.FPMsgList[index].msgData[2]){

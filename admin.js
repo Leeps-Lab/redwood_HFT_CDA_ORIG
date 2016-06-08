@@ -256,7 +256,6 @@ Redwood.controller("AdminCtrl",
    ra.recv ("player_join_market", function (uid, msg) {
        $scope.market.insertBid (msg.bid, msg.timestamp);
        $scope.market.insertAsk (msg.ask, msg.timestamp);
-       console.log($scope.market);
    });
 
 

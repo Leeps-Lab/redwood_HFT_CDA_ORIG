@@ -101,7 +101,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
         if(value !== $scope.using_speed){
             $scope.using_speed = value;
             var msg = new Message("USER", "USPEED", [rs.user_id, $scope.using_speed]);
-            console.log(msg);
             $scope.sendToGroupManager(msg);
         }
     };
@@ -111,12 +110,18 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             orientation: "vertical",
             step: .01,
             change: function (event, ui) {
-                    var newVal = $("#slider").slider ("value");
-                    if(newVal != $scope.sliderVal){
-                        $scope.sliderVal = newVal;
-                        var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.sliderVal]);
-                        $scope.sendToGroupManager(msg);
-                    }
+                if(ui.value != $scope.sliderVal){
+                    $scope.sliderVal = ui.value;
+                    var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.sliderVal]);
+                    $scope.sendToGroupManager(msg);
+                }
+            },
+            start: function (event, ui) {
+                if ($scope.state != "state_maker") {
+                    var msg = new Message("USER", "UMAKER", [rs.user_id]);
+                    $scope.sendToGroupManager(msg);
+                    $scope.setState("state_maker");
+                }
             },
             value: $scope.sliderVal,
             max : 10
