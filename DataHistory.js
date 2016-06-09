@@ -18,7 +18,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.pastProfitSegments = [];
       dataHistory.transactions = [];    //entries look like [timestamp, myTransaction]
       dataHistory.profit;
-      dataHistory.speedCost = 5;
+      dataHistory.speedCost = 2;
 
       dataHistory.debugMode = debugMode;
       if(debugMode){
