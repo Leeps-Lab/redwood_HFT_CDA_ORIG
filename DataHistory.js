@@ -9,16 +9,15 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.group = group;
       dataHistory.curFundPrice = [startTime, startFP, 0];
       dataHistory.pastFundPrices = [];
-      dataHistory.curBuyOffer = null;
-      dataHistory.curSellOffer = null;
       dataHistory.pastBuyOffers = [];
       dataHistory.pastSellOffers = [];
-      dataHistory.groupOffers = [];
       dataHistory.curProfitSegment = null;
       dataHistory.pastProfitSegments = [];
       dataHistory.transactions = [];    //entries look like [timestamp, myTransaction]
       dataHistory.profit;
       dataHistory.speedCost = 2;
+      dataHistory.curBuyOffers = {};
+      dataHistory.curSellOffers = {};
 
       dataHistory.debugMode = debugMode;
       if(debugMode){
@@ -31,27 +30,36 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          }
 
          switch(msg.msgType){
-            case "FPC"      : this.recordFPCchange(msg);           break;
+            case "FPC"      : this.recordFPCchange(msg);                           break;
             case "C_UBUY"   :
-            case "C_EBUY"   : this.recordBuyOffer(msg);            break;
+            case "C_EBUY"   : this.recordBuyOffer(msg);                            break;
             case "C_USELL"  :
-            case "C_ESELL"  : this.recordSellOffer(msg);           break;
-            case "C_RBUY"   : this.storeBuyOffer(msg.msgData[1]);  break;
-            case "C_RSELL"  : this.storeSellOffer(msg.msgData[1]); break;
-            case "C_TRA"    : this.storeTransaction(msg);          break;
-            case "C_USPEED" : this.storeSpeedChange(msg);          break;
+            case "C_ESELL"  : this.recordSellOffer(msg);                           break;
+            case "C_RBUY"   : this.storeBuyOffer(msg.msgData[1], msg.msgData[0]);  break;
+            case "C_RSELL"  : this.storeSellOffer(msg.msgData[1], msg.msgData[0]); break;
+            case "C_TRA"    : this.storeTransaction(msg);                          break;
+            case "C_USPEED" : this.storeSpeedChange(msg);                          break;
          }
 
       };
 
       // Functions
+
+      //initializes offers storage
+      dataHistory.init = function () {
+         for(var uid of this.group){
+            if (uid != this.myId) {
+                this.curBuyOffers[uid] = null;
+                this.curSellOffers[uid] = null;
+            }
+         }
+      }
+
       // Adds fundemental price change to history
       dataHistory.recordFPCchange = function(fpcMsg) {
          //this.fundementalPrices.push([fpcMsg.msgData[0], fpcMsg.msgData[1]]); // index 0 = timestamp, index 1 = new price value
          this.storeFundPrice(fpcMsg.msgData[0]);
          this.curFundPrice = [fpcMsg.msgData[0], fpcMsg.msgData[1], 0];
- //        console.log(this);
- //        debugger;
       };
 
       dataHistory.storeFundPrice = function(endTime){
@@ -62,39 +70,39 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       // Records a new buy offer
       dataHistory.recordBuyOffer = function(buyMsg) {
          //Check if current buy offer needs to be stored
-         if(this.curBuyOffer != null){
-            this.storeBuyOffer(buyMsg.msgData[2]);
+         if(this.curBuyOffers[buyMsg.msgData[0]] != null){
+            this.storeBuyOffer(buyMsg.msgData[2], buyMsg.msgData[0]);
          }
          //Push on new buy offer
-         this.curBuyOffer = [buyMsg.msgData[2], buyMsg.msgData[1], 0];   // [timestamp, price, slope]
+         this.curBuyOffers[buyMsg.msgData[0]] = [buyMsg.msgData[2], buyMsg.msgData[1]];   // [timestamp, price]
       };
 
       // Records a new Sell offer
       dataHistory.recordSellOffer = function(sellMsg) {
          //Check if current sell offer needs to be stored
-         if(this.curSellOffer != null){
-            this.storeSellOffer(sellMsg.msgData[2]);
+         if(this.curSellOffers[sellMsg.msgData[0]] != null){
+            this.storeSellOffer(sellMsg.msgData[2], sellMsg.msgData[0]);
          }
          //Push on new sell offer
-         this.curSellOffer = [sellMsg.msgData[2], sellMsg.msgData[1], 0];   // [timestamp, price, slope]
+         this.curSellOffers[sellMsg.msgData[0]] = [sellMsg.msgData[2], sellMsg.msgData[1]];   // [timestamp, price]
       };
 
       // Shifts buy offer from currently being active into the history
-      dataHistory.storeBuyOffer = function(endTime) {
-         if(this.curBuyOffer == null){
+      dataHistory.storeBuyOffer = function(endTime, uid) {
+         if(this.curBuyOffers[uid] == null){
             throw "Cannot shift buy offer because it is null";
          }
-         this.pastBuyOffers.push( [this.curBuyOffer[0], endTime, this.curBuyOffer[1], this.curBuyOffer[1]] );  // [startTimestamp, endTimestamp, startPrice, endPrice]
-         this.curBuyOffer = null;
+         this.pastBuyOffers.push( [this.curBuyOffers[uid][0], endTime, this.curBuyOffers[uid][1], uid] );  // [startTimestamp, endTimestamp, price, uid]
+         this.curBuyOffers[uid] = null;
       };
 
       // Shifts sell offer from currently being active into the history
-      dataHistory.storeSellOffer = function(endTime) {
-         if(this.curSellOffer == null){
+      dataHistory.storeSellOffer = function(endTime, uid) {
+         if(this.curSellOffers[uid] == null){
             throw "Cannot shift sell offer because it is null";
          }
-         this.pastSellOffers.push( [this.curSellOffer[0], endTime, this.curSellOffer[1], this.curSellOffer[1]] );  // [startTimestamp, endTimestamp, startPrice, endPrice]
-         this.curSellOffer = null;
+         this.pastSellOffers.push( [this.curSellOffers[uid][0], endTime, this.curSellOffers[uid][1], uid] );  // [startTimestamp, endTimestamp, price, uid]
+         this.curSellOffers[uid] = null;
       };
 
       dataHistory.storeTransaction = function(msg) {

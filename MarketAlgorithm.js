@@ -31,6 +31,11 @@ Redwood.factory("MarketAlgorithm", function () {
          redwoodSend("To_Data_History_" + String(this.myId), msg, "admin", 1, this.groupId);
       };
 
+      // sends a message to all dataHistory objects
+      marketAlgorithm.sendToAllDataHistories = function(msg){
+         redwoodSend("To_All_Data_Histories", msg, "admin", 1, this.groupId);
+      };
+
       // sends out buy and sell offer for entering market
       marketAlgorithm.enterMarket = function(){
          this.sendToGroupManager(this.enterBuyOfferMsg());
@@ -143,7 +148,7 @@ Redwood.factory("MarketAlgorithm", function () {
          if(msg.msgType == "C_EBUY"){
             if(msg.msgData[0] == this.myId){
                var nMsg = new Message("DATA", "C_EBUY", msg.msgData);
-               this.sendToDataHistory(nMsg);
+               this.sendToAllDataHistories(nMsg);
             }
          }
 
@@ -151,7 +156,7 @@ Redwood.factory("MarketAlgorithm", function () {
          if(msg.msgType == "C_ESELL"){
             if(msg.msgData[0] == this.myId){
                var nMsg = new Message("DATA", "C_ESELL", msg.msgData);
-               this.sendToDataHistory(nMsg);
+               this.sendToAllDataHistories(nMsg);
             }
          }
 
@@ -159,7 +164,7 @@ Redwood.factory("MarketAlgorithm", function () {
          if(msg.msgType == "C_RBUY"){
             if(msg.msgData[0] == this.myId){
                var nMsg = new Message("DATA", "C_RBUY", msg.msgData);
-               this.sendToDataHistory(nMsg);
+               this.sendToAllDataHistories(nMsg);
             }
          }
 
@@ -167,7 +172,7 @@ Redwood.factory("MarketAlgorithm", function () {
          if(msg.msgType == "C_RSELL"){
             if(msg.msgData[0] == this.myId){
                var nMsg = new Message("DATA", "C_RSELL", msg.msgData);
-               this.sendToDataHistory(nMsg);
+               this.sendToAllDataHistories(nMsg);
             }
          }
 
@@ -175,7 +180,7 @@ Redwood.factory("MarketAlgorithm", function () {
          if(msg.msgType == "C_UBUY"){
             if(msg.msgData[0] == this.myId){
                var nMsg = new Message("DATA", "C_UBUY", msg.msgData);
-               this.sendToDataHistory(nMsg);
+               this.sendToAllDataHistories(nMsg);
             }
          }
 
@@ -183,7 +188,7 @@ Redwood.factory("MarketAlgorithm", function () {
          if(msg.msgType == "C_USELL"){
             if(msg.msgData[0] == this.myId){
                var nMsg = new Message("DATA", "C_USELL", msg.msgData);
-               this.sendToDataHistory(nMsg);
+               this.sendToAllDataHistories(nMsg);
             }
          }
 

@@ -44,13 +44,23 @@
    stroke-width:1;
 }
 
-.buy-offer{
+.others-buy-offer{
    stroke:rgb(80, 50, 30);
    stroke-width:1;
 }
 
-.sell-offer{
+.others-sell-offer{
    stroke:rgb(80, 50, 30);
+   stroke-width:1;
+}
+
+.my-buy-offer{
+   stroke:orange;
+   stroke-width:1;
+}
+
+.my-sell-offer{
+   stroke:orange;
    stroke-width:1;
 }
 
