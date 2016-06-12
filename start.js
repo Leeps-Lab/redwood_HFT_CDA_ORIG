@@ -82,6 +82,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
         //Create data history and graph objects
         $scope.dHistory = dataHistory.createDataHistory(data.startTime, data.startFP, rs.user_id, $scope.group, $scope.isDebug);
+        $scope.dHistory.init();
         $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2", data.startTime);
         $scope.tradingGraph.init();
 
@@ -165,6 +166,14 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
     // recieve message from market algorithm to the data history object
     rs.recv ("To_Data_History_" + String(rs.user_id), function (uid, msg){
+        if($scope.isDebug){
+            $scope.logger.logRecv(msg, "Market Algorithm");
+        }
+        $scope.dHistory.recvMessage(msg);
+    });
+
+    // recieves message sent to all dataHistories
+    rs.recv ("To_All_Data_Histories", function (uid, msg){
         if($scope.isDebug){
             $scope.logger.logRecv(msg, "Market Algorithm");
         }

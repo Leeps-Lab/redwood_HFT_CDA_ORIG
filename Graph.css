@@ -44,14 +44,24 @@
    stroke-width:1;
 }
 
-.buy-offer{
-   stroke:rgb(80, 50, 30);
+.others-buy-offer{
+   stroke:rgb(140, 140, 140);
    stroke-width:1;
 }
 
-.sell-offer{
-   stroke:rgb(80, 50, 30);
+.others-sell-offer{
+   stroke:rgb(140, 140, 140);
    stroke-width:1;
+}
+
+.my-buy-offer{
+   stroke: black;
+   stroke-width:1.5;
+}
+
+.my-sell-offer{
+   stroke: black;
+   stroke-width:1.5;
 }
 
 .cur-buy-offer{
