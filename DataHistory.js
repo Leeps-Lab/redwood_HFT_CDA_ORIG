@@ -69,7 +69,6 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.init = function () {
          for(var uid of this.group){
             if (uid != this.myId) {
-                console.log(this.othersCurBuyOffers);
                 this.othersCurBuyOffers[uid] = null;
                 this.othersCurSellOffers[uid] = null;
             }
@@ -174,8 +173,14 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
 
       dataHistory.storeTransaction = function(msg) {
          if (msg.msgData[1] !== "none") {
+            if(msg.msgData[1] === "buyer") this.storeBuyOffer(msg.msgData[0]);
+            else this.storeSellOffer(msg.msgData[0]);
             this.profit += msg.msgData[2];
             this.recordProfitSegment(this.profit, msg.msgData[0], this.curProfitSegment[2]);
+         }
+         else {
+            if(msg.msgData[5] !== 0) this.storeOtherBuyOffer(msg.msgData[0], msg.msgData[5]);
+            if(msg.msgData[6] !== 0) this.storeOtherSellOffer(msg.msgData[0], msg.msgData[6]);
          }
          this.transactions.push(msg.msgData);
       };

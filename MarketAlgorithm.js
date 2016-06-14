@@ -195,25 +195,23 @@ Redwood.factory("MarketAlgorithm", function () {
          // Confirmation that a transaction has taken place
          if(msg.msgType == "C_TRA"){
             if(msg.msgData[1] === this.myId){   // check if I was the buyer
-               if(this.state === "state_maker"){
-                  this.sendToGroupManager(this.enterBuyOfferMsg());
-               }
                var profit = this.fundementalPrice - msg.msgData[3];
                var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], "buyer", profit, msg.msgData[3], this.fundementalPrice]);
                this.sendToDataHistory(nMsg);
-               //console.log(nMsg);
+               if(this.state === "state_maker"){
+                  this.sendToGroupManager(this.enterBuyOfferMsg());
+               }
             }
             else if(msg.msgData[2] === this.myId){   // check if I was the seller
-               if(this.state === "state_maker"){
-                  this.sendToGroupManager(this.enterSellOfferMsg());
-               }
                var profit = msg.msgData[3] - this.fundementalPrice;
                var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], "seller", profit, msg.msgData[3], this.fundementalPrice]);
                this.sendToDataHistory(nMsg);
-               //console.log(nMsg);
+               if(this.state === "state_maker"){
+                  this.sendToGroupManager(this.enterSellOfferMsg());
+               }
             }
             else {    // I wasn't involved in this transaction
-              var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], "none", 0, msg.msgData[3], this.fundementalPrice]);
+              var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], "none", 0, msg.msgData[3], this.fundementalPrice, msg.msgData[1], msg.msgData[2]]);
               this.sendToDataHistory(nMsg);
             }
          }
