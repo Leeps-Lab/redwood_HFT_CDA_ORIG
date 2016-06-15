@@ -246,7 +246,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
       graph.drawTransactions = function(graphRefr, historyDataSet) {
-         graphRefr.marketSVG.selectAll("line.my-transactions line.other-transactions")
+         graphRefr.marketSVG.selectAll("line.my-positive-transactions line.my-negative-transactions line.other-transactions")
             .data(historyDataSet)
             .enter()
             .append("line")
@@ -254,7 +254,11 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("x2", function(d) {return graphRefr.mapTimeToXAxis(d[0]); })
             .attr("y1", function(d) {return graphRefr.mapMarketPriceToYAxis(d[3]); })
             .attr("y2", function(d) {return graphRefr.mapMarketPriceToYAxis(d[4]); })
-            .attr("class", function(d) {return d[1] !== "none" ? "my-transactions" : "other-transactions"});
+            .attr("class", function(d) {
+               if(d[1] === "none") return "other-transactions";
+               else if(d[2] >= 0) return "my-positive-transactions";
+               else return "my-negative-transactions";
+            });
       };
 
       graph.draw = function(dataHistory){

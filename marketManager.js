@@ -66,7 +66,7 @@ Redwood.factory("MarketManager", function () {
             // enter sell offer
             case "ESELL":
                 if (message.msgData[1] == 214748.3647) {
-                    market.CDABook.makeIOCSell(message.msgData[0], 200000, message.timestamp);
+                    market.CDABook.makeIOCSell(message.msgData[0], 0, message.timestamp);
                 }
                 else if (message.msgData[1] > 199999.9900 || message.msgData[1] <= 0) {
                     console.error("marketManager: invalid sell price of " + message.msgData[1]);
@@ -139,7 +139,7 @@ Redwood.factory("MarketManager", function () {
           var cindex = 0;
           while (cindex < market.CDABook.buyContracts[rindex].length && market.CDABook.buyContracts[rindex][cindex].timestamp > timestamp) cindex++;
           market.CDABook.buyContracts[rindex].splice(cindex, 0, {price: newPrice, id: newId, timestamp: timestamp});
-      }
+      };
 
       //inserts sell into sell orders data structure
       market.CDABook.insertSell = function (newId, newPrice, timestamp) {
@@ -152,7 +152,7 @@ Redwood.factory("MarketManager", function () {
           var cindex = 0;
           while (cindex < market.CDABook.sellContracts[rindex].length && market.CDABook.sellContracts[rindex][cindex].timestamp > timestamp) cindex++;
           market.CDABook.sellContracts[rindex].splice(cindex, 0, {price: newPrice, id: newId, timestamp: timestamp});
-      }
+      };
             
       //transacts an IOC order
       market.CDABook.makeIOCBuy = function (buyerId, price, timestamp) {
@@ -166,11 +166,11 @@ Redwood.factory("MarketManager", function () {
               var msg = new Message("ITCH", "C_TRA", [timestamp, buyerId, order.id, order.price]);
               market.sendToGroupManager(msg);
           }
-      }
+      };
       
       market.CDABook.makeIOCSell = function (sellerId, price, timestamp) {
           if (market.CDABook.buyContracts.length === 0) return;
-          if (market.CDABook.buyPrices[market.CDABook.buyPrices.length - 1] < price) {
+          if (market.CDABook.buyPrices[market.CDABook.buyPrices.length - 1] > price) {
               var order = market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].pop();
               if (market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].length === 0) {
                   market.CDABook.buyContracts.pop();
@@ -179,7 +179,7 @@ Redwood.factory("MarketManager", function () {
               var msg = new Message("ITCH", "C_TRA", [timestamp, order.id, sellerId, order.price]);
               market.sendToGroupManager(msg);
           }
-      }
+      };
 
       //removes buy order associated with a user id from the order book and returns it
       market.CDABook.removeBuy = function (idToRemove) {
@@ -204,12 +204,12 @@ Redwood.factory("MarketManager", function () {
               toReturn = market.CDABook.buyContracts[rindex].splice(cindex, 1);
           }
           return toReturn;
-      }
+      };
 
       //removes sell order associated with a user id from the order book and returns it
       market.CDABook.removeSell = function (idToRemove) {
           var rindex = 0;
-          var cindex = -1
+          var cindex = -1;
           while (rindex < market.CDABook.sellContracts.length) {
               cindex = market.CDABook.sellContracts[rindex].findIndex(function (element){
                   return element.id == idToRemove;
@@ -229,7 +229,7 @@ Redwood.factory("MarketManager", function () {
               toReturn = market.CDABook.sellContracts[rindex].splice(cindex, 1);
           }
           return toReturn;
-      }
+      };
 
       //updates a buy order to a new price
       market.CDABook.updateBuy = function (idToUpdate, newPrice, timestamp) {
@@ -237,7 +237,7 @@ Redwood.factory("MarketManager", function () {
               return;
           }
           market.CDABook.insertBuy(idToUpdate, newPrice, timestamp);
-      }
+      };
 
       //updates a sell order to a new price
       market.CDABook.updateSell = function (idToUpdate, newPrice, timestamp) {
@@ -245,10 +245,10 @@ Redwood.factory("MarketManager", function () {
               return;
           }
           market.CDABook.insertSell(idToUpdate, newPrice, timestamp);
-      }
+      };
 
       return market;
-   }
+   };
 
    return api;
 
