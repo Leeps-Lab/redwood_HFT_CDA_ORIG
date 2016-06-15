@@ -88,8 +88,13 @@
    stroke-width:3;
 }
 
-.my-transactions{
+.my-positive-transactions{
    stroke:green;
+   stroke-width: 1;
+}
+
+.my-negative-transactions{
+   stroke:red;
    stroke-width: 1;
 }
 

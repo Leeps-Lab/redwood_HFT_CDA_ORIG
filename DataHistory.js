@@ -73,7 +73,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
                 this.othersCurSellOffers[uid] = null;
             }
          }
-      }
+      };
 
       // Adds fundemental price change to history
       dataHistory.recordFPCchange = function(fpcMsg) {
@@ -85,7 +85,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.storeFundPrice = function(endTime){
          this.pastFundPrices.push( [this.curFundPrice[0], endTime, this.curFundPrice[1], this.curFundPrice[1]] );
          this.curFundPrice = null;
-      }
+      };
 
       //
       // OFFER MANAGEMENT FUNCTIONS FOR MY OFFERS:
@@ -171,10 +171,14 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          this.othersCurSellOffers[uid] = null;
       };
 
+      //
+      // TRANSACTION AND PROFIT MANAGEMENT FUNCTIONS
+      //
+
       dataHistory.storeTransaction = function(msg) {
          if (msg.msgData[1] !== "none") {
-            if(msg.msgData[1] === "buyer") this.storeBuyOffer(msg.msgData[0]);
-            else this.storeSellOffer(msg.msgData[0]);
+            if(msg.msgData[1] === "buyer" && this.curBuyOffer !== null) this.storeBuyOffer(msg.msgData[0]);
+            else if (msg.msgData[1] === "seller" && this.curSellOffer !== null) this.storeSellOffer(msg.msgData[0]);
             this.profit += msg.msgData[2];
             this.recordProfitSegment(this.profit, msg.msgData[0], this.curProfitSegment[2]);
          }
@@ -187,7 +191,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       
       dataHistory.storeSpeedChange = function(msg) {
          this.recordProfitSegment (this.profit, msg.timeStamp, msg.msgData[1] ? this.speedCost : 0);
-      }
+      };
 
       dataHistory.recordProfitSegment = function(price, startTime, slope) {
          if (this.curProfitSegment != null){
