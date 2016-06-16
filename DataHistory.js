@@ -156,7 +156,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       // Shifts buy offer from currently being active into the history
       dataHistory.storeOtherBuyOffer = function(endTime, uid) {
          if(this.othersCurBuyOffers[uid] == null){
-            throw "Cannot shift buy offer because it is null";
+            throw "Cannot shift other buy offer because it is null";
          }
          this.othersPastBuyOffers.push( [this.othersCurBuyOffers[uid][0], endTime, this.othersCurBuyOffers[uid][1]] );  // [startTimestamp, endTimestamp, price]
          this.othersCurBuyOffers[uid] = null;
@@ -165,7 +165,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       // Shifts sell offer from currently being active into the history
       dataHistory.storeOtherSellOffer = function(endTime, uid) {
          if(this.othersCurSellOffers[uid] == null){
-            throw "Cannot shift sell offer because it is null";
+            throw "Cannot shift other sell offer because it is null";
          }
          this.othersPastSellOffers.push( [this.othersCurSellOffers[uid][0], endTime, this.othersCurSellOffers[uid][1]] );  // [startTimestamp, endTimestamp, price]
          this.othersCurSellOffers[uid] = null;
@@ -177,14 +177,23 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
 
       dataHistory.storeTransaction = function(msg) {
          if (msg.msgData[1] !== "none") {
-            if(msg.msgData[1] === "buyer" && this.curBuyOffer !== null) this.storeBuyOffer(msg.msgData[0]);
-            else if (msg.msgData[1] === "seller" && this.curSellOffer !== null) this.storeSellOffer(msg.msgData[0]);
+            // this spaghetti code decides which offers to remove when a transaction is completed
+            if(msg.msgData[1] === "buyer") {
+               if(this.curBuyOffer !== null) this.storeBuyOffer(msg.msgData[0]);
+               if(msg.msgData[6] !== 0 && this.othersCurSellOffers[msg.msgData[6]] !== null) this.storeOtherSellOffer(msg.msgData[0], msg.msgData[6]);
+            }
+            if(msg.msgData[1] === "seller"){
+               if(this.curSellOffer !== null) this.storeSellOffer(msg.msgData[0]);
+               if(msg.msgData[5] !== 0 && this.othersCurBuyOffers[msg.msgData[5]] !== null) this.storeOtherBuyOffer(msg.msgData[0], msg.msgData[5]);
+            }
+
             this.profit += msg.msgData[2];
             this.recordProfitSegment(this.profit, msg.msgData[0], this.curProfitSegment[2]);
          }
          else {
-            if(msg.msgData[5] !== 0) this.storeOtherBuyOffer(msg.msgData[0], msg.msgData[5]);
-            if(msg.msgData[6] !== 0) this.storeOtherSellOffer(msg.msgData[0], msg.msgData[6]);
+            //if I'm not a buyer or seller, then just try to remove others' offers
+            if(msg.msgData[5] !== 0 && this.othersCurBuyOffers[msg.msgData[5]] !== null) this.storeOtherBuyOffer(msg.msgData[0], msg.msgData[5]);
+            if(msg.msgData[6] !== 0 && this.othersCurSellOffers[msg.msgData[6]] !== null) this.storeOtherSellOffer(msg.msgData[0], msg.msgData[6]);
          }
          this.transactions.push(msg.msgData);
       };
