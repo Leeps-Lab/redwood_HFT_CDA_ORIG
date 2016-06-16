@@ -168,7 +168,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          priceMapFunction = priceMapFunction.bind(graphRefr);
 
          svgToUpdate.selectAll("line." + styleClassName)
-            .data(historyDataSet)
+            .data(historyDataSet, function (d) {return d})
             .enter()
             .append("line")
             .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0]); })
@@ -188,38 +188,15 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          }
       };
 
-      //draws others' offer
-      graph.drawOtherOffer = function(graphRefr, historyDataSet, currentData, styleClassName, svgToUpdate, priceMapFunction){
-         //hack to fix problem with this not being set correctly for map function
-         priceMapFunction = priceMapFunction.bind(graphRefr);
-
-         svgToUpdate.selectAll("line." + styleClassName)
-            .data(historyDataSet)
-            .enter()
-            .append("line")
-            .attr("x1", function(d){ return graphRefr.mapTimeToXAxis(d[0]); })
-            .attr("x2", function(d){ return graphRefr.mapTimeToXAxis(d[1]); })
-            .attr("y1", function(d){ return priceMapFunction(d[2]); })
-            .attr("y2", function(d){ return priceMapFunction(d[2]); })
-            .attr("class", styleClassName);
-
-         for (var uid in currentData) {
-            if (currentData[uid] !== null) {
-                svgToUpdate.append("line")
-               .attr("x1", this.mapTimeToXAxis(currentData[uid][0]) )
-               .attr("x2", this.curTimeX)
-               .attr("y1", priceMapFunction(currentData[uid][1]) )
-               .attr("y2", priceMapFunction(currentData[uid][1]) )
-               .attr("class", styleClassName);
+      graph.drawOffers = function(graphRefr, dataHistory){
+         for(var user of dataHistory.group) {
+            if(user !== dataHistory.myId) {
+               this.drawStep(graphRefr, dataHistory.offers[user].pastBuyOffers, dataHistory.offers[user].curBuyOffer, "others-buy-offer", this.marketSVG, this.mapMarketPriceToYAxis);
+               this.drawStep(graphRefr, dataHistory.offers[user].pastSellOffers, dataHistory.offers[user].curSellOffer, "others-sell-offer", this.marketSVG, this.mapMarketPriceToYAxis);
             }
          }
-      };
-
-      graph.drawOffers = function(graphRefr, dataHistory){
-         this.drawOtherOffer(graphRefr, dataHistory.othersPastBuyOffers, dataHistory.othersCurBuyOffers, "others-buy-offer", this.marketSVG, this.mapMarketPriceToYAxis);
-         this.drawOtherOffer(graphRefr, dataHistory.othersPastSellOffers, dataHistory.othersCurSellOffers, "others-sell-offer", this.marketSVG, this.mapMarketPriceToYAxis);
-         this.drawStep(graphRefr, dataHistory.pastBuyOffers, dataHistory.curBuyOffer, "my-buy-offer", this.marketSVG, this.mapMarketPriceToYAxis);
-         this.drawStep(graphRefr, dataHistory.pastSellOffers, dataHistory.curSellOffer, "my-sell-offer", this.marketSVG, this.mapMarketPriceToYAxis);
+         this.drawStep(graphRefr, dataHistory.offers[dataHistory.myId].pastBuyOffers, dataHistory.offers[dataHistory.myId].curBuyOffer, "my-buy-offer", this.marketSVG, this.mapMarketPriceToYAxis);
+         this.drawStep(graphRefr, dataHistory.offers[dataHistory.myId].pastSellOffers, dataHistory.offers[dataHistory.myId].curSellOffer, "my-sell-offer", this.marketSVG, this.mapMarketPriceToYAxis);
       };
 
       graph.drawPriceAxis = function(graphRefr, priceLines, svgToUpdate, priceMapFunction){
@@ -245,19 +222,23 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .text(function(d) {return d;});
       };
 
-      graph.drawTransactions = function(graphRefr, historyDataSet) {
+      graph.drawTransactions = function(graphRefr, historyDataSet, myId) {
          graphRefr.marketSVG.selectAll("line.my-positive-transactions line.my-negative-transactions line.other-transactions")
             .data(historyDataSet)
             .enter()
             .append("line")
             .attr("x1", function(d) {return graphRefr.mapTimeToXAxis(d[0]); })
             .attr("x2", function(d) {return graphRefr.mapTimeToXAxis(d[0]); })
-            .attr("y1", function(d) {return graphRefr.mapMarketPriceToYAxis(d[3]); })
-            .attr("y2", function(d) {return graphRefr.mapMarketPriceToYAxis(d[4]); })
+            .attr("y1", function(d) {return graphRefr.mapMarketPriceToYAxis(d[1]); })
+            .attr("y2", function(d) {return graphRefr.mapMarketPriceToYAxis(d[2]); })
             .attr("class", function(d) {
-               if(d[1] === "none") return "other-transactions";
-               else if(d[2] >= 0) return "my-positive-transactions";
-               else return "my-negative-transactions";
+               if(d[3] == myId) {
+                  return d[2] - d[1] > 0 ? "my-positive-transactions" : "my-negative-transactions";
+               }
+               else if(d[4] == myId) {
+                  return d[1] - d[2] > 0 ? "my-positive-transactions" : "my-negative-transactions";
+               }
+               else return "other-transactions";
             });
       };
 
@@ -284,7 +265,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
          this.drawStep(graphRefr, dataHistory.pastFundPrices, dataHistory.curFundPrice, "price-line", this.marketSVG, this.mapMarketPriceToYAxis);
          this.drawOffers(graphRefr, dataHistory);
-         this.drawTransactions(graphRefr, dataHistory.transactions);
+         this.drawTransactions(graphRefr, dataHistory.transactions, dataHistory.myId);
 
          this.drawPriceAxis(graphRefr, this.marketPriceLines, this.marketSVG, this.mapMarketPriceToYAxis);
          this.drawPriceAxis(graphRefr, this.profitPriceLines, this.profitSVG, this.mapProfitPriceToYAxis);
