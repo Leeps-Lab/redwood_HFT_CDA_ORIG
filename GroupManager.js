@@ -42,7 +42,7 @@ Redwood.factory("GroupManager", function () {
         }
       };
 
-      // recv a message from a single market algorithm in this group
+      // receive a message from a single market algorithm in this group
       groupManager.recvFromMarketAlgorithm = function(msg){
         
         if(this.isDebug){
@@ -142,8 +142,7 @@ Redwood.factory("GroupManager", function () {
       };
 
       groupManager.update = function(){
-
-        // check if msgs on wait list need to be sent
+        // check if messages on wait list need to be sent
         if(this.msgWaitList.length > 0){
           while(this.msgWaitList[0][0] < Date.now()){
             this.market.recvMessage(this.msgWaitList[0][1]);
@@ -155,23 +154,28 @@ Redwood.factory("GroupManager", function () {
         }
 
         //Looks for change in fundamental price and sends message if change is found
-         while(this.priceIndex < this.priceChanges.length
+         if (this.priceIndex < this.priceChanges.length
                && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
+            console.log("fp:" + (Date.now()  - this.startTime));
             var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);
+            msg.delay = false;
             this.sendToMarketAlgorithms(msg);
             this.priceIndex++;
          }
 
-         //looks for investor arrivals and sends message if one has occured
-         while(this.investorIndex < this.investorArrivals.length
+         //looks for investor arrivals and sends message if one has occurred
+         if (this.investorIndex < this.investorArrivals.length
                && Date.now() > this.investorArrivals[this.investorIndex][0] + this.startTime) {
-            var msg = new Message("OUCH", this.investorArrivals[this.investorIndex][1] == 1 ? "EBUY" : "ESELL", [0, 214748.3647, true]);
-            this.sendToMarket(msg);
+            console.log(this.investorArrivals[this.investorIndex][0]);
+            console.log("inv:" + (Date.now()  - this.startTime));
+            var msg2 = new Message("OUCH", this.investorArrivals[this.investorIndex][1] == 1 ? "EBUY" : "ESELL", [0, 214748.3647, true]);
+            msg2.delay = false;
+            this.sendToMarket(msg2);
             this.investorIndex++;
          }
       };
 
-      // pulls out the initial fundemental price for this group and removes that element from the fundemental price array
+      // pulls out the initial fundamental price for this group and removes that element from the fundamental price array
       groupManager.getStartFP = function(){
         var temp = this.priceChanges.shift();
         return temp[1];

@@ -1,7 +1,7 @@
 RedwoodHighFrequencyTrading.factory("DataHistory", function () {
    var api = {};
 
-   api.createDataHistory = function(startTime, startFP, myId, group, debugMode){
+   api.createDataHistory = function(startTime, startFP, myId, group, debugMode, speedCost){
       //Variables
       dataHistory = {};
       dataHistory.startTime = startTime;
@@ -13,7 +13,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.pastProfitSegments = [];
       dataHistory.transactions = [];    //entries look like [timestamp, myTransaction]
       dataHistory.profit;
-      dataHistory.speedCost = 2;
+      dataHistory.speedCost = speedCost;
       dataHistory.offers = {};
 
       dataHistory.debugMode = debugMode;
@@ -60,6 +60,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          this.curFundPrice = null;
       };
 
+      //records a new buy offer
       dataHistory.recordBuyOffer = function(buyMsg) {
          //Check if current buy offer needs to be stored
          if(this.offers[buyMsg.msgData[0]].curBuyOffer != null){
