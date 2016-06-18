@@ -158,6 +158,18 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             $scope.setState("state_out");
         });
 
+     $("#expand-graph")
+         .button()
+         .click(function () {
+             $scope.tradingGraph.setExpandedGraph();
+         });
+
+     $("#contract-graph")
+         .button()
+         .click(function () {
+             $scope.tradingGraph.setContractedGraph();
+         });
+
     $scope.setState = function(newState){
         $("#"+$scope.state).removeClass("state-selected").addClass("state-not-selected");
         $scope.state = newState;

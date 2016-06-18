@@ -9,7 +9,10 @@
 
           <!--Top left screen-->
           <div class="col-xs-4 screen-wrapper" style="padding-right:20px;">
-            <div class="screen top-left-screen"></div>
+            <div class="screen top-left-screen">
+              <button id="expand-graph" ng-disabled="tradingGraph.expandedGraph" class="btn" type="button">Expand Graph</button>
+              <button id="contract-graph" ng-disabled="!tradingGraph.expandedGraph" class="btn" type="button">Contract Graph</button>
+            </div>
           </div>
 
           <!--Top right screen-->

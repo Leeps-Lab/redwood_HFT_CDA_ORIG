@@ -25,14 +25,16 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.maxPriceProfit = 150;             //max price on price axis for profit graph
       graph.marketPriceGridIncriment = 5;     //amount between each line on market price axis
       graph.profitPriceGridIncriment = 15;    //amount between each line on profit price axis
-      graph.timeInterval = 30;         //Amount in seconds displayed at once on full time axis
+      graph.contractedTimeInterval = 30;      //amount of time displayed on time axis when graph is contracted
+      graph.timeInterval = graph.contractedTimeInterval;         //current amount in seconds displayed at once on full time axis
       graph.timeIncriment = 5;         //Amount in seconds between lines on time axis
       graph.currentTime = 0;           //Time displayed on graph
       graph.marketPriceLines = [];           //
       graph.timeLines = [];
       graph.pricesArray = [];
       graph.adminStartTime = adminStartTime;
-      graph.timeOffset;
+      graph.timeOffset = 0;
+      graph.expandedGraph = false;
       graph.dataObj = {
          prices: [],
          buyOffers: [[500,15,2]],
@@ -42,7 +44,16 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       
       graph.getCurOffsetTime = function(){
             return Date.now() - this.timeOffset;
-      }
+      };
+
+      graph.setExpandedGraph = function () {
+         this.expandedGraph = true;
+      };
+
+      graph.setContractedGraph = function () {
+         this.expandedGraph = false;
+         this.timeInterval = this.contractedTimeInterval;
+      };
 
       graph.calculateSize = function(){
          this.elementWidth = $('#'+ this.marketElementId).width();
@@ -250,6 +261,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          var graphRefr = this;
 
          this.currentTime = this.getCurOffsetTime();
+         if(this.expandedGraph) {
+            this.timeInterval = (this.currentTime - dataHistory.startTime) / 1000;
+         }
 
          //Check if it is necessary to recalculate timeLines
          if(this.currentTime > this.timeLines[0] + this.timeIncriment){
