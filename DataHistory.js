@@ -27,13 +27,13 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          }
 
          switch(msg.msgType){
-            case "FPC"      : this.recordFPCchange(msg);                                break;
-            case "C_TRA"    : this.storeTransaction(msg);                               break;
-            case "C_USPEED" : this.storeSpeedChange(msg);                               break;
+            case "FPC"      : this.recordFPCchange(msg);                           break;
+            case "C_TRA"    : this.storeTransaction(msg);                          break;
+            case "C_USPEED" : this.storeSpeedChange(msg);                          break;
             case "C_UBUY"   :
-            case "C_EBUY"   : this.recordBuyOffer(msg);            break;
+            case "C_EBUY"   : this.recordBuyOffer(msg);                            break;
             case "C_USELL"  :
-            case "C_ESELL"  : this.recordSellOffer(msg);           break;
+            case "C_ESELL"  : this.recordSellOffer(msg);                           break;
             case "C_RBUY"   : this.storeBuyOffer(msg.msgData[1], msg.msgData[0]);  break;
             case "C_RSELL"  : this.storeSellOffer(msg.msgData[1], msg.msgData[0]); break;
          }

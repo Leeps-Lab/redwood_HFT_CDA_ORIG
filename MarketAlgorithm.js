@@ -1,7 +1,7 @@
 Redwood.factory("MarketAlgorithm", function () {
    var api = {};
 
-   api.createMarketAlgorithm = function(subjectArgs, groupManager, redwoodSend){
+   api.createMarketAlgorithm = function(subjectArgs, groupManager){
       var marketAlgorithm = {};
 
       marketAlgorithm.spread = 5;            // record of this user's spread value
@@ -13,7 +13,7 @@ Redwood.factory("MarketAlgorithm", function () {
       marketAlgorithm.myId = subjectArgs.myId;
       marketAlgorithm.groupId = subjectArgs.groupId;
       marketAlgorithm.groupManager = groupManager;   //Sends message to group manager, function obtained as parameter
-      marketAlgorithm.fundementalPrice;
+      marketAlgorithm.fundementalPrice = 0;
 
       marketAlgorithm.isDebug = subjectArgs.isDebug;
       if(marketAlgorithm.isDebug){
@@ -28,12 +28,12 @@ Redwood.factory("MarketAlgorithm", function () {
 
       // sends a message to the dataHistory object for this subject via rs.send
       marketAlgorithm.sendToDataHistory = function(msg){
-         redwoodSend("To_Data_History_" + String(this.myId), msg, "admin", 1, this.groupId);
+         this.groupManager.sendToDataHistory(msg, this.myId);
       };
 
       // sends a message to all dataHistory objects
       marketAlgorithm.sendToAllDataHistories = function(msg){
-         redwoodSend("To_All_Data_Histories", msg, "admin", 1, this.groupId);
+         this.groupManager.sendToAllDataHistories(msg);
       };
 
       // sends out buy and sell offer for entering market
@@ -63,10 +63,10 @@ Redwood.factory("MarketAlgorithm", function () {
            this.logger.logRecv(msg, "Group Manager");
          }      
 
-         // Fundemental Price Change
+         // Fundamental Price Change
          if(msg.msgType === "FPC"){
 
-            // update fundemental price variable
+            // update fundamental price variable
             this.fundementalPrice = msg.msgData[1];
 
             //send player state to group manager
@@ -199,8 +199,11 @@ Redwood.factory("MarketAlgorithm", function () {
                if(msg.msgData[2] === this.myId) this.sendToGroupManager(this.enterSellOfferMsg());
             }
             //send data message to dataHistory containing [timestamp, price, fund-price, buyer, seller]
-            var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], msg.msgData[3], this.fundementalPrice, msg.msgData[1], msg.msgData[2]]);
-            this.sendToDataHistory(nMsg);
+            //pick the buyer to send the message unless the buyer is an outside investor, then use the seller
+            if (msg.msgData[2] === this.myId || (msg.msgData[1] === this.myId && msg.msgData[2] == 0)) {
+               var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], msg.msgData[3], this.fundementalPrice, msg.msgData[1], msg.msgData[2]]);
+               this.sendToAllDataHistories(nMsg);
+            }
          }
       };
 

@@ -43,7 +43,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
       
       graph.getCurOffsetTime = function(){
-            return Date.now() - this.timeOffset;
+         return Date.now() - this.timeOffset;
       };
 
       graph.setExpandedGraph = function () {
@@ -135,7 +135,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("width", this.timeIncriment / this.timeInterval * (this.elementWidth - this.axisLabelWidth))
             .attr("height", this.elementHeight)
             .attr("class", function(d){return graphRefr.getTimeGridClass(d);});
-         //If necisarry, draw the dark gray space to signify the "dead zone" before exp. started
+         //If necessary, draw the dark gray space to signify the "dead zone" before exp. started
          if(this.currentTime < dataHistory.startTime + this.timeInterval * 1000){
             svgToUpdate.append("rect")
             .attr("x", 0)
@@ -173,7 +173,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("class", "price-grid-line");
       };
 
-      //draws profit line and FP
+      //draws profit line, FP and offers
       graph.drawStep = function(graphRefr, historyDataSet, currentData, styleClassName, svgToUpdate, priceMapFunction){
          //hack to fix problem with this not being set correctly for map function
          priceMapFunction = priceMapFunction.bind(graphRefr);

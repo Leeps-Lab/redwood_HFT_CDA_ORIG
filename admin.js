@@ -5,9 +5,10 @@ Redwood.controller("AdminCtrl",
  "MarketManager",
  "GroupManager",
  "MarketAlgorithm",
+ "DataStorage",
  "$http",
  "$interval",
- function($rootScope, $scope, ra, marketManager, groupManager, marketAlgorithm, $http, $interval) {
+ function($rootScope, $scope, ra, marketManager, groupManager, marketAlgorithm, dataStorage, $http, $interval) {
    
    var debugMode = false;   // change this to switch all the message loggers on and off
 
@@ -216,7 +217,7 @@ Redwood.controller("AdminCtrl",
                }
             }
 
-            // loop through groups and create thier groupManager, market, and marketAlgorithms
+            // loop through groups and create their groupManager, market, dataStorage and marketAlgorithms
             for (var groupNum = 1; groupNum <= $scope.groups.length; groupNum++) {
 
                var group = $scope.getGroup(groupNum); // fetch group from array
@@ -231,6 +232,7 @@ Redwood.controller("AdminCtrl",
                };
                $scope.groupManagers[groupNum] = groupManager.createGroupManager (groupArgs, ra.sendCustom);
                $scope.groupManagers[groupNum].market = marketManager.createMarketManager(ra.sendCustom, groupNum, $scope.groupManagers[groupNum]);
+               $scope.groupManagers[groupNum].dataStore = dataStorage.createDataStorage(group);
                for(var subjectNum of group){
                   
                   // map subject number to group number
@@ -243,7 +245,7 @@ Redwood.controller("AdminCtrl",
                      isDebug : debugMode,
                      speedCost : $scope
                   };
-                  $scope.groupManagers[groupNum].marketAlgorithms[subjectNum] = marketAlgorithm.createMarketAlgorithm(subjectArgs, $scope.groupManagers[groupNum], ra.sendCustom);
+                  $scope.groupManagers[groupNum].marketAlgorithms[subjectNum] = marketAlgorithm.createMarketAlgorithm(subjectArgs, $scope.groupManagers[groupNum]);
                }
             }
             //********************************************************************
@@ -295,6 +297,7 @@ Redwood.controller("AdminCtrl",
          };
          ra.sendCustom ("Experiment_Begin", beginData, "admin", 1, groupNum);
          $scope.groupManagers[groupNum].startTime = startTime;
+         $scope.groupManagers[groupNum].dataStore.init(startFP, startTime);
          for(var user of group) {
              $scope.groupManagers[groupNum].marketAlgorithms[user].fundementalPrice = startFP;
          }
