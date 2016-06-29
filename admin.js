@@ -232,7 +232,7 @@ Redwood.controller("AdminCtrl",
                };
                $scope.groupManagers[groupNum] = groupManager.createGroupManager (groupArgs, ra.sendCustom);
                $scope.groupManagers[groupNum].market = marketManager.createMarketManager(ra.sendCustom, groupNum, $scope.groupManagers[groupNum]);
-               $scope.groupManagers[groupNum].dataStore = dataStorage.createDataStorage(group);
+               $scope.groupManagers[groupNum].dataStore = dataStorage.createDataStorage(group, groupNum);
                for(var subjectNum of group){
                   
                   // map subject number to group number

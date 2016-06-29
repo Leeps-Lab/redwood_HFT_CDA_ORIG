@@ -3,11 +3,12 @@
 Redwood.factory("DataStorage", function () {
    var api = {};
 
-   api.createDataStorage = function (group) {
+   api.createDataStorage = function (group, groupNum) {
       var dataStorage = {};
 
       dataStorage.startTime = 0;          // experiment start time
       dataStorage.group = group;          // array containing uid of every player in this group
+      dataStorage.groupNum = groupNum;    // identifier for this group
       dataStorage.curFundPrice = 0;       // current fundamental price. used for finding fp delta
 
       dataStorage.speedChanges = [];      // array of speed change events: [timestamp, speed, uid]
@@ -15,7 +16,7 @@ Redwood.factory("DataStorage", function () {
       dataStorage.spreadChanges = [];     // array of spread change events: [timestamp, spread, uid]
       dataStorage.profitChanges = [];     // array of profit change events: [timestamp, deltaProfit, uid]
       dataStorage.investorArrivals = [];  // array of investor arrival events: [timestamp, buyOrSell]
-      dataStorage.fundPriceChanges = [];  // array of fundamental price change events: [timestamp,
+      dataStorage.fundPriceChanges = [];  // array of fundamental price change events: [timestamp, deltaPrice]
 
       dataStorage.init = function (startFP, startTime) {
          this.startTime = startTime;
@@ -25,8 +26,8 @@ Redwood.factory("DataStorage", function () {
          $("#ui").append("<button id='export-btn' type='button'>Export CSV</button>");
          $("#export-btn")
             .button()
-            .click(function (event) {
-               console.log("she's a'workin");
+            .click(function () {
+               dataStorage.exportDataCsv();
             });
       };
       
@@ -57,17 +58,14 @@ Redwood.factory("DataStorage", function () {
 
       dataStorage.storeSpeedChange = function (timestamp, speed, uid) {
          this.speedChanges.push([timestamp - this.startTime, speed, uid]);
-         console.log(this.speedChanges);
       };
 
       dataStorage.storeStateChange = function (timestamp, state, uid) {
          this.stateChanges.push([timestamp - this.startTime, state, uid]);
-         console.log(this.stateChanges);
       };
 
       dataStorage.storeSpreadChange = function (timestamp, spread, uid) {
          this.spreadChanges.push([timestamp - this.startTime, spread, uid]);
-         console.log(this.spreadChanges);
       };
 
       dataStorage.storeTransaction = function (timestamp, price, fundPrice, buyer, seller) {
@@ -76,19 +74,114 @@ Redwood.factory("DataStorage", function () {
 
          if (seller != 0) this.profitChanges.push([timestamp - this.startTime, price - fundPrice, seller]);
          else this.investorArrivals.push([timestamp - this.startTime, "SELL"]);
-
-         console.log(this.profitChanges);
-         console.log(this.investorArrivals);
       };
 
       dataStorage.storeFPC = function (timestamp, price) {
          this.fundPriceChanges.push([timestamp - this.startTime, this.curFundPrice - price]);
          this.curFundPrice = price;
-         console.log(this.fundPriceChanges);
       };
 
+      // function to combine all data into one big array and download it as a CSV
       dataStorage.exportDataCsv = function () {
-         
+         var data = [];
+
+         // associative array to map each player to a unique index
+         var playerToIndex = {};
+         for (let index = 0; index < this.group.length; index++) {
+            playerToIndex[this.group[index]] = index;
+         }
+
+         // 4 columns for each player + timestamp, delta value and investors
+         var numColumns = this.group.length * 4 + 3;
+
+         // iterate through every entry in each storage array
+
+         // add speed changes to data array
+         for (let entry of this.speedChanges) {
+            let row = new Array(numColumns).fill(null);
+
+            row[0] = entry[0];
+            row[playerToIndex[entry[2]] * 4 + 3] = entry[1];
+
+            data.push(row);
+         }
+
+         // add state changes to data array
+         for (let entry of this.stateChanges) {
+            let row = new Array(numColumns).fill(null);
+
+            row[0] = entry[0];
+            row[playerToIndex[entry[2]] * 4 + 1] = entry[1];
+
+            data.push(row);
+         }
+
+         // add spread changes to data array
+         for (let entry of this.spreadChanges) {
+            let row = new Array(numColumns).fill(null);
+
+            row[0] = entry[0];
+            row[playerToIndex[entry[2]] * 4 + 2] = entry[1];
+
+            data.push(row);
+         }
+
+         // add profit changes to data array
+         for (let entry of this.profitChanges) {
+            let row = new Array(numColumns).fill(null);
+
+            row[0] = entry[0];
+            row[playerToIndex[entry[2]] * 4 + 4] = entry[1];
+
+            data.push(row);
+         }
+
+         // add investor changes to data array
+         for (let entry of this.investorArrivals) {
+            let row = new Array(numColumns).fill(null);
+
+            row[0] = entry[0];
+            row[numColumns - 1] = entry[1];
+
+            data.push(row);
+         }
+
+         // add fundamental price changes to data array
+         for (let entry of this.fundPriceChanges) {
+            let row = new Array(numColumns).fill(null);
+
+            row[0] = entry[0];
+            row[numColumns - 2] = entry[1];
+
+            data.push(row);
+         }
+
+         // sort data by timestamp
+         data.sort(function (a, b) {
+            return a[0] - b[0];
+         });
+
+         // set up headings for each row
+         data.unshift(["timestamp"]);
+         for (let index = 0; index < this.group.length; index++) {
+            data[0].push("status_p" + this.group[index], "spread_p" + this.group[index], "speed_p" + this.group[index], "dprofit_p" + this.group[index]);
+         }
+         data[0].push("dvalue", "investor_buy_sell");
+
+         // download data 2d array as csv
+         // stolen from stackoverflow
+         var csvRows = [];
+         for (let index = 0; index < data.length; index++) {
+            csvRows.push(data[index].join(','));
+         }
+         var csvString = csvRows.join("\n");
+         var a = document.createElement('a');
+         a.href = 'data:attachment/csv,' +  encodeURIComponent(csvString);
+         a.target = '_blank';
+         a.download = 'group_' + this.groupNum + '.csv';
+
+         document.body.appendChild(a);
+         a.click();
       };
 
       return dataStorage;
