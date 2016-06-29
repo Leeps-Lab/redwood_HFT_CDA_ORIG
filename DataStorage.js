@@ -176,7 +176,7 @@ Redwood.factory("DataStorage", function () {
          }
          var csvString = csvRows.join("\n");
          var a = document.createElement('a');
-         a.href = 'data:attachment/csv,' +  encodeURIComponent(csvString);
+         a.href = 'data:attachment/csv,' + encodeURIComponent(csvString);
          a.target = '_blank';
          a.download = 'group_' + this.groupNum + '.csv';
 
