@@ -299,7 +299,7 @@ Redwood.controller("AdminCtrl",
                $scope.groupManagers[groupNum].startTime = startTime;
                $scope.groupManagers[groupNum].dataStore.init(startFP, startTime);
                for (var user of group) {
-                  $scope.groupManagers[groupNum].marketAlgorithms[user].fundementalPrice = startFP;
+                  $scope.groupManagers[groupNum].marketAlgorithms[user].fundamentalPrice = startFP;
                }
                $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
             }

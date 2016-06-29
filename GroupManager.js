@@ -59,7 +59,7 @@ Redwood.factory("GroupManager", function () {
             this.logger.logRecv(msg, "Market Algorithm");
          }
 
-         // synchronized message in response to fundemental price change
+         // synchronized message in response to fundamental price change
          if (msg.protocol === "SYNC_FP") {
             //mark that this user sent msg
             this.syncFPArray.markReady(msg.msgData[0]);

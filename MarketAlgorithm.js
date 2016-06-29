@@ -13,7 +13,7 @@ Redwood.factory("MarketAlgorithm", function () {
       marketAlgorithm.myId = subjectArgs.myId;
       marketAlgorithm.groupId = subjectArgs.groupId;
       marketAlgorithm.groupManager = groupManager;   //Sends message to group manager, function obtained as parameter
-      marketAlgorithm.fundementalPrice = 0;
+      marketAlgorithm.fundamentalPrice = 0;
 
       marketAlgorithm.isDebug = subjectArgs.isDebug;
       if (marketAlgorithm.isDebug) {
@@ -67,7 +67,7 @@ Redwood.factory("MarketAlgorithm", function () {
          if (msg.msgType === "FPC") {
 
             // update fundamental price variable
-            this.fundementalPrice = msg.msgData[1];
+            this.fundamentalPrice = msg.msgData[1];
 
             //send player state to group manager
             var nMsg3;
@@ -85,9 +85,9 @@ Redwood.factory("MarketAlgorithm", function () {
             }
             else if (this.state == "state_snipe") {
                nMsg3 = new Message("SYNC_FP", "SNIPE", [this.myId, this.using_speed, []]);
-               snipeBuyMsg = new Message("OUCH", "EBUY", [this.myId, this.fundementalPrice, true]);
+               snipeBuyMsg = new Message("OUCH", "EBUY", [this.myId, this.fundamentalPrice, true]);
                snipeBuyMsg.delay = !this.using_speed;
-               snipeSellMsg = new Message("OUCH", "ESELL", [this.myId, this.fundementalPrice, true]);
+               snipeSellMsg = new Message("OUCH", "ESELL", [this.myId, this.fundamentalPrice, true]);
                snipeSellMsg.delay = !this.using_speed;
                nMsg3.msgData[2].push(snipeBuyMsg, snipeSellMsg);
             }
@@ -201,32 +201,32 @@ Redwood.factory("MarketAlgorithm", function () {
             //send data message to dataHistory containing [timestamp, price, fund-price, buyer, seller]
             //pick the buyer to send the message unless the buyer is an outside investor, then use the seller
             if (msg.msgData[2] === this.myId || (msg.msgData[1] === this.myId && msg.msgData[2] == 0)) {
-               var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], msg.msgData[3], this.fundementalPrice, msg.msgData[1], msg.msgData[2]]);
+               var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], msg.msgData[3], this.fundamentalPrice, msg.msgData[1], msg.msgData[2]]);
                this.sendToAllDataHistories(nMsg);
             }
          }
       };
 
       marketAlgorithm.enterBuyOfferMsg = function () {
-         var nMsg = new Message("OUCH", "EBUY", [this.myId, this.fundementalPrice - this.spread / 2, false]);
+         var nMsg = new Message("OUCH", "EBUY", [this.myId, this.fundamentalPrice - this.spread / 2, false]);
          nMsg.delay = !this.using_speed;
          return nMsg;
       };
 
       marketAlgorithm.enterSellOfferMsg = function () {
-         var nMsg = new Message("OUCH", "ESELL", [this.myId, this.fundementalPrice + this.spread / 2, false]);
+         var nMsg = new Message("OUCH", "ESELL", [this.myId, this.fundamentalPrice + this.spread / 2, false]);
          nMsg.delay = !this.using_speed;
          return nMsg;
       };
 
       marketAlgorithm.updateBuyOfferMsg = function () {
-         var nMsg = new Message("OUCH", "UBUY", [this.myId, this.fundementalPrice - this.spread / 2]);
+         var nMsg = new Message("OUCH", "UBUY", [this.myId, this.fundamentalPrice - this.spread / 2]);
          nMsg.delay = !this.using_speed;
          return nMsg;
       };
 
       marketAlgorithm.updateSellOfferMsg = function () {
-         var nMsg = new Message("OUCH", "USELL", [this.myId, this.fundementalPrice + this.spread / 2]);
+         var nMsg = new Message("OUCH", "USELL", [this.myId, this.fundamentalPrice + this.spread / 2]);
          nMsg.delay = !this.using_speed;
          return nMsg;
       };

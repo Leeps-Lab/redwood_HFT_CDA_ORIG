@@ -67,9 +67,9 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          }
       };
 
-      // Adds fundemental price change to history
+      // Adds fundamental price change to history
       dataHistory.recordFPCchange = function (fpcMsg) {
-         //this.fundementalPrices.push([fpcMsg.msgData[0], fpcMsg.msgData[1]]); // index 0 = timestamp, index 1 = new price value
+         //this.fundamentalPrices.push([fpcMsg.msgData[0], fpcMsg.msgData[1]]); // index 0 = timestamp, index 1 = new price value
          this.storeFundPrice(fpcMsg.msgData[0]);
          this.curFundPrice = [fpcMsg.msgData[0], fpcMsg.msgData[1], 0];
       };
