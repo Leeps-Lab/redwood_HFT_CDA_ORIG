@@ -316,7 +316,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.calculateSize();
          this.marketPriceLines = this.calcPriceGridLines(this.maxPriceMarket, this.minPriceMarket, this.marketPriceGridIncriment);
          this.profitPriceLines = this.calcPriceGridLines(this.maxPriceProfit, this.minPriceProfit, this.profitPriceGridIncriment);
-         this.timeLines = this.calcTimeGridLines(this.adminStartTime);
+         this.timeLines = this.calcTimeGridLines(this.adminStartTime + this.timeInterval * 1000);
          this.timeOffset = Date.now() - this.adminStartTime;
       };
 
