@@ -194,15 +194,16 @@ Redwood.factory("MarketAlgorithm", function () {
 
          // Confirmation that a transaction has taken place
          if (msg.msgType == "C_TRA") {
-            if (this.state == "state_maker") {
-               if (msg.msgData[1] === this.myId) this.sendToGroupManager(this.enterBuyOfferMsg());
-               if (msg.msgData[2] === this.myId) this.sendToGroupManager(this.enterSellOfferMsg());
-            }
             //send data message to dataHistory containing [timestamp, price, fund-price, buyer, seller]
             //pick the buyer to send the message unless the buyer is an outside investor, then use the seller
             if (msg.msgData[2] === this.myId || (msg.msgData[1] === this.myId && msg.msgData[2] == 0)) {
                var nMsg = new Message("DATA", "C_TRA", [msg.msgData[0], msg.msgData[3], this.fundamentalPrice, msg.msgData[1], msg.msgData[2]]);
                this.sendToAllDataHistories(nMsg);
+            }
+
+            if (this.state == "state_maker") {
+               if (msg.msgData[1] === this.myId) this.sendToGroupManager(this.enterBuyOfferMsg());
+               if (msg.msgData[2] === this.myId) this.sendToGroupManager(this.enterSellOfferMsg());
             }
          }
       };
