@@ -16,20 +16,7 @@
                 <div class="col-xs-4 screen-wrapper"
                      style="padding-right:20px;">
                     <div class="screen top-left-screen">
-                        <button id="expand-graph"
-                                ng-disabled="tradingGraph.expandedGraph"
-                                class="btn"
-                                type="button">
-                            Expand
-                            Graph
-                        </button>
-                        <button id="contract-graph"
-                                ng-disabled="!tradingGraph.expandedGraph"
-                                class="btn"
-                                type="button">
-                            Contract
-                            Graph
-                        </button>
+
                     </div>
                 </div>
 
@@ -92,6 +79,20 @@
                                 </button>
                             </div>
 
+                            <div id="graph-controls">
+                                <button id="expand-graph"
+                                        ng-disabled="tradingGraph.expandedGraph"
+                                        class="btn"
+                                        type="button">
+                                    Expand
+                                </button>
+                                <button id="contract-graph"
+                                        ng-disabled="!tradingGraph.expandedGraph"
+                                        class="btn"
+                                        type="button">
+                                    Contract
+                                </button>
+                            </div>
                         </div>
 
                         <div id="slider-container">

@@ -30,6 +30,10 @@ body {
   padding: 10px;
 }
 
+#graph-controls {
+    margin-top: 20px;
+}
+
 .ui-slider-handle {
     background-image: url(http://www.irs.gov/image/money_icon.gif);
     width: 45px;

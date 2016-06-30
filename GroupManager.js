@@ -157,8 +157,13 @@ Redwood.factory("GroupManager", function () {
          }
          return indices;
       };
+      groupManager.lastTime = 0;
 
       groupManager.update = function () {
+         console.log(Date.now() - this.lastTime);
+         this.lastTime = Date.now();
+         //var start = Date.now();
+
          // check if messages on wait list need to be sent
          if (this.msgWaitList.length > 0) {
             while (this.msgWaitList[0][0] < Date.now()) {
@@ -188,6 +193,8 @@ Redwood.factory("GroupManager", function () {
             this.sendToMarket(msg2);
             this.investorIndex++;
          }
+
+         //console.log(Date.now() - start);
       };
 
       // pulls out the initial fundamental price for this group and removes that element from the fundamental price array

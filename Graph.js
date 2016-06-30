@@ -33,8 +33,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.timeLines = [];
       graph.pricesArray = [];
       graph.adminStartTime = adminStartTime;
-      graph.timeOffset = 0;
+      graph.timeOffset = 0;            //offset to adjust for clock difference between lab computers
       graph.expandedGraph = false;
+      graph.timeSinceStart = 0;        //the amount of time since the start of the experiment in seconds
       graph.dataObj = {
          prices: [],
          buyOffers: [[500, 15, 2]],
@@ -58,11 +59,6 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.calculateSize = function () {
          this.elementWidth = $('#' + this.marketElementId).width();
          this.elementHeight = $('#' + this.marketElementId).height();
-         this.curTimeX = this.elementWidth - this.axisLabelWidth;
-      };
-
-      graph.getSize = function () {
-         return [this.elementWidth, this.elementHeight];
       };
 
       graph.mapProfitPriceToYAxis = function (price) {
@@ -76,13 +72,14 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
       graph.mapTimeToXAxis = function (timeStamp) {
-         var percentOffset = (timeStamp - (this.currentTime - (this.timeInterval * 1000))) / (this.timeInterval * 1000);
-         return (this.elementWidth - this.axisLabelWidth) * percentOffset;
-      };
-
-      //unused
-      graph.priceUnit = function () {
-         return this.elementHeight / (this.maxPriceMarket - this.minPriceMarket);
+         if (this.timeSinceStart >= this.timeInterval) {
+            let percentOffset = (timeStamp - (this.currentTime - (this.timeInterval * 1000))) / (this.timeInterval * 1000);
+            return (this.elementWidth - this.axisLabelWidth) * percentOffset;
+         }
+         else {
+            let percentOffset = (timeStamp - this.adminStartTime) / (this.timeInterval * 1000);
+            return (this.elementWidth - this.axisLabelWidth) * percentOffset;
+         }
       };
 
       graph.millisToTime = function (timeStamp) {
@@ -139,15 +136,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("class", function (d) {
                return graphRefr.getTimeGridClass(d);
             });
-         //If necessary, draw the dark gray space to signify the "dead zone" before exp. started
-         if (this.currentTime < dataHistory.startTime + this.timeInterval * 1000) {
-            svgToUpdate.append("rect")
-               .attr("x", 0)
-               .attr("y", 0)
-               .attr("width", this.mapTimeToXAxis(dataHistory.startTime))
-               .attr("height", this.elementHeight)
-               .attr("class", "dead-zone");
-         }
+
          //Draw labels for time gridlines
          svgToUpdate.selectAll("text.time-grid-line-text")
             .data(this.timeLines)
@@ -163,7 +152,6 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             })
             .attr("class", "time-grid-line-text");
       };
-
 
       graph.drawPriceGridLines = function (graphRefr, priceLines, svgToUpdate, priceMapFunction) {
          //hack to fix problem with this not being set correctly for map function
@@ -192,7 +180,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
          svgToUpdate.selectAll("line." + styleClassName)
             .data(historyDataSet, function (d) {
-               return d
+               return d;
             })
             .enter()
             .append("line")
@@ -295,9 +283,12 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          var graphRefr = this;
 
          this.currentTime = this.getCurOffsetTime();
+         this.timeSinceStart = (this.currentTime - dataHistory.startTime) / 1000;
          if (this.expandedGraph) {
-            this.timeInterval = (this.currentTime - dataHistory.startTime) / 1000;
+            this.timeInterval = this.timeSinceStart;
          }
+
+         this.curTimeX = this.mapTimeToXAxis(this.currentTime);
 
          //Check if it is necessary to recalculate timeLines
          if (this.currentTime > this.timeLines[0] + this.timeIncriment) {
