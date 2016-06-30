@@ -72,14 +72,14 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
       graph.mapTimeToXAxis = function (timeStamp) {
+         var percentOffset;
          if (this.timeSinceStart >= this.timeInterval) {
-            let percentOffset = (timeStamp - (this.currentTime - (this.timeInterval * 1000))) / (this.timeInterval * 1000);
-            return (this.elementWidth - this.axisLabelWidth) * percentOffset;
+            percentOffset = (timeStamp - (this.currentTime - (this.timeInterval * 1000))) / (this.timeInterval * 1000);
          }
          else {
-            let percentOffset = (timeStamp - this.adminStartTime) / (this.timeInterval * 1000);
-            return (this.elementWidth - this.axisLabelWidth) * percentOffset;
+            percentOffset = (timeStamp - this.adminStartTime) / (this.timeInterval * 1000);
          }
+         return (this.elementWidth - this.axisLabelWidth) * percentOffset;
       };
 
       graph.millisToTime = function (timeStamp) {

@@ -23,8 +23,8 @@ Redwood.factory("DataStorage", function () {
          this.curFundPrice = startFP;
          this.fundPriceChanges.push([0, startFP]);
 
-         $("#ui").append("<button id='export-btn' type='button'>Export CSV</button>");
-         $("#export-btn")
+         $("#ui").append("<button id='export-btn-" + groupNum + "' type='button'>Export CSV</button>");
+         $("#export-btn-" + groupNum)
             .button()
             .click(function () {
                dataStorage.exportDataCsv();
