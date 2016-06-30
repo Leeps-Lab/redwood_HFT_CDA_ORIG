@@ -130,10 +130,11 @@ Redwood.factory("GroupManager", function () {
 
          // if this is a user message, handle it and don't send it to market
          if (msg.protocol === "USER") {
-            this.dataStore.storeMsg(msg);
-
             var subjectID = msg.msgData[0];
             this.marketAlgorithms[subjectID].recvFromGroupManager(msg);
+
+            this.dataStore.storeMsg(msg);
+            if (msg.msgType == "UMAKER") this.dataStore.storeSpreadChange(msg.timeStamp, this.marketAlgorithms[subjectID].spread, msg.msgData[0]);
          }
       };
 

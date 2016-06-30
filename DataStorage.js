@@ -161,6 +161,23 @@ Redwood.factory("DataStorage", function () {
             return a[0] - b[0];
          });
 
+         // combine rows with same timestamp
+         var loopAgain = true;
+         while(loopAgain) {
+            loopAgain = false;
+            for (let index = 1; index < data.length; index++) {
+               if (data[index][0] === data[index - 1][0]) {
+                  loopAgain = true;
+                  for (let index2 = 0; index2 < data[index].length; index2++) {
+                     if (data[index][index2] !== null) {
+                        data[index - 1][index2] = data[index][index2];
+                     }
+                  }
+                  data.splice(index, 1);
+               }
+            }
+         }
+
          // set up headings for each row
          data.unshift(["timestamp"]);
          for (let index = 0; index < this.group.length; index++) {
