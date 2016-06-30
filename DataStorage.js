@@ -23,7 +23,7 @@ Redwood.factory("DataStorage", function () {
          this.curFundPrice = startFP;
          this.fundPriceChanges.push([0, startFP]);
 
-         $("#ui").append("<button id='export-btn-" + groupNum + "' type='button'>Export CSV</button>");
+         $("#ui").append("<button id='export-btn-" + groupNum + "' type='button'>Export Group " + this.groupNum + " CSV</button>");
          $("#export-btn-" + groupNum)
             .button()
             .click(function () {
@@ -34,19 +34,19 @@ Redwood.factory("DataStorage", function () {
       dataStorage.storeMsg = function (message) {
          switch (message.msgType) {
             case "USPEED" :
-               this.storeSpeedChange(message.timeStamp, message.msgData[1] ? "YES" : "NO", message.msgData[0]);
+               this.storeSpeedChange(message.msgData[2], message.msgData[1] ? "YES" : "NO", message.msgData[0]);
                break;
             case "UOUT" :
-               this.storeStateChange(message.timeStamp, "OUT", message.msgData[0]);
+               this.storeStateChange(message.msgData[1], "OUT", message.msgData[0]);
                break;
             case "UMAKER" :
-               this.storeStateChange(message.timeStamp, "MAKER", message.msgData[0]);
+               this.storeStateChange(message.msgData[1], "MAKER", message.msgData[0]);
                break;
             case "USNIPE" :
-               this.storeStateChange(message.timeStamp, "SNIPE", message.msgData[0]);
+               this.storeStateChange(message.msgData[1], "SNIPE", message.msgData[0]);
                break;
             case "UUSPR" :
-               this.storeSpreadChange(message.timeStamp, message.msgData[1], message.msgData[0]);
+               this.storeSpreadChange(message.msgData[2], message.msgData[1], message.msgData[0]);
                break;
             case "C_TRA" :
                this.storeTransaction(message.timeStamp, message.msgData[1], message.msgData[2], message.msgData[3], message.msgData[4]);

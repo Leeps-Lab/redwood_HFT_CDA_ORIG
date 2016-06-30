@@ -134,7 +134,7 @@ Redwood.factory("GroupManager", function () {
             this.marketAlgorithms[subjectID].recvFromGroupManager(msg);
 
             this.dataStore.storeMsg(msg);
-            if (msg.msgType == "UMAKER") this.dataStore.storeSpreadChange(msg.timeStamp, this.marketAlgorithms[subjectID].spread, msg.msgData[0]);
+            if (msg.msgType == "UMAKER") this.dataStore.storeSpreadChange(msg.msgData[1], this.marketAlgorithms[subjectID].spread, msg.msgData[0]);
          }
       };
 

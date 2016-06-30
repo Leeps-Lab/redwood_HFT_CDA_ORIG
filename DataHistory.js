@@ -138,7 +138,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       };
 
       dataHistory.storeSpeedChange = function (msg) {
-         this.recordProfitSegment(this.profit, msg.timeStamp, msg.msgData[1] ? this.speedCost : 0);
+         this.recordProfitSegment(this.profit, msg.msgData[2], msg.msgData[1] ? this.speedCost : 0);
       };
 
       dataHistory.recordProfitSegment = function (price, startTime, slope) {

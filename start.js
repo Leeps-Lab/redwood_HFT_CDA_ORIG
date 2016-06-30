@@ -4,9 +4,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
       "RedwoodSubject",
       "DataHistory",
       "Graphing",
-      "SynchronizedStopWatch",
-      "$http",
-      function ($scope, $interval, rs, dataHistory, graphing, stopWatch, $http) {
+      function ($scope, $interval, rs, dataHistory, graphing) {
 
          var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in ms delay between ticks
 
@@ -101,7 +99,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
          $scope.setSpeed = function (value) {
             if (value !== $scope.using_speed) {
                $scope.using_speed = value;
-               var msg = new Message("USER", "USPEED", [rs.user_id, $scope.using_speed]);
+               var msg = new Message("USER", "USPEED", [rs.user_id, $scope.using_speed, $scope.tradingGraph.getCurOffsetTime()]);
                $scope.sendToGroupManager(msg);
             }
          };
@@ -113,13 +111,13 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                change: function (event, ui) {
                   if (ui.value != $scope.sliderVal) {
                      $scope.sliderVal = ui.value;
-                     var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.sliderVal]);
+                     var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.sliderVal, $scope.tradingGraph.getCurOffsetTime()]);
                      $scope.sendToGroupManager(msg);
                   }
                },
                start: function (event, ui) {
                   if ($scope.state != "state_maker") {
-                     var msg = new Message("USER", "UMAKER", [rs.user_id]);
+                     var msg = new Message("USER", "UMAKER", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
                      $scope.sendToGroupManager(msg);
                      $scope.setState("state_maker");
                   }
@@ -133,7 +131,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             .addClass("state-not-selected")
             .button()
             .click(function (event) {
-               var msg = new Message("USER", "USNIPE", [rs.user_id]);
+               var msg = new Message("USER", "USNIPE", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
                $scope.sendToGroupManager(msg);
                $scope.setState("state_snipe");
             });
@@ -143,7 +141,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             .addClass("state-not-selected")
             .button()
             .click(function (event) {
-               var msg = new Message("USER", "UMAKER", [rs.user_id]);
+               var msg = new Message("USER", "UMAKER", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
                $scope.sendToGroupManager(msg);
                $scope.setState("state_maker");
             });
@@ -153,7 +151,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             .addClass("state-selected")
             .button()
             .click(function (event) {
-               var msg = new Message("USER", "UOUT", [rs.user_id]);
+               var msg = new Message("USER", "UOUT", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
                $scope.sendToGroupManager(msg);
                $scope.setState("state_out");
             });
