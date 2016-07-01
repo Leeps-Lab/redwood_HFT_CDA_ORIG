@@ -34,6 +34,35 @@ body {
     margin-top: 20px;
 }
 
+#data-container {
+    margin: auto;
+    width: 85%;
+    height: 100%;
+    margin-top: 0px;
+    border: 1px solid transparent;
+}
+
+.status-list {
+    margin-top: 20px;
+    height: 50%;
+    border-radius: 10px;
+    border: 1px solid green;
+    overflow:hidden;
+    overflow-y:auto;
+}
+
+.status-entry {
+    border-radius: 10px;
+    height: 40px;
+}
+
+.data-heading {
+    margin-top: 20px;
+    text-align: center;
+    background-color: white;
+    border-radius: 10px;
+}
+
 .ui-slider-handle {
     background-image: url(http://www.irs.gov/image/money_icon.gif);
     width: 45px;

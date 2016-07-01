@@ -1,31 +1,30 @@
 <div ng-controller="HFTStartController">
-    <div rw-subject-header
-         time-remaining="timeRemaining"
-         time-total="config.timeLimit"></div>
-    <div time-remaining="timeRemaining"
-         time-total="config.timeLimit"></div>
+    <div rw-subject-header time-remaining="timeRemaining" time-total="config.timeLimit"></div>
+    <div time-remaining="timeRemaining" time-total="config.timeLimit"></div>
     <div class="container">
+        <div class="ui-container" id="ui">
 
-        <div class="ui-container"
-             id="ui">
             <!--Top two screens-->
-            <div class="row"
-                 style="margin-bottom:20px;">
+            <div class="row" style="margin-bottom:20px;">
 
                 <!--Top left screen-->
-                <div class="col-xs-4 screen-wrapper"
-                     style="padding-right:20px;">
+                <div class="col-xs-4 screen-wrapper" style="padding-right:20px;">
                     <div class="screen top-left-screen">
-
+                        <div id="data-container">
+                            <h4 class="data-heading" ">Market Participants:</h4>
+                            <ul class="list-group status-list">
+                                <li class="list-group-item status-entry" ng-repeat="(key, value) in dHistory.statuses" ng-show="value.inMarket == true">
+                                    Player {{key}} With Spread {{value.spread}}
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
                 <!--Top right screen-->
                 <div class="col-xs-8 screen-wrapper">
                     <div class="screen top-right-screen">
-                        <svg width="100%"
-                             height="100%"
-                             id="graph1"></svg>
+                        <svg width="100%" height="100%" id="graph1"></svg>
                     </div>
                 </div>
             </div>
@@ -34,8 +33,7 @@
             <div class="row">
 
                 <!--Bottom left screen-->
-                <div class="col-xs-4 screen-wrapper"
-                     style="padding-right:20px">
+                <div class="col-xs-4 screen-wrapper" style="padding-right:20px">
                     <div class="screen bottom-left-screen">
 
                         <div id="buttons-container">
@@ -44,52 +42,36 @@
                                 <div class="speed-label">
                                     Speed
                                 </div>
-                                <label class="radio-inline"
-                                       ng-click="setSpeed(true);"><input
-                                        type="radio"
-                                        name="speed-status">On</label>
-                                <label class="radio-inline"
-                                       ng-click="setSpeed(false);"><input
-                                        type="radio"
-                                        name="speed-status"
-                                        checked>Off</label>
+                                <label class="radio-inline" ng-click="setSpeed(true);">
+                                    <input type="radio" name="speed-status">
+                                    On
+                                </label>
+                                <label class="radio-inline" ng-click="setSpeed(false);">
+                                    <input type="radio" name="speed-status" checked>
+                                    Off
+                                </label>
                             </div>
 
                             <div class="button-container-state">
                                 <div class="state-label">
                                     State
                                 </div>
-                                <button id="state_out"
-                                        ng-disabled="state=='state_out'"
-                                        class="btn"
-                                        type="button">
+                                <button id="state_out" ng-disabled="state=='state_out'" class="btn" type="button">
                                     Out
                                 </button>
-                                <button id="state_snipe"
-                                        ng-disabled="state=='state_snipe'"
-                                        class="btn"
-                                        type="button">
+                                <button id="state_snipe" ng-disabled="state=='state_snipe'" class="btn" type="button">
                                     Snipe
                                 </button>
-                                <button id="state_maker"
-                                        ng-disabled="state=='state_maker'"
-                                        class="btn"
-                                        type="button">
+                                <button id="state_maker" ng-disabled="state=='state_maker'" class="btn" type="button">
                                     Maker
                                 </button>
                             </div>
 
                             <div id="graph-controls">
-                                <button id="expand-graph"
-                                        ng-disabled="tradingGraph.expandedGraph"
-                                        class="btn"
-                                        type="button">
+                                <button id="expand-graph" ng-disabled="tradingGraph.expandedGraph" class="btn" type="button">
                                     Expand
                                 </button>
-                                <button id="contract-graph"
-                                        ng-disabled="!tradingGraph.expandedGraph"
-                                        class="btn"
-                                        type="button">
+                                <button id="contract-graph" ng-disabled="!tradingGraph.expandedGraph" class="btn" type="button">
                                     Contract
                                 </button>
                             </div>
@@ -100,9 +82,7 @@
                                 <div class="spread-label">
                                     Spread
                                 </div>
-                                <input id="slider-val"
-                                       value={{sliderVal}}
-                                       readonly>
+                                <input id="slider-val" value={{sliderVal}} readonly>
                                 <div id="slider"></div>
                             </div>
                         </div>
@@ -114,9 +94,7 @@
                 <!--Bottom right screen-->
                 <div class="col-xs-8 screen-wrapper">
                     <div class="screen bottom-right-screen">
-                        <svg width="100%"
-                             height="100%"
-                             id="graph2"></svg>
+                        <svg width="100%" height="100%" id="graph2"></svg>
                     </div>
                 </div>
             </div>

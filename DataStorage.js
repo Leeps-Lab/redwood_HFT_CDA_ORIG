@@ -165,20 +165,20 @@ Redwood.factory("DataStorage", function () {
          var loopAgain = true;
          while(loopAgain) {
             loopAgain = false;
-            for (let index = 1; index < data.length; index++) {
-               if (data[index][0] === data[index - 1][0]) {
+            for (let row = 1; row < data.length; row++) {
+               if (data[row][0] === data[row - 1][0]) {
                   loopAgain = true;
-                  for (let index2 = 0; index2 < data[index].length; index2++) {
-                     if (data[index][index2] !== null) {
-                        data[index - 1][index2] = data[index][index2];
+                  for (let col = 0; col < data[row].length; col++) {
+                     if (data[row][col] !== null) {
+                        data[row - 1][col] = data[row][col];
                      }
                   }
-                  data.splice(index, 1);
+                  data.splice(row, 1);
                }
             }
          }
 
-         // set up headings for each row
+         // set up headings for each column
          data.unshift(["timestamp"]);
          for (let index = 0; index < this.group.length; index++) {
             data[0].push("status_p" + this.group[index], "spread_p" + this.group[index], "speed_p" + this.group[index], "dprofit_p" + this.group[index]);
@@ -199,6 +199,7 @@ Redwood.factory("DataStorage", function () {
 
          document.body.appendChild(a);
          a.click();
+         a.remove();
       };
 
       return dataStorage;

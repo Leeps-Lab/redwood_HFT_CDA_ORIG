@@ -106,7 +106,10 @@ Redwood.factory("MarketAlgorithm", function () {
          // user sent signal to change state to market maker. Need to enter market.
          if (msg.msgType === "UMAKER") {
             this.enterMarket();                 // enter market
-            this.state = "state_maker";         // set state           
+            this.state = "state_maker";         // set state
+
+            var nMsg = new Message("DATA", "C_UMAKER", msg.msgData);
+            this.sendToAllDataHistories(nMsg);
          }
 
          // user sent signal to change state to sniper
@@ -115,6 +118,9 @@ Redwood.factory("MarketAlgorithm", function () {
                this.exitMarket();
             }
             this.state = "state_snipe";         // update state
+
+            var nMsg = new Message("DATA", "C_USNIPE", msg.msgData);
+            this.sendToAllDataHistories(nMsg);
          }
 
          // user sent signal to change state to "out of market"
@@ -123,6 +129,9 @@ Redwood.factory("MarketAlgorithm", function () {
                this.exitMarket();
             }
             this.state = "state_out";           // update state
+
+            var nMsg = new Message("DATA", "C_UOUT", msg.msgData);
+            this.sendToAllDataHistories(nMsg);
          }
 
          if (msg.msgType === "USPEED") {
@@ -142,6 +151,9 @@ Redwood.factory("MarketAlgorithm", function () {
             if (this.sellEntered) {
                this.sendToGroupManager(this.updateSellOfferMsg());
             }
+
+            var nMsg = new Message("DATA", "C_UUSPR", msg.msgData);
+            this.sendToAllDataHistories(nMsg);
          }
 
          // Confirmation that a buy offer has been placed in market

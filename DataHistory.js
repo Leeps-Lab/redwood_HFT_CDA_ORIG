@@ -15,6 +15,8 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.profit;
       dataHistory.speedCost = speedCost;
       dataHistory.offers = {};
+      dataHistory.statuses = {};
+      dataHistory.lowestSpread = 5;
 
       dataHistory.debugMode = debugMode;
       if (debugMode) {
@@ -50,12 +52,25 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
             case "C_RSELL"  :
                this.storeSellOffer(msg.msgData[1], msg.msgData[0]);
                break;
+            case "C_UMAKER" :
+               this.statuses[msg.msgData[0]].inMarket = true;
+               break;
+            case "C_USNIPE" :
+               this.statuses[msg.msgData[0]].inMarket = false;
+               break;
+            case "C_UOUT" :
+               this.statuses[msg.msgData[0]].inMarket = false;
+               break;
+            case "C_UUSPR" :
+               this.statuses[msg.msgData[0]].spread = msg.msgData[1];
+               if (msg.msgData[1] < this.lowestSpread) this.lowestSpread = msg.msgData[1];
+               break;
          }
       };
 
       // Functions
-
-      //initializes offers storage
+      
+      //initializes offer and status storage
       dataHistory.init = function () {
          for (var uid of this.group) {
             this.offers[uid] = {
@@ -63,6 +78,11 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
                curSellOffer: null,
                pastBuyOffers: [],
                pastSellOffers: []
+            };
+
+            this.statuses[uid] = {
+               inMarket: false,
+               spread: 5
             };
          }
       };
