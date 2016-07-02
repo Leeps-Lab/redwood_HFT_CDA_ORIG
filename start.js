@@ -12,7 +12,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
          $scope.state = "state_out";
          $scope.using_speed = false;
          $scope.spread = 0;
-         $scope.startingWealth = 100;
 
          //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
          $scope.update = function () {
@@ -79,14 +78,10 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             }
 
             //Create data history and graph objects
-            $scope.dHistory = dataHistory.createDataHistory(data.startTime, data.startFP, rs.user_id, $scope.group, $scope.isDebug, data.speedCost);
+            $scope.dHistory = dataHistory.createDataHistory(data.startTime, data.startFP, rs.user_id, $scope.group, $scope.isDebug, data.speedCost, data.startingWealth);
             $scope.dHistory.init();
             $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2", data.startTime);
             $scope.tradingGraph.init();
-
-            //set initial profit equal to value set in config
-            $scope.dHistory.curProfitSegment = [data.startTime, $scope.startingWealth, 0];
-            $scope.dHistory.profit = $scope.startingWealth;
 
             // start looping the update function
             $interval($scope.update, CLOCK_FREQUENCY);

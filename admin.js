@@ -161,6 +161,7 @@ Redwood.controller("AdminCtrl",
             //INITIALIZE ADMIN FOR EXPERIMENT   **************************************
 
             $scope.speedCost = ra.get_config(1, 0).speedCost;
+            $scope.startingWealth = ra.get_config(1, 0).startingWealth;
 
             $scope.priceChanges = [];
             var priceURL = ra.get_config(1, 0).priceChangesURL;
@@ -200,7 +201,7 @@ Redwood.controller("AdminCtrl",
 
                   //******************** seting up groups **************************
 
-                  // Fetch groups array from config file and create wraper for accessing groups
+                  // Fetch groups array from config file and create wrapper for accessing groups
                   $scope.groups = ra.get_config(1, 0).groups;
                   $scope.getGroup = function (groupNum) {
                      return $scope.groups[groupNum - 1];
@@ -293,7 +294,8 @@ Redwood.controller("AdminCtrl",
                   groupNumber: groupNum,
                   group: group,
                   isDebug: debugMode,
-                  speedCost: $scope.speedCost
+                  speedCost: $scope.speedCost,
+                  startingWealth: $scope.startingWealth
                };
                ra.sendCustom("Experiment_Begin", beginData, "admin", 1, groupNum);
                $scope.groupManagers[groupNum].startTime = startTime;
