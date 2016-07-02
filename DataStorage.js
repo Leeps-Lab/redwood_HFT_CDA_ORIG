@@ -10,18 +10,29 @@ Redwood.factory("DataStorage", function () {
       dataStorage.group = group;          // array containing uid of every player in this group
       dataStorage.groupNum = groupNum;    // identifier for this group
       dataStorage.curFundPrice = 0;       // current fundamental price. used for finding fp delta
+      dataStorage.curProfits = [];         // current cumulative profits for each player
 
       dataStorage.speedChanges = [];      // array of speed change events: [timestamp, speed, uid]
       dataStorage.stateChanges = [];      // array of state change events: [timestamp, state, uid]
       dataStorage.spreadChanges = [];     // array of spread change events: [timestamp, spread, uid]
-      dataStorage.profitChanges = [];     // array of profit change events: [timestamp, deltaProfit, uid]
+      dataStorage.profitChanges = [];     // array of profit change events: [timestamp, deltaProfit, cumProfits, uid]
       dataStorage.investorArrivals = [];  // array of investor arrival events: [timestamp, buyOrSell]
-      dataStorage.fundPriceChanges = [];  // array of fundamental price change events: [timestamp, deltaPrice]
+      dataStorage.fundPriceChanges = [];  // array of fundamental price change events: [timestamp, deltaPrice, cumPrice]
 
-      dataStorage.init = function (startFP, startTime) {
+      dataStorage.init = function (startFP, startTime, startingWealth) {
          this.startTime = startTime;
          this.curFundPrice = startFP;
-         this.fundPriceChanges.push([0, startFP]);
+         this.fundPriceChanges.push([0, startFP, startFP]);
+         this.investorArrivals.push([0, "NA"]);
+
+         for (let user of this.group) {
+            this.speedChanges.push([0, "NO", user]);
+            this.stateChanges.push([0, "OUT", user]);
+            this.spreadChanges.push([0, 5, user]);
+            this.profitChanges.push([0, 0, startingWealth, user]);
+
+            this.curProfits[user] = startingWealth;
+         }
 
          $("#ui").append("<button id='export-btn-" + groupNum + "' type='button'>Export Group " + this.groupNum + " CSV</button>");
          $("#export-btn-" + groupNum)
@@ -69,15 +80,21 @@ Redwood.factory("DataStorage", function () {
       };
 
       dataStorage.storeTransaction = function (timestamp, price, fundPrice, buyer, seller) {
-         if (buyer != 0) this.profitChanges.push([timestamp - this.startTime, fundPrice - price, buyer]);
+         if (buyer != 0) {
+            this.curProfits[buyer] += fundPrice - price;
+            this.profitChanges.push([timestamp - this.startTime, fundPrice - price,  this.curProfits[buyer], buyer]);
+         }
          else this.investorArrivals.push([timestamp - this.startTime, "BUY"]);
 
-         if (seller != 0) this.profitChanges.push([timestamp - this.startTime, price - fundPrice, seller]);
+         if (seller != 0) {
+            this.curProfits[seller] += price - fundPrice;
+            this.profitChanges.push([timestamp - this.startTime, price - fundPrice, this.curProfits[seller], seller]);
+         }
          else this.investorArrivals.push([timestamp - this.startTime, "SELL"]);
       };
 
       dataStorage.storeFPC = function (timestamp, price) {
-         this.fundPriceChanges.push([timestamp - this.startTime, this.curFundPrice - price]);
+         this.fundPriceChanges.push([timestamp - this.startTime, price - this.curFundPrice, price]);
          this.curFundPrice = price;
       };
 
@@ -91,8 +108,8 @@ Redwood.factory("DataStorage", function () {
             playerToIndex[this.group[index]] = index;
          }
 
-         // 4 columns for each player + timestamp, delta value and investors
-         var numColumns = this.group.length * 4 + 3;
+         // 5 columns for each player + timestamp, delta value, cumulative value and investors
+         var numColumns = this.group.length * 5 + 4;
 
          // iterate through every entry in each storage array
 
@@ -101,7 +118,7 @@ Redwood.factory("DataStorage", function () {
             let row = new Array(numColumns).fill(null);
 
             row[0] = entry[0];
-            row[playerToIndex[entry[2]] * 4 + 3] = entry[1];
+            row[playerToIndex[entry[2]] * 5 + 3] = entry[1];
 
             data.push(row);
          }
@@ -111,7 +128,7 @@ Redwood.factory("DataStorage", function () {
             let row = new Array(numColumns).fill(null);
 
             row[0] = entry[0];
-            row[playerToIndex[entry[2]] * 4 + 1] = entry[1];
+            row[playerToIndex[entry[2]] * 5 + 1] = entry[1];
 
             data.push(row);
          }
@@ -121,7 +138,7 @@ Redwood.factory("DataStorage", function () {
             let row = new Array(numColumns).fill(null);
 
             row[0] = entry[0];
-            row[playerToIndex[entry[2]] * 4 + 2] = entry[1];
+            row[playerToIndex[entry[2]] * 5 + 2] = entry[1];
 
             data.push(row);
          }
@@ -131,7 +148,8 @@ Redwood.factory("DataStorage", function () {
             let row = new Array(numColumns).fill(null);
 
             row[0] = entry[0];
-            row[playerToIndex[entry[2]] * 4 + 4] = entry[1];
+            row[playerToIndex[entry[3]] * 5 + 4] = entry[1];
+            row[playerToIndex[entry[3]] * 5 + 5] = entry[2];
 
             data.push(row);
          }
@@ -151,7 +169,8 @@ Redwood.factory("DataStorage", function () {
             let row = new Array(numColumns).fill(null);
 
             row[0] = entry[0];
-            row[numColumns - 2] = entry[1];
+            row[numColumns - 3] = entry[1];
+            row[numColumns - 2] = entry[2];
 
             data.push(row);
          }
@@ -178,12 +197,28 @@ Redwood.factory("DataStorage", function () {
             }
          }
 
+         // set empty delta and investor columns to 0 and NA respectively
+         for (let row of data) {
+            for (let index = 0; index < this.group.length; index++) {
+               if (row[index * 5 + 4] === null) row[index * 5 + 4] = 0;
+            }
+            if (row[numColumns - 3] === null) row[numColumns - 3] = 0;
+            if (row[numColumns - 1] === null) row[numColumns - 1] = "NA";
+         }
+
+         // fill empty cells with the value above them
+         for (let row = 1; row < data.length; row++) {
+            for (let col = 0; col < data[row].length; col++) {
+               if (data[row][col] === null) data[row][col] = data[row - 1][col];
+            }
+         }
+
          // set up headings for each column
          data.unshift(["timestamp"]);
          for (let index = 0; index < this.group.length; index++) {
-            data[0].push("status_p" + this.group[index], "spread_p" + this.group[index], "speed_p" + this.group[index], "dprofit_p" + this.group[index]);
+            data[0].push("status_p" + this.group[index], "spread_p" + this.group[index], "speed_p" + this.group[index], "dprofit_p" + this.group[index], "cumprofit_p" + this.group[index]);
          }
-         data[0].push("dvalue", "investor_buy_sell");
+         data[0].push("dvalue", "cumvalue", "investor_buy_sell");
 
          // download data 2d array as csv
          // stolen from stackoverflow
