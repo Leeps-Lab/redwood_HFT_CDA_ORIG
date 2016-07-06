@@ -65,17 +65,24 @@ Redwood.factory("GroupManager", function () {
             this.syncFPArray.markReady(msg.msgData[0]);
             this.FPMsgList.push(msg);
 
+
             // check if every user has sent a response
             if (this.syncFPArray.allReady()) {
                // shuffle the order of messages sitting in the arrays
                var indexOrder = this.getRandomMsgOrder(this.FPMsgList.length);
 
+               // store player order for debugging purposes
+               var playerOrder = [];
+
                // send msgs in new shuffled order
                for (var index of indexOrder) {
+                  playerOrder.push(this.FPMsgList[index].msgData[0]);
                   for (var rmsg of this.FPMsgList[index].msgData[2]) {
                      this.sendToMarket(rmsg);
                   }
                }
+               
+               this.dataStore.storePlayerOrder(Date.now(), playerOrder);
 
                // reset arrays for the next fundamental price change
                this.FPMsgList = [];

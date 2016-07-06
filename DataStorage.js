@@ -18,12 +18,14 @@ Redwood.factory("DataStorage", function () {
       dataStorage.profitChanges = [];     // array of profit change events: [timestamp, deltaProfit, cumProfits, uid]
       dataStorage.investorArrivals = [];  // array of investor arrival events: [timestamp, buyOrSell]
       dataStorage.fundPriceChanges = [];  // array of fundamental price change events: [timestamp, deltaPrice, cumPrice]
+      dataStorage.playerOrders = [] ;     // array of player order lists [timestamp, [player order]]
 
       dataStorage.init = function (startFP, startTime, startingWealth) {
          this.startTime = startTime;
          this.curFundPrice = startFP;
          this.fundPriceChanges.push([0, startFP, startFP]);
          this.investorArrivals.push([0, "NA"]);
+         this.playerOrders.push([0, "NA"]);
 
          for (let user of this.group) {
             this.speedChanges.push([0, "NO", user]);
@@ -67,6 +69,12 @@ Redwood.factory("DataStorage", function () {
          }
       };
 
+      dataStorage.storePlayerOrder = function (timestamp, order) {
+         console.log(order);
+         console.log(order.toString());
+         this.playerOrders.push([timestamp - this.startTime, order.join(" ")]);
+      };
+
       dataStorage.storeSpeedChange = function (timestamp, speed, uid) {
          this.speedChanges.push([timestamp - this.startTime, speed, uid]);
       };
@@ -108,8 +116,8 @@ Redwood.factory("DataStorage", function () {
             playerToIndex[this.group[index]] = index;
          }
 
-         // 5 columns for each player + timestamp, delta value, cumulative value and investors
-         var numColumns = this.group.length * 5 + 4;
+         // 5 columns for each player + timestamp, delta value, cumulative value, investors and player orders
+         var numColumns = this.group.length * 5 + 5;
 
          // iterate through every entry in each storage array
 
@@ -175,6 +183,16 @@ Redwood.factory("DataStorage", function () {
             data.push(row);
          }
 
+         // add player order lists to data array
+         for (let entry of this.playerOrders) {
+            let row = new Array(numColumns).fill(null);
+
+            row[0] = entry[0];
+            row[numColumns - 4] = entry[1];
+
+            data.push(row);
+         }
+
          // sort data by timestamp
          data.sort(function (a, b) {
             return a[0] - b[0];
@@ -204,6 +222,7 @@ Redwood.factory("DataStorage", function () {
             }
             if (row[numColumns - 3] === null) row[numColumns - 3] = 0;
             if (row[numColumns - 1] === null) row[numColumns - 1] = "NA";
+            if (row[numColumns - 4] === null) row[numColumns - 4] = "NA";
          }
 
          // fill empty cells with the value above them
@@ -218,7 +237,7 @@ Redwood.factory("DataStorage", function () {
          for (let index = 0; index < this.group.length; index++) {
             data[0].push("status_p" + this.group[index], "spread_p" + this.group[index], "speed_p" + this.group[index], "dprofit_p" + this.group[index], "cumprofit_p" + this.group[index]);
          }
-         data[0].push("dvalue", "cumvalue", "investor_buy_sell");
+         data[0].push("porder", "dvalue", "cumvalue", "investor_buy_sell");
 
          // download data 2d array as csv
          // stolen from stackoverflow
