@@ -91,7 +91,7 @@ function MessageLogger(name, nameColor, elementId) {
 
 // array for synchronizing events. Initialize with an array holding all of the keys, then
 // mark each key ready one at a time using markReady. All keys are marked when allReady returns true.
-function synchronizeArray(key_array) {
+function SynchronizeArray(key_array) {
    this.readyFlags = {};
    this.readyCount = 0;
    this.targetReadyCount = key_array.length;

@@ -212,7 +212,7 @@ Redwood.controller("AdminCtrl",
                   $scope.startSyncArrays = {};  // synchronized array for ensuring that all subjects in a group start together
                   for (var groupNum = 1; groupNum <= $scope.groups.length; groupNum++) {
                      var group = $scope.getGroup(groupNum); // fetch group from array
-                     $scope.startSyncArrays[groupNum] = new synchronizeArray(group);
+                     $scope.startSyncArrays[groupNum] = new SynchronizeArray(group);
                      for (var subject of group) {
                         $scope.idToGroup[subject] = groupNum;
                      }

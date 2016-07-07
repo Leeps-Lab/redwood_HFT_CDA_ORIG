@@ -15,11 +15,11 @@ Redwood.factory("GroupManager", function () {
 
       groupManager.groupNumber = groupArgs.groupNumber;
       groupManager.memberIDs = groupArgs.memberIDs; // array that contains id number for each subject in this group
-      groupManager.syncFpArray = [];                // buffer that holds onto messages until recved msg from all subjects
+      groupManager.syncFpArray = [];                // buffer that holds onto messages until received msg from all subjects
       groupManager.msgWaitList = [];                // buffer that holds onto outgoing messages for an amount of delay to simulate latency
       groupManager.delay = 500;                     // # of milliseconds that will be delayed by latency simulation
 
-      groupManager.syncFPArray = new synchronizeArray(groupManager.memberIDs);
+      groupManager.syncFPArray = new SynchronizeArray(groupManager.memberIDs);
       groupManager.FPMsgList = [];
 
       groupManager.isDebug = groupArgs.isDebug;     //indicates if message logger should be used
@@ -82,11 +82,11 @@ Redwood.factory("GroupManager", function () {
                   }
                }
                
-               this.dataStore.storePlayerOrder(Date.now(), playerOrder);
+               this.dataStore.storePlayerOrder(msg.timeStamp, playerOrder);
 
                // reset arrays for the next fundamental price change
                this.FPMsgList = [];
-               this.syncFPArray = new synchronizeArray(this.memberIDs);
+               this.syncFPArray = new SynchronizeArray(this.memberIDs);
             }
          }
 
