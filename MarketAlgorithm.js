@@ -73,9 +73,11 @@ Redwood.factory("MarketAlgorithm", function () {
             var nMsg3;
             if (this.state == "state_out") {
                nMsg3 = new Message("SYNC_FP", "NONE", [this.myId, this.using_speed, []]);
+               nMsg3.timeStamp = msg.msgData[0]; // for debugging test output only
             }
             else if (this.state == "state_maker") {
                nMsg3 = new Message("SYNC_FP", "UOFFERS", [this.myId, this.using_speed, []]);
+               nMsg3.timeStamp = msg.msgData[0]; // for debugging test output only
                if (this.buyEntered) {
                   nMsg3.msgData[2].push(this.updateBuyOfferMsg());
                }
@@ -85,6 +87,7 @@ Redwood.factory("MarketAlgorithm", function () {
             }
             else if (this.state == "state_snipe") {
                nMsg3 = new Message("SYNC_FP", "SNIPE", [this.myId, this.using_speed, []]);
+               nMsg3.timeStamp = msg.msgData[0]; // for debugging test output only
                snipeBuyMsg = new Message("OUCH", "EBUY", [this.myId, this.fundamentalPrice, true]);
                snipeBuyMsg.delay = !this.using_speed;
                snipeSellMsg = new Message("OUCH", "ESELL", [this.myId, this.fundamentalPrice, true]);
