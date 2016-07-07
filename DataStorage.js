@@ -19,13 +19,16 @@ Redwood.factory("DataStorage", function () {
       dataStorage.investorArrivals = [];  // array of investor arrival events: [timestamp, buyOrSell]
       dataStorage.fundPriceChanges = [];  // array of fundamental price change events: [timestamp, deltaPrice, cumPrice]
       dataStorage.playerOrders = [] ;     // array of player order lists [timestamp, [player order]]
+      dataStorage.buyOrderChanges = [];   // array of changes in the buy order book [timestamp, [buy order book]]
+      dataStorage.sellOrderChanges = [];  // array of changes in the sell order book [timestamp, [sell order book]]
 
       dataStorage.init = function (startFP, startTime, startingWealth) {
          this.startTime = startTime;
          this.curFundPrice = startFP;
          this.fundPriceChanges.push([0, startFP, startFP]);
          this.investorArrivals.push([0, "NA"]);
-         this.playerOrders.push([0, "NA"]);
+         this.buyOrderChanges.push([0, []]);
+         this.sellOrderChanges.push([0, []]);
 
          for (let user of this.group) {
             this.speedChanges.push([0, "NO", user]);
@@ -70,9 +73,12 @@ Redwood.factory("DataStorage", function () {
       };
 
       dataStorage.storePlayerOrder = function (timestamp, order) {
-         console.log(order);
-         console.log(order.toString());
-         this.playerOrders.push([timestamp - this.startTime, order.join(" ")]);
+         this.playerOrders.push([timestamp - this.startTime, order]);
+      };
+
+      dataStorage.storeMarketState = function (timestamp, orderBook) {
+         this.buyOrderChanges.push([timestamp - this.startTime, $.extend(true, [], orderBook.buyContracts)]);
+         this.sellOrderChanges.push([timestamp - this.startTime, $.extend(true, [], orderBook.sellContracts)]);
       };
 
       dataStorage.storeSpeedChange = function (timestamp, speed, uid) {
@@ -117,7 +123,7 @@ Redwood.factory("DataStorage", function () {
          }
 
          // 5 columns for each player + timestamp, delta value, cumulative value, investors and player orders
-         var numColumns = this.group.length * 5 + 5;
+         var numColumns = this.group.length * 5 + 7;
 
          // iterate through every entry in each storage array
 
@@ -188,7 +194,43 @@ Redwood.factory("DataStorage", function () {
             let row = new Array(numColumns).fill(null);
 
             row[0] = entry[0];
-            row[numColumns - 4] = entry[1];
+            row[numColumns - 4] = entry[1].join(' ');
+
+            data.push(row);
+         }
+
+         // add buy order changes to data array
+         for (let entry of this.buyOrderChanges) {
+            let row = new Array(numColumns).fill(null);
+            // put start time into a local variable so I don't have to redefine this for the map calls
+            let startTime = this.startTime;
+
+            row[0] = entry[0];
+
+            // truly a masterpiece of illegibility
+            // just formats everything in the order book 2D array nicely and combines it all as one big string
+            if (entry[1].length === 0) row[numColumns - 6] = "EMPTY";
+            else row[numColumns - 6] = entry[1].map(function (row) {
+               return row.map(function (col) {
+                  return "(" + col.id + "|" + col.price + "|" + (col.timestamp - startTime) + ")";
+               }).join(' ');
+            }).join(' ');
+
+            data.push(row);
+         }
+
+         // add sell order changes to data array
+         for (let entry of this.sellOrderChanges) {
+            let row = new Array(numColumns).fill(null);
+            let startTime = this.startTime;
+
+            row[0] = entry[0];
+            if (entry[1].length === 0) row[numColumns - 5] = "EMPTY";
+            else row[numColumns - 5] = entry[1].map(function (row) {
+               return row.map(function (col) {
+                  return "(" + col.id + "|" + col.price + "|" + (col.timestamp - startTime) + ")";
+               }).join(' ');
+            }).join(' ');
 
             data.push(row);
          }
@@ -237,7 +279,7 @@ Redwood.factory("DataStorage", function () {
          for (let index = 0; index < this.group.length; index++) {
             data[0].push("status_p" + this.group[index], "spread_p" + this.group[index], "speed_p" + this.group[index], "dprofit_p" + this.group[index], "cumprofit_p" + this.group[index]);
          }
-         data[0].push("porder", "dvalue", "cumvalue", "investor_buy_sell");
+         data[0].push("buy_orders", "sell_orders", "porder", "dvalue", "cumvalue", "investor_buy_sell");
 
          // download data 2d array as csv
          // stolen from stackoverflow

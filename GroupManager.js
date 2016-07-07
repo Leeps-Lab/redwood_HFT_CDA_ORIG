@@ -126,6 +126,8 @@ Redwood.factory("GroupManager", function () {
             case "C_TRA"   :
                this.sendToMarketAlgorithms(msg);
          }
+         
+         this.dataStore.storeMarketState(msg.timeStamp, this.market.CDABook);
       };
 
       // handles message from subject and passes it on to market algorithm
@@ -168,7 +170,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.lastTime = 0;
 
       groupManager.update = function () {
-         console.log(Date.now() - this.lastTime);
+         //console.log(Date.now() - this.lastTime);
          this.lastTime = Date.now();
 
          // check if messages on wait list need to be sent

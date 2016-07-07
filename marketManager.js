@@ -58,6 +58,7 @@ Redwood.factory("MarketManager", function () {
                      market.CDABook.insertBuy(message.msgData[0], message.msgData[1], message.timestamp);
                      //only send C_EBUY message for regular limit order
                      var msg = new Message("ITCH", "C_EBUY", [message.msgData[0], message.msgData[1], message.timestamp]);
+                     msg.timeStamp = message.timestamp; // for test output only
                      this.sendToGroupManager(msg);
                   }
                }
@@ -81,6 +82,7 @@ Redwood.factory("MarketManager", function () {
                      market.CDABook.insertSell(message.msgData[0], message.msgData[1], message.timestamp);
                      //only send C_ESELL message for regular limit order
                      var msg = new Message("ITCH", "C_ESELL", [message.msgData[0], message.msgData[1], message.timestamp]);
+                     msg.timeStamp = message.timestamp; // for test output only
                      this.sendToGroupManager(msg);
                   }
                }
@@ -90,6 +92,7 @@ Redwood.factory("MarketManager", function () {
             case "RBUY":
                market.CDABook.removeBuy(message.msgData[0]);
                var msg = new Message("ITCH", "C_RBUY", [message.msgData[0], message.timestamp]);
+               msg.timeStamp = message.timestamp; // for test output only
                this.sendToGroupManager(msg);
                break;
 
@@ -97,20 +100,23 @@ Redwood.factory("MarketManager", function () {
             case "RSELL":
                market.CDABook.removeSell(message.msgData[0]);
                var msg = new Message("ITCH", "C_RSELL", [message.msgData[0], message.timestamp]);
+               msg.timeStamp = message.timestamp; // for test output only
                this.sendToGroupManager(msg);
                break;
 
             // update buy offer
             case "UBUY":
-               market.CDABook.updateBuy(message.msgData[0], message.msgData[1]);
+               market.CDABook.updateBuy(message.msgData[0], message.msgData[1], message.timestamp);
                var msg = new Message("ITCH", "C_UBUY", [message.msgData[0], message.msgData[1], message.timestamp]);
+               msg.timeStamp = message.timestamp; // for test output only
                this.sendToGroupManager(msg);
                break;
 
             // update sell offer
             case "USELL":
-               market.CDABook.updateSell(message.msgData[0], message.msgData[1]);
+               market.CDABook.updateSell(message.msgData[0], message.msgData[1], message.timestamp);
                var msg = new Message("ITCH", "C_USELL", [message.msgData[0], message.msgData[1], message.timestamp]);
+               msg.timeStamp = message.timestamp; // for test output only
                this.sendToGroupManager(msg);
                break;
 
