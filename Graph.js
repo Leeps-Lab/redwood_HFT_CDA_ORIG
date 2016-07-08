@@ -21,15 +21,14 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.profitSVG = d3.select('#' + graph.profitElementId); //profit svg element
       graph.minPriceMarket = 85;              //min price on price axis for market graph
       graph.maxPriceMarket = 115;             //max price on price axis for market graph
-      graph.centerPriceMarket = (graph.maxPriceMarket + graph.minPriceMarket) / 2;
-                                              //desired price for center of graph
-      graph.minPriceProfit = 0;               //min price on price axis for profit graph
+      graph.centerPriceMarket = (graph.maxPriceMarket + graph.minPriceMarket) / 2; //desired price for center of graph
+      graph.minPriceProfit = -15;               //min price on price axis for profit graph
       graph.maxPriceProfit = 150;             //max price on price axis for profit graph
       graph.graphAdjustSpeed = .1;            //speed that price axis adjusts in pixels per frame
       graph.marketPriceGridIncriment = 5;     //amount between each line on market price axis
       graph.profitPriceGridIncriment = 15;    //amount between each line on profit price axis
       graph.contractedTimeInterval = 30;      //amount of time displayed on time axis when graph is contracted
-      graph.timeInterval = graph.contractedTimeInterval;         //current amount in seconds displayed at once on full time axis
+      graph.timeInterval = graph.contractedTimeInterval; //current amount in seconds displayed at once on full time axis
       graph.timeIncriment = 5;         //Amount in seconds between lines on time axis
       graph.currentTime = 0;           //Time displayed on graph
       graph.marketPriceLines = [];           //
@@ -97,6 +96,8 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
       graph.calcPriceGridLines = function (maxPrice, minPrice, increment) {
          var gridLineVal = minPrice + increment - (minPrice % increment);
+         // adjust for mod of negative numbers being negative
+         if(minPrice < 0) gridLineVal -= increment;
          var lines = [];
          while (gridLineVal < maxPrice) {
             lines.push(gridLineVal);
@@ -123,7 +124,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       };
 
 
-      graph.drawTimeGridLines = function (graphRefr, svgToUpdate, dataHistory) {
+      graph.drawTimeGridLines = function (graphRefr, svgToUpdate) {
          //Draw rectangles for time gridlines
          svgToUpdate.selectAll("rect")
             .data(this.timeLines)
@@ -172,7 +173,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("y2", function (d) {
                return priceMapFunction(d);
             })
-            .attr("class", "price-grid-line");
+            .attr("class", function (d) {
+               return d != 0 ? "price-grid-line" : "price-grid-line-zero";
+            });
       };
 
       //draws profit line, FP and offers
@@ -241,7 +244,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("text-anchor", "start")
             .attr("x", this.elementWidth - this.axisLabelWidth + 5)
             .attr("y", function (d) {
-               return priceMapFunction(d);
+               return priceMapFunction(d) + 3;
             })
             .attr("class", "price-grid-line-text")
             .text(function (d) {
@@ -277,7 +280,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             });
       };
 
-      graph.calcMarketPriceBounds = function (currentFP) {
+      graph.calcPriceBounds = function (currentFP) {
          // check to see if current FP is outside of middle 80% of screen
          if (currentFP[1] > (.1 * this.minPriceMarket) + (.9 * this.maxPriceMarket) ||
              currentFP[1] < (.9 * this.minPriceMarket) + (.1 * this.maxPriceMarket)) {
@@ -315,7 +318,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.curTimeX = this.mapTimeToXAxis(this.currentTime);
 
          // recalculate market price bounds if necessary
-         this.calcMarketPriceBounds(dataHistory.curFundPrice);
+         this.calcPriceBounds(dataHistory.curFundPrice);
 
          //Check if it is necessary to recalculate timeLines
          if (this.currentTime > this.timeLines[0] + this.timeIncriment) {
@@ -323,8 +326,8 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          }
 
          //Invoke all of the draw functions
-         this.drawTimeGridLines(graphRefr, this.marketSVG, dataHistory);
-         this.drawTimeGridLines(graphRefr, this.profitSVG, dataHistory);
+         this.drawTimeGridLines(graphRefr, this.marketSVG);
+         this.drawTimeGridLines(graphRefr, this.profitSVG);
 
          this.drawPriceGridLines(graphRefr, this.marketPriceLines, this.marketSVG, this.mapMarketPriceToYAxis);
          this.drawPriceGridLines(graphRefr, this.profitPriceLines, this.profitSVG, this.mapProfitPriceToYAxis);
