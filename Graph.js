@@ -40,12 +40,6 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.timeOffset = 0;            //offset to adjust for clock difference between lab computers
       graph.expandedGraph = false;
       graph.timeSinceStart = 0;        //the amount of time since the start of the experiment in seconds
-      graph.dataObj = {
-         prices: [],
-         buyOffers: [[500, 15, 2]],
-         sellOffers: [],
-         drawData: []
-      };
 
       graph.getCurOffsetTime = function () {
          return Date.now() - this.timeOffset;

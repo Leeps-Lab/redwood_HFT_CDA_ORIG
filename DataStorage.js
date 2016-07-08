@@ -210,11 +210,11 @@ Redwood.factory("DataStorage", function () {
             // truly a masterpiece of illegibility
             // just formats everything in the order book 2D array nicely and combines it all as one big string
             if (entry[1].length === 0) row[numColumns - 6] = "EMPTY";
-            else row[numColumns - 6] = entry[1].map(function (row) {
+            else row[numColumns - 6] = '"(' + entry[1].map(function (row) {
                return row.map(function (col) {
-                  return "(" + col.id + "|" + col.price + "|" + (col.timestamp - startTime) + ")";
-               }).join(' ');
-            }).join(' ');
+                  return "{id:" + col.id + ", price:" + col.price + ", time:" + (col.timestamp - startTime) + "}";
+               }).reverse().join(', ');
+            }).join(', ') + ')"';
 
             data.push(row);
          }
@@ -226,11 +226,11 @@ Redwood.factory("DataStorage", function () {
 
             row[0] = entry[0];
             if (entry[1].length === 0) row[numColumns - 5] = "EMPTY";
-            else row[numColumns - 5] = entry[1].map(function (row) {
+            else row[numColumns - 5] = '"(' + entry[1].map(function (row) {
                return row.map(function (col) {
-                  return "(" + col.id + "|" + col.price + "|" + (col.timestamp - startTime) + ")";
-               }).join(' ');
-            }).join(' ');
+                  return "{id:" + col.id + ", price:" + col.price + ", time:" + (col.timestamp - startTime) + "}";
+               }).reverse().join(', ');
+            }).reverse().join(', ') + ')"';
 
             data.push(row);
          }
