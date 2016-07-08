@@ -22,9 +22,11 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.minPriceMarket = 85;              //min price on price axis for market graph
       graph.maxPriceMarket = 115;             //max price on price axis for market graph
       graph.centerPriceMarket = (graph.maxPriceMarket + graph.minPriceMarket) / 2; //desired price for center of graph
-      graph.minPriceProfit = -15;               //min price on price axis for profit graph
-      graph.maxPriceProfit = 150;             //max price on price axis for profit graph
-      graph.graphAdjustSpeed = .1;            //speed that price axis adjusts in pixels per frame
+      graph.minPriceProfit = 20;               //min price on price axis for profit graph
+      graph.maxPriceProfit = 200;             //max price on price axis for profit graph
+      graph.centerPriceProfit = (graph.maxPriceProfit + graph.minPriceProfit) / 2;
+      graph.graphAdjustSpeedMarket = .1;      //speed that market price axis adjusts in pixels per frame
+      graph.graphAdjustSpeedProfit = .75;      //speed that market price axis adjusts in pixels per frame
       graph.marketPriceGridIncriment = 5;     //amount between each line on market price axis
       graph.profitPriceGridIncriment = 15;    //amount between each line on profit price axis
       graph.contractedTimeInterval = 30;      //amount of time displayed on time axis when graph is contracted
@@ -280,24 +282,46 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             });
       };
 
-      graph.calcPriceBounds = function (currentFP) {
+      graph.calcPriceBounds = function (dHistory) {
+         // calc bounds for market graph
          // check to see if current FP is outside of middle 80% of screen
-         if (currentFP[1] > (.1 * this.minPriceMarket) + (.9 * this.maxPriceMarket) ||
-             currentFP[1] < (.9 * this.minPriceMarket) + (.1 * this.maxPriceMarket)) {
-            this.centerPriceMarket = currentFP[1];
+         if (dHistory.curFundPrice[1] > (.1 * this.minPriceMarket) + (.9 * this.maxPriceMarket) ||
+             dHistory.curFundPrice[1] < (.9 * this.minPriceMarket) + (.1 * this.maxPriceMarket)) {
+            this.centerPriceMarket = dHistory.curFundPrice[1];
          }
 
-         var curCenter = (this.maxPriceMarket + this.minPriceMarket) / 2;
+         var curCenterMarket = (this.maxPriceMarket + this.minPriceMarket) / 2;
 
-            if (Math.abs(this.centerPriceMarket - curCenter) > 1) {
+            if (Math.abs(this.centerPriceMarket - curCenterMarket) > 1) {
             this.marketPriceLines = this.calcPriceGridLines(this.maxPriceMarket, this.minPriceMarket, this.marketPriceGridIncriment);
-            if (this.centerPriceMarket > curCenter) {
-               this.maxPriceMarket += this.graphAdjustSpeed;
-               this.minPriceMarket += this.graphAdjustSpeed;
+            if (this.centerPriceMarket > curCenterMarket) {
+               this.maxPriceMarket += this.graphAdjustSpeedMarket;
+               this.minPriceMarket += this.graphAdjustSpeedMarket;
             }
             else {
-               this.maxPriceMarket -= this.graphAdjustSpeed;
-               this.minPriceMarket -= this.graphAdjustSpeed;
+               this.maxPriceMarket -= this.graphAdjustSpeedMarket;
+               this.minPriceMarket -= this.graphAdjustSpeedMarket;
+            }
+         }
+
+         //calc bounds for profit graph
+
+         if (dHistory.profit > (.1 * this.minPriceProfit) + (.9 * this.maxPriceProfit) ||
+             dHistory.profit < (.9 * this.minPriceProfit) + (.1 * this.maxPriceProfit)) {
+            this.centerPriceProfit = dHistory.profit;
+         }
+
+         var curCenterProfit = (this.maxPriceProfit + this.minPriceProfit) / 2;
+
+         if (Math.abs(this.centerPriceProfit - curCenterProfit) > 1) {
+            this.profitPriceLines = this.calcPriceGridLines(this.maxPriceProfit, this.minPriceProfit, this.profitPriceGridIncriment);
+            if (this.centerPriceProfit > curCenterProfit) {
+               this.maxPriceProfit += this.graphAdjustSpeedProfit;
+               this.minPriceProfit += this.graphAdjustSpeedProfit;
+            }
+            else {
+               this.maxPriceProfit -= this.graphAdjustSpeedProfit;
+               this.minPriceProfit -= this.graphAdjustSpeedProfit;
             }
          }
       };
@@ -318,7 +342,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.curTimeX = this.mapTimeToXAxis(this.currentTime);
 
          // recalculate market price bounds if necessary
-         this.calcPriceBounds(dataHistory.curFundPrice);
+         this.calcPriceBounds(dataHistory);
 
          //Check if it is necessary to recalculate timeLines
          if (this.currentTime > this.timeLines[0] + this.timeIncriment) {
