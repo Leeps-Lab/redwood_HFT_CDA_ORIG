@@ -21,8 +21,11 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.profitSVG = d3.select('#' + graph.profitElementId); //profit svg element
       graph.minPriceMarket = 85;              //min price on price axis for market graph
       graph.maxPriceMarket = 115;             //max price on price axis for market graph
+      graph.centerPriceMarket = (graph.maxPriceMarket + graph.minPriceMarket) / 2;
+                                              //desired price for center of graph
       graph.minPriceProfit = 0;               //min price on price axis for profit graph
       graph.maxPriceProfit = 150;             //max price on price axis for profit graph
+      graph.graphAdjustSpeed = .1;            //speed that price axis adjusts in pixels per frame
       graph.marketPriceGridIncriment = 5;     //amount between each line on market price axis
       graph.profitPriceGridIncriment = 15;    //amount between each line on profit price axis
       graph.contractedTimeInterval = 30;      //amount of time displayed on time axis when graph is contracted
@@ -58,8 +61,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
       graph.calculateSize = function () {
          this.elementWidth = $('#' + this.marketElementId).width();
-         this.elementHeight = $('#' + this.marketElementId).height();
-      };
+         this.elementHeight = $('#' + this.marketElementId).height();      };
 
       graph.mapProfitPriceToYAxis = function (price) {
          var percentOffset = (this.maxPriceProfit - price) / (this.maxPriceProfit - this.minPriceProfit);
@@ -275,6 +277,28 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             });
       };
 
+      graph.calcMarketPriceBounds = function (currentFP) {
+         // check to see if current FP is outside of middle 80% of screen
+         if (currentFP[1] > (.1 * this.minPriceMarket) + (.9 * this.maxPriceMarket) ||
+             currentFP[1] < (.9 * this.minPriceMarket) + (.1 * this.maxPriceMarket)) {
+            this.centerPriceMarket = currentFP[1];
+         }
+
+         var curCenter = (this.maxPriceMarket + this.minPriceMarket) / 2;
+
+            if (Math.abs(this.centerPriceMarket - curCenter) > 1) {
+            this.marketPriceLines = this.calcPriceGridLines(this.maxPriceMarket, this.minPriceMarket, this.marketPriceGridIncriment);
+            if (this.centerPriceMarket > curCenter) {
+               this.maxPriceMarket += this.graphAdjustSpeed;
+               this.minPriceMarket += this.graphAdjustSpeed;
+            }
+            else {
+               this.maxPriceMarket -= this.graphAdjustSpeed;
+               this.minPriceMarket -= this.graphAdjustSpeed;
+            }
+         }
+      };
+
       graph.draw = function (dataHistory) {
          //Clear the svg elements
          this.marketSVG.selectAll("*").remove();
@@ -289,6 +313,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          }
 
          this.curTimeX = this.mapTimeToXAxis(this.currentTime);
+
+         // recalculate market price bounds if necessary
+         this.calcMarketPriceBounds(dataHistory.curFundPrice);
 
          //Check if it is necessary to recalculate timeLines
          if (this.currentTime > this.timeLines[0] + this.timeIncriment) {
