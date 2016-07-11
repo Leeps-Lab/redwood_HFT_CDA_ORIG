@@ -100,7 +100,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.sendToMarket = function (msg) {
          //If no delay send msg now, otherwise push it onto wait list with tag for what time msg should be sent
          if (msg.delay) {
-            this.msgWaitList.push([Date.now() + this.delay, msg]);
+            window.setTimeout(this.market.recvMessage, this.delay, msg);
          }
          else {
             this.market.recvMessage(msg);
