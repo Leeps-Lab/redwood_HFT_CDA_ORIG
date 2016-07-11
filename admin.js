@@ -285,7 +285,7 @@ Redwood.controller("AdminCtrl",
             if ($scope.startSyncArrays[groupNum].allReady()) {
                var startTime = Date.now();
                var group = $scope.getGroup(groupNum);
-               var startFP = $scope.groupManagers[groupNum].getStartFP();
+               var startFP = $scope.priceChanges[0][1];
 
                //send out start message with start time and information about group then start groupManager
                var beginData = {

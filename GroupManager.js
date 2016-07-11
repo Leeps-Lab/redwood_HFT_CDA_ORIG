@@ -10,7 +10,7 @@ Redwood.factory("GroupManager", function () {
 
       groupManager.priceChanges = groupArgs.priceChanges;         // array of all price changes that will occur
       groupManager.investorArrivals = groupArgs.investorArrivals; // array of all investor arrivals that will occur
-      groupManager.priceIndex = 0;                                // index of last price index to occur
+      groupManager.priceIndex = 1;                                // index of last price index to occur. start at 1 because start FP is handled differently
       groupManager.investorIndex = 0;                             // index of last investor arrival to occur
 
       groupManager.groupNumber = groupArgs.groupNumber;
@@ -202,12 +202,6 @@ Redwood.factory("GroupManager", function () {
             this.sendToMarket(msg2);
             this.investorIndex++;
          }
-      };
-
-      // pulls out the initial fundamental price for this group and removes that element from the fundamental price array
-      groupManager.getStartFP = function () {
-         var temp = this.priceChanges.shift();
-         return temp[1];
       };
 
       return groupManager;
