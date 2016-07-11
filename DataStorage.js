@@ -18,7 +18,7 @@ Redwood.factory("DataStorage", function () {
       dataStorage.profitChanges = [];     // array of profit change events: [timestamp, deltaProfit, cumProfits, uid]
       dataStorage.investorArrivals = [];  // array of investor arrival events: [timestamp, buyOrSell]
       dataStorage.fundPriceChanges = [];  // array of fundamental price change events: [timestamp, deltaPrice, cumPrice]
-      dataStorage.playerOrders = [] ;     // array of player order lists [timestamp, [player order]]
+      dataStorage.playerOrders = [];     // array of player order lists [timestamp, [player order]]
       dataStorage.buyOrderChanges = [];   // array of changes in the buy order book [timestamp, [buy order book]]
       dataStorage.sellOrderChanges = [];  // array of changes in the sell order book [timestamp, [sell order book]]
 
@@ -46,7 +46,7 @@ Redwood.factory("DataStorage", function () {
                dataStorage.exportDataCsv();
             });
       };
-      
+
       dataStorage.storeMsg = function (message) {
          switch (message.msgType) {
             case "USPEED" :
@@ -96,7 +96,7 @@ Redwood.factory("DataStorage", function () {
       dataStorage.storeTransaction = function (timestamp, price, fundPrice, buyer, seller) {
          if (buyer != 0) {
             this.curProfits[buyer] += fundPrice - price;
-            this.profitChanges.push([timestamp - this.startTime, fundPrice - price,  this.curProfits[buyer], buyer]);
+            this.profitChanges.push([timestamp - this.startTime, fundPrice - price, this.curProfits[buyer], buyer]);
          }
          else this.investorArrivals.push([timestamp - this.startTime, "BUY"]);
 
@@ -207,14 +207,22 @@ Redwood.factory("DataStorage", function () {
 
             row[0] = entry[0];
 
-            // truly a masterpiece of illegibility
-            // just formats everything in the order book 2D array nicely and combines it all as one big string
             if (entry[1].length === 0) row[numColumns - 6] = "EMPTY";
-            else row[numColumns - 6] = '"(' + entry[1].map(function (row) {
-               return row.map(function (col) {
-                  return "{id:" + col.id + ", price:" + col.price + ", time:" + (col.timestamp - startTime) + "}";
-               }).reverse().join(', ');
-            }).join(', ') + ')"';
+            else {
+               let ids = [];
+               let times = [];
+               let prices = [];
+
+               for (let marketCol of entry[1]) {
+                  for (let marketRow of marketCol.reverse()) {
+                     ids.push(marketRow.id);
+                     times.push(marketRow.timestamp - startTime);
+                     prices.push(marketRow.price);
+                  }
+               }
+
+               row[numColumns - 6] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + ")}\"";
+            }
 
             data.push(row);
          }
@@ -226,11 +234,21 @@ Redwood.factory("DataStorage", function () {
 
             row[0] = entry[0];
             if (entry[1].length === 0) row[numColumns - 5] = "EMPTY";
-            else row[numColumns - 5] = '"(' + entry[1].map(function (row) {
-               return row.map(function (col) {
-                  return "{id:" + col.id + ", price:" + col.price + ", time:" + (col.timestamp - startTime) + "}";
-               }).reverse().join(', ');
-            }).reverse().join(', ') + ')"';
+            else {
+               let ids = [];
+               let times = [];
+               let prices = [];
+
+               for (let marketCol of entry[1].reverse()) {
+                  for (let marketRow of marketCol.reverse()) {
+                     ids.push(marketRow.id);
+                     times.push(marketRow.timestamp - startTime);
+                     prices.push(marketRow.price);
+                  }
+               }
+
+               row[numColumns - 5] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + ")}\"";
+            }
 
             data.push(row);
          }
@@ -242,7 +260,7 @@ Redwood.factory("DataStorage", function () {
 
          // combine rows with same timestamp
          var loopAgain = true;
-         while(loopAgain) {
+         while (loopAgain) {
             loopAgain = false;
             for (let row = 1; row < data.length; row++) {
                if (data[row][0] === data[row - 1][0]) {
