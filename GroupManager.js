@@ -16,7 +16,6 @@ Redwood.factory("GroupManager", function () {
       groupManager.groupNumber = groupArgs.groupNumber;
       groupManager.memberIDs = groupArgs.memberIDs; // array that contains id number for each subject in this group
       groupManager.syncFpArray = [];                // buffer that holds onto messages until received msg from all subjects
-      groupManager.msgWaitList = [];                // buffer that holds onto outgoing messages for an amount of delay to simulate latency
       groupManager.delay = 500;                     // # of milliseconds that will be delayed by latency simulation
 
       groupManager.syncFPArray = new SynchronizeArray(groupManager.memberIDs);
@@ -98,7 +97,7 @@ Redwood.factory("GroupManager", function () {
 
       // this sends message to market with specified amount of delay
       groupManager.sendToMarket = function (msg) {
-         //If no delay send msg now, otherwise push it onto wait list with tag for what time msg should be sent
+         //If no delay send msg now, otherwise send after delay
          if (msg.delay) {
             window.setTimeout(this.market.recvMessage.bind(this.market), this.delay, msg);
          }
@@ -167,23 +166,8 @@ Redwood.factory("GroupManager", function () {
          }
          return indices;
       };
-      groupManager.lastTime = 0;
 
       groupManager.update = function () {
-         //console.log(Date.now() - this.lastTime);
-         this.lastTime = Date.now();
-
-         // check if messages on wait list need to be sent
-         if (this.msgWaitList.length > 0) {
-            while (this.msgWaitList[0][0] < Date.now()) {
-               this.market.recvMessage(this.msgWaitList[0][1]);
-               this.msgWaitList.shift();
-               if (this.msgWaitList.length === 0) {
-                  break;
-               }
-            }
-         }
-
          //Looks for change in fundamental price and sends message if change is found
          if (this.priceIndex < this.priceChanges.length
             && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
