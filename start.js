@@ -8,10 +8,11 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
          var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in ms delay between ticks
 
-         $scope.sliderVal = 5;
+         $scope.sliderVal = 0;
          $scope.state = "state_out";
          $scope.using_speed = false;
          $scope.spread = 0;
+         $scope.maxSpread = 1;
 
          //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
          $scope.update = function () {
@@ -69,6 +70,14 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
          rs.recv("Experiment_Begin", function (uid, data) {
             $scope.groupNum = data.groupNumber;
             $scope.group = data.group;
+            $scope.maxSpread = data.maxSpread;
+            $scope.sliderVal = $scope.maxSpread / 2;
+            $scope.spread = $scope.maxSpread / 2;
+            $("#slider")
+               .slider({
+                  value: $scope.sliderVal,
+                  max: $scope.maxSpread
+               });
 
             //Create the logger for this start.js page
             $scope.isDebug = data.isDebug;
@@ -78,7 +87,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             }
 
             //Create data history and graph objects
-            $scope.dHistory = dataHistory.createDataHistory(data.startTime, data.startFP, rs.user_id, $scope.group, $scope.isDebug, data.speedCost, data.startingWealth);
+            $scope.dHistory = dataHistory.createDataHistory(data.startTime, data.startFP, rs.user_id, $scope.group, $scope.isDebug, data.speedCost, data.startingWealth, data.maxSpread);
             $scope.dHistory.init();
             $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2", data.startTime);
             $scope.tradingGraph.init();
@@ -132,9 +141,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                      $scope.sendToGroupManager(msg);
                      $scope.setState("state_maker");
                   }
-               },
-               value: $scope.sliderVal,
-               max: 10
+               }
             });
 
          // button for setting state to sniper

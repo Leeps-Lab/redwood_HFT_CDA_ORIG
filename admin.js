@@ -162,6 +162,7 @@ Redwood.controller("AdminCtrl",
 
             $scope.speedCost = ra.get_config(1, 0).speedCost;
             $scope.startingWealth = ra.get_config(1, 0).startingWealth;
+            $scope.maxSpread = ra.get_config(1, 0).maxSpread;
 
             $scope.priceChanges = [];
             var priceURL = ra.get_config(1, 0).priceChangesURL;
@@ -244,7 +245,8 @@ Redwood.controller("AdminCtrl",
                            myId: subjectNum,
                            groupId: groupNum,
                            isDebug: debugMode,
-                           speedCost: $scope
+                           speedCost: $scope.speedCost,
+                           maxSpread: $scope.maxSpread
                         };
                         $scope.groupManagers[groupNum].marketAlgorithms[subjectNum] = marketAlgorithm.createMarketAlgorithm(subjectArgs, $scope.groupManagers[groupNum]);
                      }
@@ -295,7 +297,8 @@ Redwood.controller("AdminCtrl",
                   group: group,
                   isDebug: debugMode,
                   speedCost: $scope.speedCost,
-                  startingWealth: $scope.startingWealth
+                  startingWealth: $scope.startingWealth,
+                  maxSpread: $scope.maxSpread
                };
                ra.sendCustom("Experiment_Begin", beginData, "admin", 1, groupNum);
                $scope.groupManagers[groupNum].startTime = startTime;

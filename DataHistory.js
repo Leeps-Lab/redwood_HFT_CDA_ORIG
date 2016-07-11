@@ -1,7 +1,7 @@
 RedwoodHighFrequencyTrading.factory("DataHistory", function () {
    var api = {};
 
-   api.createDataHistory = function (startTime, startFP, myId, group, debugMode, speedCost, startingWealth) {
+   api.createDataHistory = function (startTime, startFP, myId, group, debugMode, speedCost, startingWealth, maxSpread) {
       //Variables
       dataHistory = {};
       dataHistory.startTime = startTime;
@@ -14,9 +14,9 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.transactions = [];    //entries look like [timestamp, myTransaction]
       dataHistory.profit = startingWealth;
       dataHistory.speedCost = speedCost;
+      dataHistory.maxSpread = maxSpread;
       dataHistory.offers = {};
       dataHistory.statuses = {};
-      dataHistory.lowestSpread = 5;
 
       dataHistory.debugMode = debugMode;
       if (debugMode) {
@@ -84,7 +84,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
 
             this.statuses[uid] = {
                inMarket: false,
-               spread: 5
+               spread: this.maxSpread / 2
             };
          }
       };

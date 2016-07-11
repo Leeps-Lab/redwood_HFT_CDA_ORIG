@@ -4,7 +4,7 @@ Redwood.factory("MarketAlgorithm", function () {
    api.createMarketAlgorithm = function (subjectArgs, groupManager) {
       var marketAlgorithm = {};
 
-      marketAlgorithm.spread = 5;            // record of this user's spread value
+      marketAlgorithm.spread = subjectArgs.maxSpread / 2;            // record of this user's spread value
       marketAlgorithm.using_speed = false;
       marketAlgorithm.state = "state_out";   // user's state - can be "state_out", "state_maker", or "state_snipe"
       marketAlgorithm.buyEntered = false;    // flags for if this user has buy/sell orders still in the book
