@@ -275,6 +275,14 @@ Redwood.controller("AdminCtrl",
             ra.start_session();
          });
 
+         $scope.playerTimeOffsets = {};
+
+         ra.recv("set_player_time_offset", function (uid, data) {
+            if ($scope.playerTimeOffsets[uid] === undefined) {
+               $scope.playerTimeOffsets[uid] = data - Date.now();
+            }
+         });
+
          ra.recv("Subject_Ready", function (uid) {
 
             // get group number
@@ -298,7 +306,8 @@ Redwood.controller("AdminCtrl",
                   isDebug: debugMode,
                   speedCost: $scope.speedCost,
                   startingWealth: $scope.startingWealth,
-                  maxSpread: $scope.maxSpread
+                  maxSpread: $scope.maxSpread,
+                  playerTimeOffsets: $scope.playerTimeOffsets
                };
                ra.sendCustom("Experiment_Begin", beginData, "admin", 1, groupNum);
                $scope.groupManagers[groupNum].startTime = startTime;

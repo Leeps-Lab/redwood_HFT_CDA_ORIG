@@ -63,6 +63,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
          //First function to run when page is loaded
          rs.on_load(function () {
+            rs.send("set_player_time_offset", Date.now());
             rs.send("Subject_Ready");
          });
 
@@ -89,7 +90,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             //Create data history and graph objects
             $scope.dHistory = dataHistory.createDataHistory(data.startTime, data.startFP, rs.user_id, $scope.group, $scope.isDebug, data.speedCost, data.startingWealth, data.maxSpread);
             $scope.dHistory.init();
-            $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2", data.startTime);
+            $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2", data.startTime, data.playerTimeOffsets[rs.user_id]);
             $scope.tradingGraph.init();
 
             // start looping the update function

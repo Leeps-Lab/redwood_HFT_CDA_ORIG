@@ -9,7 +9,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
    var api = {};
 
    // Returns new grpah object - pass in id of svg element on which graph will be drawn
-   api.makeTradingGraph = function (marketSVGElementID, profitSVGElementID, adminStartTime) {
+   api.makeTradingGraph = function (marketSVGElementID, profitSVGElementID, adminStartTime, playerTimeOffset) {
       var graph = {};
 
       graph.marketElementId = marketSVGElementID;  //id of the market graph svg element
@@ -37,7 +37,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.timeLines = [];
       graph.pricesArray = [];
       graph.adminStartTime = adminStartTime;
-      graph.timeOffset = 0;            //offset to adjust for clock difference between lab computers
+      graph.timeOffset = playerTimeOffset;            //offset to adjust for clock difference between lab computers
       graph.expandedGraph = false;
       graph.timeSinceStart = 0;        //the amount of time since the start of the experiment in seconds
 
@@ -365,7 +365,6 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.marketPriceLines = this.calcPriceGridLines(this.maxPriceMarket, this.minPriceMarket, this.marketPriceGridIncriment);
          this.profitPriceLines = this.calcPriceGridLines(this.maxPriceProfit, this.minPriceProfit, this.profitPriceGridIncriment);
          this.timeLines = this.calcTimeGridLines(this.adminStartTime + this.timeInterval * 1000);
-         this.timeOffset = Date.now() - this.adminStartTime;
       };
 
       return graph;
