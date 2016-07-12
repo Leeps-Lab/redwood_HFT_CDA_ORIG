@@ -211,6 +211,7 @@ Redwood.factory("DataStorage", function () {
             else {
                let ids = [];
                let times = [];
+               let origTimes = [];
                let prices = [];
 
                for (let marketCol of entry[1]) {
@@ -218,10 +219,12 @@ Redwood.factory("DataStorage", function () {
                      ids.push(marketRow.id);
                      times.push(marketRow.timestamp - startTime);
                      prices.push(marketRow.price);
+                     origTimes.push(marketRow.originTimestamp);
+
                   }
                }
 
-               row[numColumns - 6] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + ")}\"";
+               row[numColumns - 6] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + "), 'time_orig': (" + origTimes.join(', ') + ")}\"";
             }
 
             data.push(row);
@@ -237,6 +240,7 @@ Redwood.factory("DataStorage", function () {
             else {
                let ids = [];
                let times = [];
+               let origTimes = [];
                let prices = [];
 
                for (let marketCol of entry[1].reverse()) {
@@ -244,10 +248,11 @@ Redwood.factory("DataStorage", function () {
                      ids.push(marketRow.id);
                      times.push(marketRow.timestamp - startTime);
                      prices.push(marketRow.price);
+                     origTimes.push(marketRow.originTimestamp);
                   }
                }
 
-               row[numColumns - 5] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + ")}\"";
+               row[numColumns - 5] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + "), 'time_orig': (" + origTimes.join(', ') + ")}\"";
             }
 
             data.push(row);
