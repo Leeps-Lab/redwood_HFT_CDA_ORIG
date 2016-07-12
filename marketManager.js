@@ -55,11 +55,13 @@ Redwood.factory("MarketManager", function () {
                      market.CDABook.makeIOCBuy(message.msgData[0], message.msgData[1], message.timestamp);
                   }
                   else {
-                     market.CDABook.insertBuy(message.msgData[0], message.msgData[1], message.timestamp);
-                     //only send C_EBUY message for regular limit order
-                     var msg = new Message("ITCH", "C_EBUY", [message.msgData[0], message.msgData[1], message.timestamp]);
-                     msg.timeStamp = message.timestamp; // for test output only
-                     this.sendToGroupManager(msg);
+                     // if insert was successful, send confirm message
+                     if (market.CDABook.insertBuy(message.msgData[0], message.msgData[1], message.timestamp, message.msgData[3])) {
+                        //only send C_EBUY message for regular limit order
+                        var msg = new Message("ITCH", "C_EBUY", [message.msgData[0], message.msgData[1], message.timestamp]);
+                        msg.timeStamp = message.timestamp; // for test output only
+                        this.sendToGroupManager(msg);
+                     }
                   }
                }
                break;
@@ -79,11 +81,13 @@ Redwood.factory("MarketManager", function () {
                      market.CDABook.makeIOCSell(message.msgData[0], message.msgData[1], message.timestamp);
                   }
                   else {
-                     market.CDABook.insertSell(message.msgData[0], message.msgData[1], message.timestamp);
-                     //only send C_ESELL message for regular limit order
-                     var msg = new Message("ITCH", "C_ESELL", [message.msgData[0], message.msgData[1], message.timestamp]);
-                     msg.timeStamp = message.timestamp; // for test output only
-                     this.sendToGroupManager(msg);
+                     // insert returns true if order was actually inserted
+                     if (market.CDABook.insertSell(message.msgData[0], message.msgData[1], message.timestamp, message.msgData[3])) {
+                        //only send C_ESELL message for regular limit order
+                        var msg = new Message("ITCH", "C_ESELL", [message.msgData[0], message.msgData[1], message.timestamp]);
+                        msg.timeStamp = message.timestamp; // for test output only
+                        this.sendToGroupManager(msg);
+                     }
                   }
                }
                break;
@@ -106,18 +110,21 @@ Redwood.factory("MarketManager", function () {
 
             // update buy offer
             case "UBUY":
-               market.CDABook.updateBuy(message.msgData[0], message.msgData[1], message.timestamp);
-               var msg = new Message("ITCH", "C_UBUY", [message.msgData[0], message.msgData[1], message.timestamp]);
-               msg.timeStamp = message.timestamp; // for test output only
-               this.sendToGroupManager(msg);
+               // insert function works as update now also
+               if (market.CDABook.insertBuy(message.msgData[0], message.msgData[1], message.timestamp, message.msgData[2])) {
+                  var msg = new Message("ITCH", "C_UBUY", [message.msgData[0], message.msgData[1], message.timestamp]);
+                  msg.timeStamp = message.timestamp; // for test output only
+                  this.sendToGroupManager(msg);
+               }
                break;
 
             // update sell offer
             case "USELL":
-               market.CDABook.updateSell(message.msgData[0], message.msgData[1], message.timestamp);
-               var msg = new Message("ITCH", "C_USELL", [message.msgData[0], message.msgData[1], message.timestamp]);
-               msg.timeStamp = message.timestamp; // for test output only
-               this.sendToGroupManager(msg);
+               if (market.CDABook.insertSell(message.msgData[0], message.msgData[1], message.timestamp, message.msgData[2])) {
+                  var msg = new Message("ITCH", "C_USELL", [message.msgData[0], message.msgData[1], message.timestamp]);
+                  msg.timeStamp = message.timestamp; // for test output only
+                  this.sendToGroupManager(msg);
+               }
                break;
 
             // message not recognized
@@ -135,37 +142,101 @@ Redwood.factory("MarketManager", function () {
       market.CDABook.sellContracts = [];
 
       //inserts buy into buy orders data structure
-      market.CDABook.insertBuy = function (newId, newPrice, timestamp) {
+      market.CDABook.insertBuy = function (newId, newPrice, timestamp, originTimestamp) {
+         // search the whole book to see if this player already has a newer offer inserted
          var rindex = 0;
+         var cindex = -1;
+         while (rindex < market.CDABook.buyContracts.length) {
+            cindex = market.CDABook.buyContracts[rindex].findIndex(function (element) {
+               return element.id == newId;
+            });
+            if (cindex != -1) break;
+            rindex++;
+         }
+         // if another order from this person was found
+         if (cindex != -1) {
+            if (market.CDABook.buyContracts[rindex][cindex].originTimestamp > originTimestamp) {
+               // if that order is newer than the new one, don't insert the new one
+               console.log("tried to insert an older buy order");
+               return false;
+            }
+            else {
+               // otherwise, get rid of the old one
+               if (market.CDABook.buyContracts[rindex].length == 1) {
+                  toReturn = market.CDABook.buyContracts.splice(rindex, 1)[0];
+                  market.CDABook.buyPrices.splice(rindex, 1);
+               }
+               else {
+                  toReturn = market.CDABook.buyContracts[rindex].splice(cindex, 1);
+               }
+            }
+         }
+
+         // insert the new order
+         rindex = 0;
          while (rindex < market.CDABook.buyPrices.length && market.CDABook.buyPrices[rindex] < newPrice) rindex++;
          if (rindex == market.CDABook.buyPrices.length || market.CDABook.buyPrices[rindex] != newPrice) {
             market.CDABook.buyPrices.splice(rindex, 0, newPrice);
             market.CDABook.buyContracts.splice(rindex, 0, []);
          }
-         var cindex = 0;
+         cindex = 0;
          while (cindex < market.CDABook.buyContracts[rindex].length && market.CDABook.buyContracts[rindex][cindex].timestamp > timestamp) cindex++;
          market.CDABook.buyContracts[rindex].splice(cindex, 0, {
             price: newPrice,
             id: newId,
-            timestamp: timestamp
+            timestamp: timestamp,
+            originTimestamp: originTimestamp
          });
+         return true;
       };
 
       //inserts sell into sell orders data structure
-      market.CDABook.insertSell = function (newId, newPrice, timestamp) {
+      market.CDABook.insertSell = function (newId, newPrice, timestamp, originTimestamp) {
+         // search the whole book to see if this player already has a newer offer inserted
          var rindex = 0;
-         while (rindex < market.CDABook.sellPrices.length && market.CDABook.sellPrices[rindex] > newPrice) rindex++;
+         var cindex = -1;
+         while (rindex < market.CDABook.sellContracts.length) {
+            cindex = market.CDABook.sellContracts[rindex].findIndex(function (element) {
+               return element.id == newId;
+            });
+            if (cindex != -1) break;
+            rindex++;
+         }
+         // if another order from this person was found
+         if (cindex != -1) {
+            if (market.CDABook.sellContracts[rindex][cindex].originTimestamp > originTimestamp) {
+               // if that order is newer than the new one, don't insert the new one
+               console.log("tried to insert an older sell order");
+               return false;
+            }
+            else {
+               // otherwise, get rid of the old one
+               if (market.CDABook.sellContracts[rindex].length == 1) {
+                  toReturn = market.CDABook.sellContracts.splice(rindex, 1)[0];
+                  market.CDABook.sellPrices.splice(rindex, 1);
+               }
+               else {
+                  toReturn = market.CDABook.sellContracts[rindex].splice(cindex, 1);
+               }
+            }
+         }
+
+         // insert the new order
+         rindex = 0;
+         while (rindex < market.CDABook.sellPrices.length && market.CDABook.sellPrices[rindex] < newPrice) rindex++;
          if (rindex == market.CDABook.sellPrices.length || market.CDABook.sellPrices[rindex] != newPrice) {
             market.CDABook.sellPrices.splice(rindex, 0, newPrice);
             market.CDABook.sellContracts.splice(rindex, 0, []);
          }
-         var cindex = 0;
+         cindex = 0;
          while (cindex < market.CDABook.sellContracts[rindex].length && market.CDABook.sellContracts[rindex][cindex].timestamp > timestamp) cindex++;
          market.CDABook.sellContracts[rindex].splice(cindex, 0, {
             price: newPrice,
             id: newId,
-            timestamp: timestamp
+            timestamp: timestamp,
+            originTimestamp: originTimestamp
          });
+         return true;
       };
 
       //transacts an IOC order
@@ -244,6 +315,8 @@ Redwood.factory("MarketManager", function () {
          }
          return toReturn;
       };
+
+      // update functions are unused now, insert does both jobs
 
       //updates a buy order to a new price
       market.CDABook.updateBuy = function (idToUpdate, newPrice, timestamp) {
