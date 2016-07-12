@@ -219,7 +219,7 @@ Redwood.factory("DataStorage", function () {
                      ids.push(marketRow.id);
                      times.push(marketRow.timestamp - startTime);
                      prices.push(marketRow.price);
-                     origTimes.push(marketRow.originTimestamp);
+                     origTimes.push(marketRow.originTimestamp - startTime);
 
                   }
                }
@@ -248,7 +248,7 @@ Redwood.factory("DataStorage", function () {
                      ids.push(marketRow.id);
                      times.push(marketRow.timestamp - startTime);
                      prices.push(marketRow.price);
-                     origTimes.push(marketRow.originTimestamp);
+                     origTimes.push(marketRow.originTimestamp - startTime);
                   }
                }
 
