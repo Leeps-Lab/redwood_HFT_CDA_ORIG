@@ -193,7 +193,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             $("#" + $scope.state).removeClass("state-not-selected").addClass("state-selected");
          };
 
-         // recieve message from market algorithm to the data history object
+         // receive message from market algorithm to the data history object
          rs.recv("To_Data_History_" + String(rs.user_id), function (uid, msg) {
             if ($scope.isDebug) {
                $scope.logger.logRecv(msg, "Market Algorithm");
@@ -201,7 +201,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             $scope.dHistory.recvMessage(msg);
          });
 
-         // recieves message sent to all dataHistories
+         // receives message sent to all dataHistories
          rs.recv("To_All_Data_Histories", function (uid, msg) {
             if ($scope.isDebug) {
                $scope.logger.logRecv(msg, "Market Algorithm");
@@ -209,4 +209,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             $scope.dHistory.recvMessage(msg);
          });
 
+         rs.recv("end_game", function (uid, msg) {
+            console.log(msg);
+            rs.finish();
+         })
       }]);

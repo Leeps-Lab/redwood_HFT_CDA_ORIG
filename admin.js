@@ -315,13 +315,18 @@ Redwood.controller("AdminCtrl",
                for (var user of group) {
                   $scope.groupManagers[groupNum].marketAlgorithms[user].fundamentalPrice = startFP;
                }
-               $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
+               $scope.groupManagers[groupNum].intervalPromise = $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
             }
          });
 
          ra.recv("To_Group_Manager", function (uid, msg) {
             var groupNum = $scope.idToGroup[uid];
             $scope.groupManagers[groupNum].recvFromSubject(msg);
+         });
+
+         ra.on("end_game", function (msg) {
+            console.log("group " + msg + " interval canceled");
+            $interval.cancel($scope.groupManagers[msg].intervalPromise);
          });
 
          ra.on("pause", function () {

@@ -12,6 +12,7 @@ Redwood.factory("GroupManager", function () {
       groupManager.investorArrivals = groupArgs.investorArrivals; // array of all investor arrivals that will occur
       groupManager.priceIndex = 1;                                // index of last price index to occur. start at 1 because start FP is handled differently
       groupManager.investorIndex = 0;                             // index of last investor arrival to occur
+      groupManager.intervalPromise = null;                        // promise for canceling interval when experiment ends
 
       groupManager.groupNumber = groupArgs.groupNumber;
       groupManager.memberIDs = groupArgs.memberIDs; // array that contains id number for each subject in this group
@@ -171,11 +172,16 @@ Redwood.factory("GroupManager", function () {
          //Looks for change in fundamental price and sends message if change is found
          if (this.priceIndex < this.priceChanges.length
             && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
-            var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);
-            msg.delay = false;
-            this.dataStore.storeMsg(msg);
-            this.sendToMarketAlgorithms(msg);
-            this.priceIndex++;
+            if (this.priceChanges[this.priceIndex][1] == -1) {
+               this.rssend("end_game", this.groupNumber);
+            }
+            else {
+               var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);
+               msg.delay = false;
+               this.dataStore.storeMsg(msg);
+               this.sendToMarketAlgorithms(msg);
+               this.priceIndex++;
+            }
          }
 
          //looks for investor arrivals and sends message if one has occurred
