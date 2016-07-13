@@ -214,7 +214,7 @@ Redwood.factory("DataStorage", function () {
                let origTimes = [];
                let prices = [];
 
-               for (let marketCol of entry[1]) {
+               for (let marketCol of entry[1].reverse()) {
                   for (let marketRow of marketCol.reverse()) {
                      ids.push(marketRow.id);
                      times.push(marketRow.timestamp - startTime);

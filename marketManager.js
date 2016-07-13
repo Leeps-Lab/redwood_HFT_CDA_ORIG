@@ -223,7 +223,7 @@ Redwood.factory("MarketManager", function () {
 
          // insert the new order
          rindex = 0;
-         while (rindex < market.CDABook.sellPrices.length && market.CDABook.sellPrices[rindex] < newPrice) rindex++;
+         while (rindex < market.CDABook.sellPrices.length && market.CDABook.sellPrices[rindex] > newPrice) rindex++;
          if (rindex == market.CDABook.sellPrices.length || market.CDABook.sellPrices[rindex] != newPrice) {
             market.CDABook.sellPrices.splice(rindex, 0, newPrice);
             market.CDABook.sellContracts.splice(rindex, 0, []);
