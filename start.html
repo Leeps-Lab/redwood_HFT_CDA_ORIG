@@ -11,12 +11,26 @@
                 <div class="col-xs-4 screen-wrapper" style="padding-right:20px;">
                     <div class="screen top-left-screen">
                         <div id="data-container">
-                            <h4 class="data-heading">Market Participants:</h4>
-                            <ul class="list-group status-list">
-                                <li class="list-group-item status-entry" ng-repeat="(key, value) in dHistory.statuses" ng-show="value.inMarket == true">
-                                    Player {{key}} With Spread {{value.spread}}
-                                </li>
-                            </ul>
+                            <div class="status-table">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Player</th>
+                                            <th>State</th>
+                                            <th>Spread</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="(player, status) in dHistory.statuses">
+                                            <td>{{player}}</td>
+                                            <td>{{status.state}}</td>
+                                            <td>{{status.state == "Maker" ? status.spread : "N/A"}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h4 class="status-display">Best Spread: {{dHistory.lowestSpread}}</h4>
+                            <h4 class="status-display">Your Profit: ${{dHistory.profit | number : 2}}</h4>
                         </div>
                     </div>
                 </div>

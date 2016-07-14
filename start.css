@@ -42,18 +42,17 @@ body {
     border: 1px solid transparent;
 }
 
-.status-list {
+.status-table {
     margin-top: 20px;
-    height: 50%;
+    height: 60%;
     border-radius: 10px;
+    background-color: white;
+    overflow: auto;
     border: 1px solid green;
-    overflow:hidden;
-    overflow-y:auto;
 }
 
-.status-entry {
-    border-radius: 10px;
-    height: 40px;
+.status-display {
+    margin-top: 15px;
 }
 
 .data-heading {

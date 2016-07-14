@@ -17,6 +17,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.maxSpread = maxSpread;
       dataHistory.offers = {};
       dataHistory.statuses = {};
+      dataHistory.lowestSpread = "N/A";
 
       dataHistory.debugMode = debugMode;
       if (debugMode) {
@@ -53,17 +54,20 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
                this.storeSellOffer(msg.msgData[1], msg.msgData[0]);
                break;
             case "C_UMAKER" :
-               this.statuses[msg.msgData[0]].inMarket = true;
+               this.statuses[msg.msgData[0]].state = "Maker";
+               this.calcLowestSpread();
                break;
             case "C_USNIPE" :
-               this.statuses[msg.msgData[0]].inMarket = false;
+               this.statuses[msg.msgData[0]].state = "Sniper";
+               this.calcLowestSpread();
                break;
             case "C_UOUT" :
-               this.statuses[msg.msgData[0]].inMarket = false;
+               this.statuses[msg.msgData[0]].state = "Out";
+               this.calcLowestSpread();
                break;
             case "C_UUSPR" :
                this.statuses[msg.msgData[0]].spread = msg.msgData[1];
-               if (msg.msgData[1] < this.lowestSpread) this.lowestSpread = msg.msgData[1];
+               this.calcLowestSpread();
                break;
          }
       };
@@ -83,15 +87,23 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
             };
 
             this.statuses[uid] = {
-               inMarket: false,
+               state: "Out",
                spread: this.maxSpread / 2
             };
          }
       };
 
+      dataHistory.calcLowestSpread = function () {
+         this.lowestSpread = "N/A";
+         for (var player in this.statuses) {
+            if (this.statuses[player].state == "Maker" && (this.lowestSpread == "N/A" || this.statuses[player].spread < this.lowestSpread)) {
+               this.lowestSpread = this.statuses[player].spread;
+            }
+         }
+      };
+
       // Adds fundamental price change to history
       dataHistory.recordFPCchange = function (fpcMsg) {
-         //this.fundamentalPrices.push([fpcMsg.msgData[0], fpcMsg.msgData[1]]); // index 0 = timestamp, index 1 = new price value, index 2 = slope of line
          this.storeFundPrice(fpcMsg.msgData[0]);
          this.curFundPrice = [fpcMsg.msgData[0], fpcMsg.msgData[1], 0];
       };

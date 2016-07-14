@@ -173,6 +173,7 @@ Redwood.factory("GroupManager", function () {
          if (this.priceIndex < this.priceChanges.length
             && Date.now() > this.priceChanges[this.priceIndex][0] + this.startTime) {
             if (this.priceChanges[this.priceIndex][1] == -1) {
+               this.dataStore.exportDataCsv();
                this.rssend("end_game", this.groupNumber);
             }
             else {
