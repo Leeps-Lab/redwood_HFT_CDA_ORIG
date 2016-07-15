@@ -127,7 +127,7 @@ Redwood.factory("GroupManager", function () {
                this.sendToMarketAlgorithms(msg);
          }
          
-         this.dataStore.storeMarketState(msg.timeStamp, this.market.CDABook);
+         this.dataStore.storeMarketState(msg.timeStamp, this.market.CDABook, msg.buyOrdersBeforeState, msg.sellOrdersBeforeState);
       };
 
       // handles message from subject and passes it on to market algorithm

@@ -27,8 +27,8 @@ Redwood.factory("DataStorage", function () {
          this.curFundPrice = startFP;
          this.fundPriceChanges.push([0, startFP, startFP]);
          this.investorArrivals.push([0, "NA"]);
-         this.buyOrderChanges.push([0, []]);
-         this.sellOrderChanges.push([0, []]);
+         this.buyOrderChanges.push([0, [], []]);
+         this.sellOrderChanges.push([0, [], []]);
 
          for (let user of this.group) {
             this.speedChanges.push([0, "NO", user]);
@@ -76,9 +76,11 @@ Redwood.factory("DataStorage", function () {
          this.playerOrders.push([timestamp - this.startTime, order]);
       };
 
-      dataStorage.storeMarketState = function (timestamp, orderBook) {
-         this.buyOrderChanges.push([timestamp - this.startTime, $.extend(true, [], orderBook.buyContracts)]);
-         this.sellOrderChanges.push([timestamp - this.startTime, $.extend(true, [], orderBook.sellContracts)]);
+      dataStorage.storeMarketState = function (timestamp, orderBook, buyOrdersBefore, sellOrdersBefore) {
+         // use jquery extend to do deep copy of market state
+         // before state is already copied, no need to copy it again
+         this.buyOrderChanges.push([timestamp - this.startTime, $.extend(true, [], orderBook.buyContracts), buyOrdersBefore]);
+         this.sellOrderChanges.push([timestamp - this.startTime, $.extend(true, [], orderBook.sellContracts), sellOrdersBefore]);
       };
 
       dataStorage.storeSpeedChange = function (timestamp, speed, uid) {
@@ -122,8 +124,7 @@ Redwood.factory("DataStorage", function () {
             playerToIndex[this.group[index]] = index;
          }
 
-         // 5 columns for each player + timestamp, delta value, cumulative value, investors and player orders
-         var numColumns = this.group.length * 5 + 7;
+         var numColumns = this.group.length * 5 + 9;
 
          // iterate through every entry in each storage array
 
@@ -202,12 +203,32 @@ Redwood.factory("DataStorage", function () {
          // add buy order changes to data array
          for (let entry of this.buyOrderChanges) {
             let row = new Array(numColumns).fill(null);
-            // put start time into a local variable so I don't have to redefine this for the map calls
-            let startTime = this.startTime;
 
             row[0] = entry[0];
 
-            if (entry[1].length === 0) row[numColumns - 6] = "EMPTY";
+            // add before market state to data
+            if (entry[2].length === 0) row[numColumns - 8] = "EMPTY";
+            else {
+               let ids = [];
+               let times = [];
+               let origTimes = [];
+               let prices = [];
+
+               for (let marketCol of entry[2].reverse()) {
+                  for (let marketRow of marketCol.reverse()) {
+                     ids.push(marketRow.id);
+                     times.push(marketRow.timestamp - this.startTime);
+                     prices.push(marketRow.price);
+                     origTimes.push(marketRow.originTimestamp - this.startTime);
+
+                  }
+               }
+
+               row[numColumns - 8] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + "), 'time_orig': (" + origTimes.join(', ') + ")}\"";
+            }
+
+            // add after market state to data
+            if (entry[1].length === 0) row[numColumns - 7] = "EMPTY";
             else {
                let ids = [];
                let times = [];
@@ -217,14 +238,14 @@ Redwood.factory("DataStorage", function () {
                for (let marketCol of entry[1].reverse()) {
                   for (let marketRow of marketCol.reverse()) {
                      ids.push(marketRow.id);
-                     times.push(marketRow.timestamp - startTime);
+                     times.push(marketRow.timestamp - this.startTime);
                      prices.push(marketRow.price);
-                     origTimes.push(marketRow.originTimestamp - startTime);
+                     origTimes.push(marketRow.originTimestamp - this.startTime);
 
                   }
                }
 
-               row[numColumns - 6] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + "), 'time_orig': (" + origTimes.join(', ') + ")}\"";
+               row[numColumns - 7] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + "), 'time_orig': (" + origTimes.join(', ') + ")}\"";
             }
 
             data.push(row);
@@ -233,9 +254,30 @@ Redwood.factory("DataStorage", function () {
          // add sell order changes to data array
          for (let entry of this.sellOrderChanges) {
             let row = new Array(numColumns).fill(null);
-            let startTime = this.startTime;
 
             row[0] = entry[0];
+
+            // add before market state to data
+            if (entry[2].length === 0) row[numColumns - 6] = "EMPTY";
+            else {
+               let ids = [];
+               let times = [];
+               let origTimes = [];
+               let prices = [];
+
+               for (let marketCol of entry[2].reverse()) {
+                  for (let marketRow of marketCol.reverse()) {
+                     ids.push(marketRow.id);
+                     times.push(marketRow.timestamp - this.startTime);
+                     prices.push(marketRow.price);
+                     origTimes.push(marketRow.originTimestamp - this.startTime);
+                  }
+               }
+
+               row[numColumns - 6] = "\"{'id': (" + ids.join(', ') + "), 'time': (" + times.join(', ') + "), 'price': (" + prices.join(', ') + "), 'time_orig': (" + origTimes.join(', ') + ")}\"";
+            }
+
+            // add after market state to data
             if (entry[1].length === 0) row[numColumns - 5] = "EMPTY";
             else {
                let ids = [];
@@ -246,9 +288,9 @@ Redwood.factory("DataStorage", function () {
                for (let marketCol of entry[1].reverse()) {
                   for (let marketRow of marketCol.reverse()) {
                      ids.push(marketRow.id);
-                     times.push(marketRow.timestamp - startTime);
+                     times.push(marketRow.timestamp - this.startTime);
                      prices.push(marketRow.price);
-                     origTimes.push(marketRow.originTimestamp - startTime);
+                     origTimes.push(marketRow.originTimestamp - this.startTime);
                   }
                }
 
@@ -302,7 +344,7 @@ Redwood.factory("DataStorage", function () {
          for (let index = 0; index < this.group.length; index++) {
             data[0].push("status_p" + this.group[index], "spread_p" + this.group[index], "speed_p" + this.group[index], "dprofit_p" + this.group[index], "cumprofit_p" + this.group[index]);
          }
-         data[0].push("buy_orders", "sell_orders", "porder", "dvalue", "cumvalue", "investor_buy_sell");
+         data[0].push("buy_orders_before", "buy_orders_after", "sell_orders_before", "sell_orders_after", "porder", "dvalue", "cumvalue", "investor_buy_sell");
 
          // download data 2d array as csv
          // stolen from stackoverflow
