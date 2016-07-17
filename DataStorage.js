@@ -100,13 +100,11 @@ Redwood.factory("DataStorage", function () {
             this.curProfits[buyer] += fundPrice - price;
             this.profitChanges.push([timestamp - this.startTime, fundPrice - price, this.curProfits[buyer], buyer]);
          }
-         else this.investorArrivals.push([timestamp - this.startTime, "BUY"]);
 
          if (seller != 0) {
             this.curProfits[seller] += price - fundPrice;
             this.profitChanges.push([timestamp - this.startTime, price - fundPrice, this.curProfits[seller], seller]);
          }
-         else this.investorArrivals.push([timestamp - this.startTime, "SELL"]);
       };
 
       dataStorage.storeFPC = function (timestamp, price) {
