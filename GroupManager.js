@@ -168,6 +168,27 @@ Redwood.factory("GroupManager", function () {
          return indices;
       };
 
+      groupManager.sendNextPriceChange = function () {
+         var msg = new Message("ITCH", "FPC", [Date.now(), this.priceChanges[this.priceIndex][1], this.priceIndex]);
+         msg.delay = false;
+         this.dataStore.storeMsg(msg);
+         this.sendToMarketAlgorithms(msg);
+
+         this.priceIndex++;
+
+         window.setTimeout(this.sendNextPriceChange, this.startTime + this.priceChanges[this.priceIndex][0] - Date.now());
+      }.bind(groupManager);
+
+      groupManager.sendNextInvestorArrival = function () {
+         var msg2 = new Message("OUCH", this.investorArrivals[this.investorIndex][1] == 1 ? "EBUY" : "ESELL", [0, 214748.3647, true]);
+         msg2.delay = false;
+         this.sendToMarket(msg2);
+
+         this.investorIndex++;
+
+         window.setTimeout(this.sendNextInvestorArrival, this.startTime + this.investorArrivals[this.investorIndex][0] - Date.now());
+      }.bind(groupManager);
+
       groupManager.update = function () {
          //Looks for change in fundamental price and sends message if change is found
          if (this.priceIndex < this.priceChanges.length

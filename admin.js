@@ -315,7 +315,11 @@ Redwood.controller("AdminCtrl",
                for (var user of group) {
                   $scope.groupManagers[groupNum].marketAlgorithms[user].fundamentalPrice = startFP;
                }
-               $scope.groupManagers[groupNum].intervalPromise = $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
+
+               // start price change sending recursive function
+               window.setTimeout($scope.groupManagers[groupNum].sendNextPriceChange, startTime + $scope.priceChanges[$scope.groupManagers[groupNum].priceIndex][0] - Date.now());
+               window.setTimeout($scope.groupManagers[groupNum].sendNextInvestorArrival, startTime + $scope.investorArrivals[$scope.groupManagers[groupNum].investorIndex][0] - Date.now());
+               //$scope.groupManagers[groupNum].intervalPromise = $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
             }
          });
 
