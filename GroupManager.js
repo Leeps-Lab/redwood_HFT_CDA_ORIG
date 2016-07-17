@@ -193,6 +193,8 @@ Redwood.factory("GroupManager", function () {
 
          this.investorIndex++;
 
+         if (this.investorIndex >= this.investorArrivals.length) return;
+
          this.dataStore.investorArrivals.push([Date.now() - this.startTime, this.investorArrivals[this.investorIndex][1] == 1 ? "BUY" : "SELL"]);
 
          window.setTimeout(this.sendNextInvestorArrival, this.startTime + this.investorArrivals[this.investorIndex][0] - Date.now());
