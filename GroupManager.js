@@ -187,6 +187,7 @@ Redwood.factory("GroupManager", function () {
       }.bind(groupManager);
 
       groupManager.sendNextInvestorArrival = function () {
+         this.dataStore.investorArrivals.push([Date.now() - this.startTime, this.investorArrivals[this.investorIndex][1] == 1 ? "BUY" : "SELL"]);
          var msg2 = new Message("OUCH", this.investorArrivals[this.investorIndex][1] == 1 ? "EBUY" : "ESELL", [0, 214748.3647, true]);
          msg2.delay = false;
          this.sendToMarket(msg2);
@@ -194,8 +195,6 @@ Redwood.factory("GroupManager", function () {
          this.investorIndex++;
 
          if (this.investorIndex >= this.investorArrivals.length) return;
-
-         this.dataStore.investorArrivals.push([Date.now() - this.startTime, this.investorArrivals[this.investorIndex][1] == 1 ? "BUY" : "SELL"]);
 
          window.setTimeout(this.sendNextInvestorArrival, this.startTime + this.investorArrivals[this.investorIndex][0] - Date.now());
       }.bind(groupManager);
