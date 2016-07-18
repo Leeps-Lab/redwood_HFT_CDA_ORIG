@@ -4,6 +4,7 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
    api.createDataHistory = function (startTime, startFP, myId, group, debugMode, speedCost, startingWealth, maxSpread) {
       //Variables
       dataHistory = {};
+      
       dataHistory.startTime = startTime;
       dataHistory.myId = myId;
       dataHistory.group = group;

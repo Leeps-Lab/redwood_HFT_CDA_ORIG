@@ -3,26 +3,27 @@
 Redwood.factory("DataStorage", function () {
    var api = {};
 
-   api.createDataStorage = function (group, groupNum) {
+   api.createDataStorage = function (group, groupNum, speedCost, startingWealth) {
       var dataStorage = {};
 
       dataStorage.startTime = 0;          // experiment start time
       dataStorage.group = group;          // array containing uid of every player in this group
       dataStorage.groupNum = groupNum;    // identifier for this group
       dataStorage.curFundPrice = 0;       // current fundamental price. used for finding fp delta
-      dataStorage.curProfits = [];         // current cumulative profits for each player
+      dataStorage.speedCost = speedCost;
+      dataStorage.startingWealth = startingWealth;
 
       dataStorage.speedChanges = [];      // array of speed change events: [timestamp, speed, uid]
       dataStorage.stateChanges = [];      // array of state change events: [timestamp, state, uid]
       dataStorage.spreadChanges = [];     // array of spread change events: [timestamp, spread, uid]
-      dataStorage.profitChanges = [];     // array of profit change events: [timestamp, deltaProfit, cumProfits, uid]
+      dataStorage.profitChanges = [];     // array of profit change events: [timestamp, deltaProfit, uid]
       dataStorage.investorArrivals = [];  // array of investor arrival events: [timestamp, buyOrSell]
       dataStorage.fundPriceChanges = [];  // array of fundamental price change events: [timestamp, deltaPrice, cumPrice]
       dataStorage.playerOrders = [];     // array of player order lists [timestamp, [player order]]
-      dataStorage.buyOrderChanges = [];   // array of changes in the buy order book [timestamp, [buy order book]]
-      dataStorage.sellOrderChanges = [];  // array of changes in the sell order book [timestamp, [sell order book]]
+      dataStorage.buyOrderChanges = [];   // array of changes in the buy order book [timestamp, [buy order book after], [buy order book before]]
+      dataStorage.sellOrderChanges = [];  // array of changes in the sell order book [timestamp, [sell order book], [buy order book before]]
 
-      dataStorage.init = function (startFP, startTime, startingWealth) {
+      dataStorage.init = function (startFP, startTime) {
          this.startTime = startTime;
          this.curFundPrice = startFP;
          this.fundPriceChanges.push([0, startFP, startFP]);
@@ -34,9 +35,7 @@ Redwood.factory("DataStorage", function () {
             this.speedChanges.push([0, "NO", user]);
             this.stateChanges.push([0, "OUT", user]);
             this.spreadChanges.push([0, 5, user]);
-            this.profitChanges.push([0, 0, startingWealth, user]);
-
-            this.curProfits[user] = startingWealth;
+            this.profitChanges.push([0, 0, user]);
          }
 
          $("#ui").append("<button id='export-btn-" + groupNum + "' type='button'>Export Group " + this.groupNum + " CSV</button>");
@@ -97,13 +96,11 @@ Redwood.factory("DataStorage", function () {
 
       dataStorage.storeTransaction = function (timestamp, price, fundPrice, buyer, seller) {
          if (buyer != 0) {
-            this.curProfits[buyer] += fundPrice - price;
-            this.profitChanges.push([timestamp - this.startTime, fundPrice - price, this.curProfits[buyer], buyer]);
+            this.profitChanges.push([timestamp - this.startTime, fundPrice - price, buyer]);
          }
 
          if (seller != 0) {
-            this.curProfits[seller] += price - fundPrice;
-            this.profitChanges.push([timestamp - this.startTime, price - fundPrice, this.curProfits[seller], seller]);
+            this.profitChanges.push([timestamp - this.startTime, price - fundPrice, seller]);
          }
       };
 
@@ -161,8 +158,7 @@ Redwood.factory("DataStorage", function () {
             let row = new Array(numColumns).fill(null);
 
             row[0] = entry[0];
-            row[playerToIndex[entry[3]] * 5 + 4] = entry[1];
-            row[playerToIndex[entry[3]] * 5 + 5] = entry[2];
+            row[playerToIndex[entry[2]] * 5 + 4] = entry[1];
 
             data.push(row);
          }
@@ -334,6 +330,22 @@ Redwood.factory("DataStorage", function () {
          for (let row = 1; row < data.length; row++) {
             for (let col = 0; col < data[row].length; col++) {
                if (data[row][col] === null) data[row][col] = data[row - 1][col];
+            }
+         }
+
+         // calculate cumulative profits for each player
+         // set initial cumulative profits
+         for (let index = 0; index < this.group.length; index++) {
+            data[0][index * 5 + 5] = this.startingWealth;
+         }
+         // calculate for all other rows
+         for (let row = 0; row < data.length - 1; row++) {
+            for (let index = 0; index < this.group.length; index++) {
+               // each row's cumulative profit is the previous row's profit plus dprofit, minus speed cost if applicable
+               data[row + 1][index * 5 + 5] = data[row][index * 5 + 5] + data[row + 1][index * 5 + 4];
+               if (data[row][index * 5 + 3] == "YES") {
+                  data[row + 1][index * 5 + 5] -= (data[row + 1][0] - data[row][0]) * this.speedCost / 1000;
+               }
             }
          }
 

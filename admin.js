@@ -234,7 +234,7 @@ Redwood.controller("AdminCtrl",
                      };
                      $scope.groupManagers[groupNum] = groupManager.createGroupManager(groupArgs, ra.sendCustom);
                      $scope.groupManagers[groupNum].market = marketManager.createMarketManager(ra.sendCustom, groupNum, $scope.groupManagers[groupNum]);
-                     $scope.groupManagers[groupNum].dataStore = dataStorage.createDataStorage(group, groupNum);
+                     $scope.groupManagers[groupNum].dataStore = dataStorage.createDataStorage(group, groupNum, $scope.speedCost, $scope.startingWealth);
                      for (var subjectNum of group) {
 
                         // map subject number to group number
@@ -311,7 +311,7 @@ Redwood.controller("AdminCtrl",
                };
                ra.sendCustom("Experiment_Begin", beginData, "admin", 1, groupNum);
                $scope.groupManagers[groupNum].startTime = startTime;
-               $scope.groupManagers[groupNum].dataStore.init(startFP, startTime, $scope.startingWealth);
+               $scope.groupManagers[groupNum].dataStore.init(startFP, startTime);
                for (var user of group) {
                   $scope.groupManagers[groupNum].marketAlgorithms[user].fundamentalPrice = startFP;
                }
@@ -329,7 +329,6 @@ Redwood.controller("AdminCtrl",
          });
 
          ra.on("end_game", function (msg) {
-            console.log("group " + msg + " interval canceled");
             $interval.cancel($scope.groupManagers[msg].intervalPromise);
          });
 
