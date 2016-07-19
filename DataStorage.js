@@ -316,6 +316,19 @@ Redwood.factory("DataStorage", function () {
             }
          }
 
+         // fill empty market state rows appropriately
+         for (let row = 1; row < data.length; row++) {
+            // if buy before column is empty, assume all market state columns are empty
+            // probably not the best way to do this
+            if (data[row][numColumns - 8] === null) {
+               // copy after state from previous row into both columns for this row
+               data[row][numColumns - 8] = data[row - 1][numColumns - 7];
+               data[row][numColumns - 7] = data[row - 1][numColumns - 7];
+               data[row][numColumns - 6] = data[row - 1][numColumns - 5];
+               data[row][numColumns - 5] = data[row - 1][numColumns - 5];
+            }
+         }
+
          // set empty delta and investor columns to 0 and NA respectively
          for (let row of data) {
             for (let index = 0; index < this.group.length; index++) {

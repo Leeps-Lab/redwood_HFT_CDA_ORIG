@@ -313,6 +313,7 @@ Redwood.controller("AdminCtrl",
                };
 
                if($scope.config.hasOwnProperty("input_addresses")) {
+                  console.log("RUNNING IN TEST MODE");
                   beginData.input_addresses = ($scope.config.input_addresses.split(','));
                }
 
