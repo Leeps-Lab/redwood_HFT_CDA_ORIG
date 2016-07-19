@@ -38,7 +38,7 @@ Redwood.factory("DataStorage", function () {
             this.profitChanges.push([0, 0, user]);
          }
 
-         $("#ui").append("<button id='export-btn-" + groupNum + "' type='button'>Export Group " + this.groupNum + " CSV</button>");
+         $("#ui").append("<button class='btn' id='export-btn-" + groupNum + "' type='button'>Export Group " + this.groupNum + " CSV</button>");
          $("#export-btn-" + groupNum)
             .button()
             .click(function () {
