@@ -4,7 +4,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
       "RedwoodSubject",
       "DataHistory",
       "Graphing",
-      function ($scope, $interval, rs, dataHistory, graphing) {
+      "$http",
+      function ($scope, $interval, rs, dataHistory, graphing, $http) {
 
          var CLOCK_FREQUENCY = 50;   // Frequency of loop, measured in ms delay between ticks
 
@@ -95,6 +96,22 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
             // start looping the update function
             $interval($scope.update, CLOCK_FREQUENCY);
+
+            // if input data was provided, setup automatic input system
+            if (data.hasOwnProperty("input_addresses")) {
+               // get unique index for this player
+               var index = $scope.group.findIndex(function (element) { return element == rs.user_id; });
+
+               // download input csv file
+               $http.get(data.input_addresses[index]).then(function (response) {
+                  // parse input into array
+                  $scope.inputData = response.data.split('\n').map(function (element) {
+                     return element.split(',');
+                  });
+
+                  window.setTimeout($scope.processInputAction, $scope.inputData[0][0] + $scope.dHistory.startTime - Date.now(), 0);
+               });
+            }
          });
 
          rs.recv("From_Group_Manager", function (uid, msg) {
@@ -212,5 +229,57 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
          rs.recv("end_game", function (uid, msg) {
             console.log(msg);
             rs.finish();
-         })
+         });
+
+         $scope.processInputAction = function (inputIndex) {
+            console.log($scope.inputData[inputIndex]);
+            switch ($scope.inputData[inputIndex][1]) {
+               case "OUT":
+                  var msg = new Message("USER", "UOUT", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
+                  $scope.sendToGroupManager(msg);
+                  $scope.setState("state_out");
+                  break;
+
+               case "SNIPE":
+                  var msg = new Message("USER", "USNIPE", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
+                  $scope.sendToGroupManager(msg);
+                  $scope.setState("state_snipe");
+                  break;
+
+               case "MAKER":
+                  var msg = new Message("USER", "UMAKER", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
+                  $scope.sendToGroupManager(msg);
+                  $scope.setState("state_maker");
+                  break;
+
+               case "FAST":
+                  $scope.setSpeed(true);
+                  break;
+
+               case "SLOW":
+                  $scope.setSpeed(false);
+                  break;
+
+               case "SPREAD":
+                  var newVal = parseFloat($scope.inputData[inputIndex][2]);
+                  if (newVal != $scope.sliderVal) {
+                     $scope.sliderVal = newVal;
+                     $("#slider").slider({value: newVal});
+                     var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.sliderVal, $scope.tradingGraph.getCurOffsetTime()]);
+                     $scope.sendToGroupManager(msg);
+                  }
+                  if ($scope.state != "state_maker") {
+                     var msg2 = new Message("USER", "UMAKER", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
+                     $scope.sendToGroupManager(msg2);
+                     $scope.setState("state_maker");
+                  }
+                  break;
+
+               default:
+                  console.error("invalid input: " + $scope.inputData[inputIndex][1]);
+            }
+
+            if (inputIndex >= $scope.inputData.length - 1) return;
+            window.setTimeout($scope.processInputAction, parseInt($scope.inputData[inputIndex + 1][0]) + $scope.dHistory.startTime - Date.now(), inputIndex + 1);
+         }
       }]);

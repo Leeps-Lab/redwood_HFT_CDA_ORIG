@@ -160,12 +160,14 @@ Redwood.controller("AdminCtrl",
 
             //INITIALIZE ADMIN FOR EXPERIMENT   **************************************
 
-            $scope.speedCost = ra.get_config(1, 0).speedCost;
-            $scope.startingWealth = ra.get_config(1, 0).startingWealth;
-            $scope.maxSpread = ra.get_config(1, 0).maxSpread;
+            $scope.config = ra.get_config(1, 0);
+
+            $scope.speedCost = $scope.config.speedCost;
+            $scope.startingWealth = $scope.config.startingWealth;
+            $scope.maxSpread = $scope.config.maxSpread;
 
             $scope.priceChanges = [];
-            var priceURL = ra.get_config(1, 0).priceChangesURL;
+            var priceURL = $scope.config.priceChangesURL;
             $http.get(priceURL).then(function (response) {
                var rows = response.data.split("\n");
 
@@ -183,7 +185,7 @@ Redwood.controller("AdminCtrl",
                }
 
                $scope.investorArrivals = [];
-               var arrivalURL = ra.get_config(1, 0).marketEventsURL;
+               var arrivalURL = $scope.config.marketEventsURL;
                $http.get(arrivalURL).then(function (response) {
                   var rows = response.data.split("\n");
 
@@ -203,13 +205,13 @@ Redwood.controller("AdminCtrl",
                   //******************** seting up groups **************************
 
                   // Fetch groups array from config file and create wrapper for accessing groups
-                  $scope.groups = ra.get_config(1, 0).groups;
+                  $scope.groups = $scope.config.groups;
                   $scope.getGroup = function (groupNum) {
                      return $scope.groups[groupNum - 1];
                   };
 
                   // create synchronize arrays for starting each group and also map subject id to their group
-                  $scope.idToGroup = {};        // maps every id to thier corresponding group
+                  $scope.idToGroup = {};        // maps every id to their corresponding group
                   $scope.startSyncArrays = {};  // synchronized array for ensuring that all subjects in a group start together
                   for (var groupNum = 1; groupNum <= $scope.groups.length; groupNum++) {
                      var group = $scope.getGroup(groupNum); // fetch group from array
@@ -309,6 +311,11 @@ Redwood.controller("AdminCtrl",
                   maxSpread: $scope.maxSpread,
                   playerTimeOffsets: $scope.playerTimeOffsets
                };
+
+               if($scope.config.hasOwnProperty("input_addresses")) {
+                  beginData.input_addresses = ($scope.config.input_addresses.split(','));
+               }
+
                ra.sendCustom("Experiment_Begin", beginData, "admin", 1, groupNum);
                $scope.groupManagers[groupNum].startTime = startTime;
                $scope.groupManagers[groupNum].dataStore.init(startFP, startTime);
