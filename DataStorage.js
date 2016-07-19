@@ -74,12 +74,14 @@ Redwood.factory("DataStorage", function () {
       dataStorage.storePlayerOrder = function (timestamp, order) {
          this.playerOrders.push([timestamp - this.startTime, order]);
       };
-
-      dataStorage.storeMarketState = function (timestamp, orderBook, buyOrdersBefore, sellOrdersBefore) {
-         // use jquery extend to do deep copy of market state
-         // before state is already copied, no need to copy it again
-         this.buyOrderChanges.push([timestamp - this.startTime, $.extend(true, [], orderBook.buyContracts), buyOrdersBefore]);
-         this.sellOrderChanges.push([timestamp - this.startTime, $.extend(true, [], orderBook.sellContracts), sellOrdersBefore]);
+      
+      dataStorage.storeBuyOrderState = function (timestamp, buyOrders, buyOrdersBefore) {
+         // use jquery extend to do a deep copy of market state
+         this.buyOrderChanges.push([timestamp - this.startTime, $.extend(true, [], buyOrders), buyOrdersBefore]);
+      };
+      
+      dataStorage.storeSellOrderState = function (timestamp, sellOrders, sellOrdersBefore) {
+         this.sellOrderChanges.push([timestamp - this.startTime, $.extend(true, [], sellOrders), sellOrdersBefore]);
       };
 
       dataStorage.storeSpeedChange = function (timestamp, speed, uid) {
@@ -318,12 +320,16 @@ Redwood.factory("DataStorage", function () {
 
          // fill empty market state rows appropriately
          for (let row = 1; row < data.length; row++) {
-            // if buy before column is empty, assume all market state columns are empty
+            // if buy before column is empty, assume all buy state columns are empty
             // probably not the best way to do this
             if (data[row][numColumns - 8] === null) {
                // copy after state from previous row into both columns for this row
                data[row][numColumns - 8] = data[row - 1][numColumns - 7];
                data[row][numColumns - 7] = data[row - 1][numColumns - 7];
+            }
+
+            // do the same for sell orders
+            if (data[row][numColumns - 6] === null) {
                data[row][numColumns - 6] = data[row - 1][numColumns - 5];
                data[row][numColumns - 5] = data[row - 1][numColumns - 5];
             }

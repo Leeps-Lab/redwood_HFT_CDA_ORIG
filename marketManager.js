@@ -42,10 +42,13 @@ Redwood.factory("MarketManager", function () {
 
             // enter buy offer
             case "EBUY":
+               // save market state before for debug output
+               message.buyOrdersBeforeState = $.extend(true, [], this.CDABook.buyContracts);
+
                //if message is a market order
                //call ioc buy with a limit greater than the max price
                if (message.msgData[1] == 214748.3647) {
-                  market.CDABook.makeIOCBuy(message.msgData[0], 200000, message.timestamp, message.buyOrdersBeforeState, message.sellOrdersBeforeState);
+                  market.CDABook.makeIOCBuy(message.msgData[0], 200000, message.timestamp, message.buyOrdersBeforeState);
                }
                //if order's price is out of bounds
                else if (message.msgData[1] > 199999.9900 || message.msgData[1] <= 0) {
@@ -56,7 +59,7 @@ Redwood.factory("MarketManager", function () {
                else {
                   //if IOC, then call IOC insert function
                   if (message.msgData[2]) {
-                     market.CDABook.makeIOCBuy(message.msgData[0], message.msgData[1], message.timestamp, message.buyOrdersBeforeState, message.sellOrdersBeforeState);
+                     market.CDABook.makeIOCBuy(message.msgData[0], message.msgData[1], message.timestamp, message.buyOrdersBeforeState);
                   }
                   else {
                      // if insert was successful, send confirm message
@@ -65,7 +68,6 @@ Redwood.factory("MarketManager", function () {
                         var msg = new Message("ITCH", "C_EBUY", [message.msgData[0], message.msgData[1], message.timestamp]);
                         msg.timeStamp = message.timestamp; // for test output only
                         msg.buyOrdersBeforeState = message.buyOrdersBeforeState;
-                        msg.sellOrdersBeforeState = message.sellOrdersBeforeState;
                         this.sendToGroupManager(msg);
                      }
                   }
@@ -74,8 +76,10 @@ Redwood.factory("MarketManager", function () {
 
             // enter sell offer
             case "ESELL":
+               message.sellOrdersBeforeState = $.extend(true, [], this.CDABook.sellContracts);
+
                if (message.msgData[1] == 214748.3647) {
-                  market.CDABook.makeIOCSell(message.msgData[0], 0, message.timestamp, message.buyOrdersBeforeState, message.sellOrdersBeforeState);
+                  market.CDABook.makeIOCSell(message.msgData[0], 0, message.timestamp, message.sellOrdersBeforeState);
                }
                else if (message.msgData[1] > 199999.9900 || message.msgData[1] <= 0) {
                   console.error("marketManager: invalid sell price of " + message.msgData[1]);
@@ -84,7 +88,7 @@ Redwood.factory("MarketManager", function () {
                else {
                   //if IOC, then call IOC insert function
                   if (message.msgData[2]) {
-                     market.CDABook.makeIOCSell(message.msgData[0], message.msgData[1], message.timestamp, message.buyOrdersBeforeState, message.sellOrdersBeforeState);
+                     market.CDABook.makeIOCSell(message.msgData[0], message.msgData[1], message.timestamp, message.sellOrdersBeforeState);
                   }
                   else {
                      // insert returns true if order was actually inserted
@@ -92,7 +96,6 @@ Redwood.factory("MarketManager", function () {
                         //only send C_ESELL message for regular limit order
                         var msg = new Message("ITCH", "C_ESELL", [message.msgData[0], message.msgData[1], message.timestamp]);
                         msg.timeStamp = message.timestamp; // for test output only
-                        msg.buyOrdersBeforeState = message.buyOrdersBeforeState;
                         msg.sellOrdersBeforeState = message.sellOrdersBeforeState;
                         this.sendToGroupManager(msg);
                      }
@@ -102,42 +105,48 @@ Redwood.factory("MarketManager", function () {
 
             // remove buy offer
             case "RBUY":
+               // save market state before for debug output
+               message.buyOrdersBeforeState = $.extend(true, [], this.CDABook.buyContracts);
+
                market.CDABook.removeBuy(message.msgData[0]);
                var msg = new Message("ITCH", "C_RBUY", [message.msgData[0], message.timestamp]);
                msg.timeStamp = message.timestamp; // for test output only
                msg.buyOrdersBeforeState = message.buyOrdersBeforeState;
-               msg.sellOrdersBeforeState = message.sellOrdersBeforeState;
                this.sendToGroupManager(msg);
                break;
 
             // remove sell offer
             case "RSELL":
+               message.sellOrdersBeforeState = $.extend(true, [], this.CDABook.sellContracts);
+
                market.CDABook.removeSell(message.msgData[0]);
                var msg = new Message("ITCH", "C_RSELL", [message.msgData[0], message.timestamp]);
                msg.timeStamp = message.timestamp; // for test output only
-               msg.buyOrdersBeforeState = message.buyOrdersBeforeState;
                msg.sellOrdersBeforeState = message.sellOrdersBeforeState;
                this.sendToGroupManager(msg);
                break;
 
             // update buy offer
             case "UBUY":
+               // save market state before for debug output
+               message.buyOrdersBeforeState = $.extend(true, [], this.CDABook.buyContracts);
+
                // insert function works as update now also
                if (market.CDABook.insertBuy(message.msgData[0], message.msgData[1], message.timestamp, message.msgData[2])) {
                   var msg = new Message("ITCH", "C_UBUY", [message.msgData[0], message.msgData[1], message.timestamp]);
                   msg.timeStamp = message.timestamp; // for test output only
                   msg.buyOrdersBeforeState = message.buyOrdersBeforeState;
-                  msg.sellOrdersBeforeState = message.sellOrdersBeforeState;
                   this.sendToGroupManager(msg);
                }
                break;
 
             // update sell offer
             case "USELL":
+               message.sellOrdersBeforeState = $.extend(true, [], this.CDABook.sellContracts);
+
                if (market.CDABook.insertSell(message.msgData[0], message.msgData[1], message.timestamp, message.msgData[2])) {
                   var msg = new Message("ITCH", "C_USELL", [message.msgData[0], message.msgData[1], message.timestamp]);
                   msg.timeStamp = message.timestamp; // for test output only
-                  msg.buyOrdersBeforeState = message.buyOrdersBeforeState;
                   msg.sellOrdersBeforeState = message.sellOrdersBeforeState;
                   this.sendToGroupManager(msg);
                }
@@ -256,7 +265,7 @@ Redwood.factory("MarketManager", function () {
       };
 
       //transacts an IOC order
-      market.CDABook.makeIOCBuy = function (buyerId, price, timestamp, buyStateBefore, sellStateBefore) {
+      market.CDABook.makeIOCBuy = function (buyerId, price, timestamp, buyStateBefore) {
          if (market.CDABook.sellContracts.length === 0) return;
          if (market.CDABook.sellPrices[market.CDABook.sellPrices.length - 1] < price) {
             var order = market.CDABook.sellContracts[market.CDABook.sellContracts.length - 1].pop();
@@ -266,12 +275,11 @@ Redwood.factory("MarketManager", function () {
             }
             var msg = new Message("ITCH", "C_TRA", [timestamp, buyerId, order.id, order.price]);
             msg.buyOrdersBeforeState = buyStateBefore;
-            msg.sellOrdersBeforeState = sellStateBefore;
             market.sendToGroupManager(msg);
          }
       };
 
-      market.CDABook.makeIOCSell = function (sellerId, price, timestamp, buyStateBefore, sellStateBefore) {
+      market.CDABook.makeIOCSell = function (sellerId, price, timestamp, sellStateBefore) {
          if (market.CDABook.buyContracts.length === 0) return;
          if (market.CDABook.buyPrices[market.CDABook.buyPrices.length - 1] > price) {
             var order = market.CDABook.buyContracts[market.CDABook.buyContracts.length - 1].pop();
@@ -280,7 +288,6 @@ Redwood.factory("MarketManager", function () {
                market.CDABook.buyPrices.pop();
             }
             var msg = new Message("ITCH", "C_TRA", [timestamp, order.id, sellerId, order.price]);
-            msg.buyOrdersBeforeState = buyStateBefore;
             msg.sellOrdersBeforeState = sellStateBefore;
             market.sendToGroupManager(msg);
          }

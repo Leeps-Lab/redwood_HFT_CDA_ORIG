@@ -116,18 +116,27 @@ Redwood.factory("GroupManager", function () {
 
          switch (msg.msgType) {
             case "C_EBUY"  :
-            case "C_ESELL" :
             case "C_RBUY"  :
-            case "C_RSELL" :
             case "C_UBUY"  :
+               this.dataStore.storeBuyOrderState(msg.timeStamp, this.market.CDABook.buyContracts, msg.buyOrdersBeforeState);
+               break;
+            case "C_RSELL" :
+            case "C_ESELL" :
             case "C_USELL" :
-               this.marketAlgorithms[msg.msgData[0]].recvFromGroupManager(msg);
+               this.dataStore.storeSellOrderState(msg.timeStamp, this.market.CDABook.sellContracts, msg.sellOrdersBeforeState);
                break;
             case "C_TRA"   :
                this.sendToMarketAlgorithms(msg);
+               // I'm actually a little ashamed of this one
+               if (msg.hasOwnProperty("buyOrdersBeforeState")) {
+                  this.dataStore.storeBuyOrderState(msg.timeStamp, this.market.CDABook.buyContracts, msg.buyOrdersBeforeState);
+               }
+               else {
+                  this.dataStore.storeSellOrderState(msg.timeStamp, this.market.CDABook.sellContracts, msg.sellOrdersBeforeState);
+               }
+               return;
          }
-         
-         this.dataStore.storeMarketState(msg.timeStamp, this.market.CDABook, msg.buyOrdersBeforeState, msg.sellOrdersBeforeState);
+         this.marketAlgorithms[msg.msgData[0]].recvFromGroupManager(msg);
       };
 
       // handles message from subject and passes it on to market algorithm
