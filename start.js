@@ -109,7 +109,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                      return element.split(',');
                   });
 
-                  window.setTimeout($scope.processInputAction, $scope.inputData[0][0] + $scope.dHistory.startTime - Date.now(), 0);
+                  window.setTimeout($scope.processInputAction, $scope.inputData[0][0] + $scope.dHistory.startTime - $scope.tradingGraph.getCurOffsetTime(), 0);
                });
             }
          });
@@ -280,6 +280,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             }
 
             if (inputIndex >= $scope.inputData.length - 1) return;
-            window.setTimeout($scope.processInputAction, parseInt($scope.inputData[inputIndex + 1][0]) + $scope.dHistory.startTime - Date.now(), inputIndex + 1);
+            window.setTimeout($scope.processInputAction, parseInt($scope.inputData[inputIndex + 1][0]) + $scope.dHistory.startTime - $scope.tradingGraph.getCurOffsetTime(), inputIndex + 1);
          }
       }]);
