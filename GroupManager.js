@@ -192,6 +192,11 @@ Redwood.factory("GroupManager", function () {
 
          this.priceIndex++;
 
+         if (this.priceIndex >= this.priceChanges.length) {
+            console.log("reached end of price changes array");
+            return;
+         }
+
          window.setTimeout(this.sendNextPriceChange, this.startTime + this.priceChanges[this.priceIndex][0] - Date.now());
       }.bind(groupManager);
 
@@ -203,7 +208,10 @@ Redwood.factory("GroupManager", function () {
 
          this.investorIndex++;
 
-         if (this.investorIndex >= this.investorArrivals.length) return;
+         if (this.investorIndex >= this.investorArrivals.length) {
+            console.log("reached end of investors array");
+            return;
+         }
 
          window.setTimeout(this.sendNextInvestorArrival, this.startTime + this.investorArrivals[this.investorIndex][0] - Date.now());
       }.bind(groupManager);

@@ -1,10 +1,16 @@
-#investor-controller-container, #fpc-controller-container {
+#control-container {
+    width: 50%;
     margin: auto;
     padding: 10px;
     text-align: center;
 }
 
-input[type=number] {
-    width: 50px;
+#control-container > * {
+    display: inline-block;
 }
 
+#fpc-input {
+    margin: 2px;
+    margin-left: 20px;
+    width: 80px;
+}

@@ -314,7 +314,7 @@ Redwood.controller("AdminCtrl",
 
                if($scope.config.hasOwnProperty("input_addresses")) {
                   console.log("RUNNING IN TEST MODE");
-                  beginData.input_addresses = ($scope.config.input_addresses.split(','));
+                  beginData.input_addresses = $scope.config.input_addresses.split(',');
                }
 
                ra.sendCustom("Experiment_Begin", beginData, "admin", 1, groupNum);
@@ -347,5 +347,39 @@ Redwood.controller("AdminCtrl",
          ra.on("resume", function () {
             ra.resume();
          });
+
+         $("#buy-investor")
+            .button()
+            .click(function () {
+               var msg = new Message("OUCH", "EBUY", [0, 214748.3647, true]);
+               msg.delay = false;
+               for (var group in $scope.groupManagers) {
+                  console.log(group);
+                  $scope.groupManagers[group].dataStore.investorArrivals.push([Date.now() - this.startTime, "BUY"]);
+                  $scope.groupManagers[group].sendToMarket(msg);
+               }
+            });
+
+         $("#sell-investor")
+            .button()
+            .click(function () {
+               var msg = new Message("OUCH", "ESELL", [0, 214748.3647, true]);
+               msg.delay = false;
+               for (var group in $scope.groupManagers) {
+                  $scope.groupManagers[group].dataStore.investorArrivals.push([Date.now() - this.startTime, "SELL"]);
+                  $scope.groupManagers[group].sendToMarket(msg);
+               }
+            });
+
+         $("#send-fpc")
+            .button()
+            .click(function () {
+               var msg = new Message("ITCH", "FPC", [Date.now(), parseFloat( $("#fpc-input").val() )]);
+               msg.delay = false;
+               for (var group in $scope.groupManagers) {
+                  $scope.groupManagers[group].dataStore.storeMsg(msg);
+                  $scope.groupManagers[group].sendToMarketAlgorithms(msg);
+               }
+            })
 
       }]);
