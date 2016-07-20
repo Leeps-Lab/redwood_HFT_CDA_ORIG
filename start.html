@@ -21,10 +21,10 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="(player, status) in dHistory.statuses">
+                                        <tr ng-repeat="(player, data) in dHistory.playerData">
                                             <td>{{player}}</td>
-                                            <td>{{status.state}}</td>
-                                            <td>{{status.state == "Maker" ? status.spread : "N/A"}}</td>
+                                            <td>{{data.state}}</td>
+                                            <td>{{data.state == "Maker" ? data.spread : "N/A"}}</td>
                                         </tr>
                                     </tbody>
                                 </table>

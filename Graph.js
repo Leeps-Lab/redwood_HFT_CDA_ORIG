@@ -174,12 +174,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             });
       };
 
-      //draws profit line, FP and offers
-      graph.drawStep = function (graphRefr, historyDataSet, currentData, styleClassName, svgToUpdate, priceMapFunction) {
-         //hack to fix problem with this not being set correctly for map function
-         priceMapFunction = priceMapFunction.bind(graphRefr);
-
-         svgToUpdate.selectAll("line." + styleClassName)
+      //draws FP and offers
+      graph.drawMarket = function (graphRefr, historyDataSet, currentData, styleClassName) {
+         this.marketSVG.selectAll("line." + styleClassName)
             .data(historyDataSet, function (d) {
                return d;
             })
@@ -192,33 +189,77 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
                return graphRefr.mapTimeToXAxis(d[1]);
             })
             .attr("y1", function (d) {
-               return priceMapFunction(d[2]);
+               return graphRefr.mapMarketPriceToYAxis(d[2]);
             })
             .attr("y2", function (d) {
-               return priceMapFunction(d[3]);
+               return graphRefr.mapMarketPriceToYAxis(d[2]);
             })
             .attr("class", styleClassName);
 
          if (currentData != null) {
-            var pricefinal = currentData[1] - ((graphRefr.currentTime - currentData[0]) * currentData[2] / 1000); //determines how far down the line has moved
-            svgToUpdate.append("line")
+            this.marketSVG.append("line")
                .attr("x1", this.mapTimeToXAxis(currentData[0]))
                .attr("x2", this.curTimeX)
-               .attr("y1", priceMapFunction(currentData[1]))
-               .attr("y2", priceMapFunction(pricefinal))
+               .attr("y1", this.mapMarketPriceToYAxis(currentData[1]))
+               .attr("y2", this.mapMarketPriceToYAxis(currentData[1]))
                .attr("class", styleClassName);
+         }
+      };
+
+      //draws profit line
+      graph.drawProfit = function (graphRefr, historyDataSet, currentData, outStyleClass, makerStyleClass, snipeStyleClass) {
+         this.profitSVG.selectAll("line." + outStyleClass + " line." + makerStyleClass + " line." + snipeStyleClass)
+            .data(historyDataSet, function (d) {
+               return d;
+            })
+            .enter()
+            .append("line")
+            .attr("x1", function (d) {
+               return graphRefr.mapTimeToXAxis(d[0]);
+            })
+            .attr("x2", function (d) {
+               return graphRefr.mapTimeToXAxis(d[1]);
+            })
+            .attr("y1", function (d) {
+               return graphRefr.mapProfitPriceToYAxis(d[2]);
+            })
+            .attr("y2", function (d) {
+               return graphRefr.mapProfitPriceToYAxis(d[3]);
+            })
+            .attr("class", function (d) {
+               // a masterpiece
+               return d[4] == "Out" ? outStyleClass : (d[4] == "Maker" ? makerStyleClass : snipeStyleClass);
+            });
+
+         if (currentData != null) {
+            var pricefinal = currentData[1] - ((graphRefr.currentTime - currentData[0]) * currentData[2] / 1000); //determines how far down the line has moved
+            this.profitSVG.append("line")
+               .attr("x1", this.mapTimeToXAxis(currentData[0]))
+               .attr("x2", this.curTimeX)
+               .attr("y1", this.mapProfitPriceToYAxis(currentData[1]))
+               .attr("y2", this.mapProfitPriceToYAxis(pricefinal))
+               .attr("class", currentData[3] == "Out" ? outStyleClass : (currentData[3] == "Maker" ? makerStyleClass : snipeStyleClass));
          }
       };
 
       graph.drawOffers = function (graphRefr, dataHistory) {
          for (var user of dataHistory.group) {
             if (user !== dataHistory.myId) {
-               this.drawStep(graphRefr, dataHistory.offers[user].pastBuyOffers, dataHistory.offers[user].curBuyOffer, "others-buy-offer", this.marketSVG, this.mapMarketPriceToYAxis);
-               this.drawStep(graphRefr, dataHistory.offers[user].pastSellOffers, dataHistory.offers[user].curSellOffer, "others-sell-offer", this.marketSVG, this.mapMarketPriceToYAxis);
+               this.drawMarket(graphRefr, dataHistory.playerData[user].pastBuyOffers, dataHistory.playerData[user].curBuyOffer, "others-buy-offer");
+               this.drawMarket(graphRefr, dataHistory.playerData[user].pastSellOffers, dataHistory.playerData[user].curSellOffer, "others-sell-offer");
             }
          }
-         this.drawStep(graphRefr, dataHistory.offers[dataHistory.myId].pastBuyOffers, dataHistory.offers[dataHistory.myId].curBuyOffer, "my-buy-offer", this.marketSVG, this.mapMarketPriceToYAxis);
-         this.drawStep(graphRefr, dataHistory.offers[dataHistory.myId].pastSellOffers, dataHistory.offers[dataHistory.myId].curSellOffer, "my-sell-offer", this.marketSVG, this.mapMarketPriceToYAxis);
+         this.drawMarket(graphRefr, dataHistory.playerData[dataHistory.myId].pastBuyOffers, dataHistory.playerData[dataHistory.myId].curBuyOffer, "my-buy-offer");
+         this.drawMarket(graphRefr, dataHistory.playerData[dataHistory.myId].pastSellOffers, dataHistory.playerData[dataHistory.myId].curSellOffer, "my-sell-offer");
+      };
+
+      graph.drawAllProfit = function (graphRefr, dataHistory) {
+         for (var user of dataHistory.group) {
+            if (user !== dataHistory.myId) {
+               this.drawProfit(graphRefr, dataHistory.playerData[user].pastProfitSegments, dataHistory.playerData[user].curProfitSegment, "others-profit-out", "others-profit-maker", "others-profit-snipe");
+            }
+         }
+         this.drawProfit(graphRefr, dataHistory.playerData[dataHistory.myId].pastProfitSegments, dataHistory.playerData[dataHistory.myId].curProfitSegment, "my-profit-out", "my-profit-maker", "my-profit-snipe");
       };
 
       graph.drawPriceAxis = function (graphRefr, priceLines, svgToUpdate, priceMapFunction) {
@@ -350,14 +391,14 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.drawPriceGridLines(graphRefr, this.marketPriceLines, this.marketSVG, this.mapMarketPriceToYAxis);
          this.drawPriceGridLines(graphRefr, this.profitPriceLines, this.profitSVG, this.mapProfitPriceToYAxis);
 
-         this.drawStep(graphRefr, dataHistory.pastFundPrices, dataHistory.curFundPrice, "price-line", this.marketSVG, this.mapMarketPriceToYAxis);
+         this.drawMarket(graphRefr, dataHistory.pastFundPrices, dataHistory.curFundPrice, "price-line");
          this.drawOffers(graphRefr, dataHistory);
          this.drawTransactions(graphRefr, dataHistory.transactions, dataHistory.myId);
 
          this.drawPriceAxis(graphRefr, this.marketPriceLines, this.marketSVG, this.mapMarketPriceToYAxis);
          this.drawPriceAxis(graphRefr, this.profitPriceLines, this.profitSVG, this.mapProfitPriceToYAxis);
 
-         this.drawStep(graphRefr, dataHistory.pastProfitSegments, dataHistory.curProfitSegment, "profit-line", this.profitSVG, this.mapProfitPriceToYAxis);
+         this.drawAllProfit(graphRefr, dataHistory);
       };
 
       graph.init = function () {

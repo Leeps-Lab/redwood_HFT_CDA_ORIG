@@ -10,14 +10,12 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.group = group;
       dataHistory.curFundPrice = [startTime, startFP, 0];
       dataHistory.pastFundPrices = [];
-      dataHistory.curProfitSegment = null;
-      dataHistory.pastProfitSegments = [];
       dataHistory.transactions = [];    //entries look like [timestamp, myTransaction]
       dataHistory.profit = startingWealth;
       dataHistory.speedCost = speedCost;
       dataHistory.maxSpread = maxSpread;
-      dataHistory.offers = {};
-      dataHistory.statuses = {};
+
+      dataHistory.playerData = {};     //holds state, offer and profit data for each player in the group
       dataHistory.lowestSpread = "N/A";
 
       dataHistory.debugMode = debugMode;
@@ -55,19 +53,16 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
                this.storeSellOffer(msg.msgData[1], msg.msgData[0]);
                break;
             case "C_UMAKER" :
-               this.statuses[msg.msgData[0]].state = "Maker";
-               this.calcLowestSpread();
+               this.recordStateChange("Maker", msg.msgData[0], msg.msgData[1]);
                break;
             case "C_USNIPE" :
-               this.statuses[msg.msgData[0]].state = "Sniper";
-               this.calcLowestSpread();
+               this.recordStateChange("Snipe", msg.msgData[0], msg.msgData[1]);
                break;
             case "C_UOUT" :
-               this.statuses[msg.msgData[0]].state = "Out";
-               this.calcLowestSpread();
+               this.recordStateChange("Out", msg.msgData[0], msg.msgData[1]);
                break;
             case "C_UUSPR" :
-               this.statuses[msg.msgData[0]].spread = msg.msgData[1];
+               this.playerData[msg.msgData[0]].spread = msg.msgData[1];
                this.calcLowestSpread();
                break;
          }
@@ -75,32 +70,37 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
 
       // Functions
       
-      //initializes offer and status storage
+      //initializes player data storage
       dataHistory.init = function () {
-         this.curProfitSegment = [this.startTime, this.profit, 0];
-
          for (var uid of this.group) {
-            this.offers[uid] = {
+            this.playerData[uid] = {
                curBuyOffer: null,
                curSellOffer: null,
                pastBuyOffers: [],
-               pastSellOffers: []
-            };
-
-            this.statuses[uid] = {
+               pastSellOffers: [],
                state: "Out",
-               spread: this.maxSpread / 2
+               spread: this.maxSpread / 2,
+               curProfitSegment: [this.startTime, this.profit, 0, "Out"], // [start time, start profit, slope, state]
+               pastProfitSegments: []                              // [start time, end time, start price, end price, state]
             };
          }
       };
 
       dataHistory.calcLowestSpread = function () {
          this.lowestSpread = "N/A";
-         for (var player in this.statuses) {
-            if (this.statuses[player].state == "Maker" && (this.lowestSpread == "N/A" || this.statuses[player].spread < this.lowestSpread)) {
-               this.lowestSpread = this.statuses[player].spread;
+         for (var player in this.playerData) {
+            if (this.playerData[player].state == "Maker" && (this.lowestSpread == "N/A" || this.playerData[player].spread < this.lowestSpread)) {
+               this.lowestSpread = this.playerData[player].spread;
             }
          }
+      };
+
+      dataHistory.recordStateChange = function (newState, uid, timestamp) {
+         this.playerData[uid].state = newState;
+         this.calcLowestSpread();
+
+         var curProfit = this.playerData[uid].curProfitSegment[1] - ((timestamp - this.playerData[uid].curProfitSegment[0]) * this.playerData[uid].curProfitSegment[2] / 1000);
+         this.recordProfitSegment(curProfit, timestamp, this.playerData[uid].curProfitSegment[2], uid, newState);
       };
 
       // Adds fundamental price change to history
@@ -110,87 +110,96 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       };
 
       dataHistory.storeFundPrice = function (endTime) {
-         this.pastFundPrices.push([this.curFundPrice[0], endTime, this.curFundPrice[1], this.curFundPrice[1]]);
+         this.pastFundPrices.push([this.curFundPrice[0], endTime, this.curFundPrice[1]]);
          this.curFundPrice = null;
       };
 
       //records a new buy offer
       dataHistory.recordBuyOffer = function (buyMsg) {
          //Check if current buy offer needs to be stored
-         if (this.offers[buyMsg.msgData[0]].curBuyOffer != null) {
+         if (this.playerData[buyMsg.msgData[0]].curBuyOffer != null) {
             this.storeBuyOffer(buyMsg.msgData[2], buyMsg.msgData[0]);
          }
          //Push on new buy offer
-         this.offers[buyMsg.msgData[0]].curBuyOffer = [buyMsg.msgData[2], buyMsg.msgData[1], 0];   // [timestamp, price, slope]
+         this.playerData[buyMsg.msgData[0]].curBuyOffer = [buyMsg.msgData[2], buyMsg.msgData[1]];   // [timestamp, price]
       };
 
       // Records a new Sell offer
       dataHistory.recordSellOffer = function (sellMsg) {
          //Check if current sell offer needs to be stored
-         if (this.offers[sellMsg.msgData[0]].curSellOffer != null) {
+         if (this.playerData[sellMsg.msgData[0]].curSellOffer != null) {
             this.storeSellOffer(sellMsg.msgData[2], sellMsg.msgData[0]);
          }
          //Push on new sell offer
-         this.offers[sellMsg.msgData[0]].curSellOffer = [sellMsg.msgData[2], sellMsg.msgData[1], 0];   // [timestamp, price, slope]
+         this.playerData[sellMsg.msgData[0]].curSellOffer = [sellMsg.msgData[2], sellMsg.msgData[1]];   // [timestamp, price]
       };
 
       // Shifts buy offer from currently being active into the history
       dataHistory.storeBuyOffer = function (endTime, uid) {
-         if (this.offers[uid].curBuyOffer == null) {
+         if (this.playerData[uid].curBuyOffer == null) {
             throw "Cannot shift " + uid + "'s buy offer because it is null";
          }
-         this.offers[uid].pastBuyOffers.push([this.offers[uid].curBuyOffer[0], endTime, this.offers[uid].curBuyOffer[1], this.offers[uid].curBuyOffer[1]]);  // [startTimestamp, endTimestamp, startPrice, endPrice]
-         this.offers[uid].curBuyOffer = null;
+         this.playerData[uid].pastBuyOffers.push([this.playerData[uid].curBuyOffer[0], endTime, this.playerData[uid].curBuyOffer[1]]);  // [startTimestamp, endTimestamp, price]
+         this.playerData[uid].curBuyOffer = null;
       };
 
       // Shifts sell offer from currently being active into the history
       dataHistory.storeSellOffer = function (endTime, uid) {
-         if (this.offers[uid].curSellOffer == null) {
+         if (this.playerData[uid].curSellOffer == null) {
             throw "Cannot shift " + uid + "'s sell offer because it is null";
          }
-         this.offers[uid].pastSellOffers.push([this.offers[uid].curSellOffer[0], endTime, this.offers[uid].curSellOffer[1], this.offers[uid].curSellOffer[1]]);  // [startTimestamp, endTimestamp, startPrice, endPrice]
-         this.offers[uid].curSellOffer = null;
+         this.playerData[uid].pastSellOffers.push([this.playerData[uid].curSellOffer[0], endTime, this.playerData[uid].curSellOffer[1]]);  // [startTimestamp, endTimestamp, price]
+         this.playerData[uid].curSellOffer = null;
       };
 
       dataHistory.storeTransaction = function (msg) {
          if (msg.msgData[3] == this.myId) {
             // if I'm the buyer
             this.profit += msg.msgData[2] - msg.msgData[1];
-            this.recordProfitSegment(this.profit, msg.msgData[0], this.curProfitSegment[2]);
          }
          else if (msg.msgData[4] == this.myId) {
             //if I'm the seller
             this.profit += msg.msgData[1] - msg.msgData[2];
-            this.recordProfitSegment(this.profit, msg.msgData[0], this.curProfitSegment[2]);
          }
-         else {
-            //if I'm not a part of this transaction
 
+         if (msg.msgData[3] != 0) {
+            if (this.playerData[msg.msgData[3]].curBuyOffer !== null) this.storeBuyOffer(msg.msgData[0], msg.msgData[3]);
+
+            var uid = msg.msgData[3];
+            var curProfit = this.playerData[uid].curProfitSegment[1] - ((msg.msgData[0] - this.playerData[uid].curProfitSegment[0]) * this.playerData[uid].curProfitSegment[2] / 1000);
+            this.recordProfitSegment(curProfit + msg.msgData[2] - msg.msgData[1], msg.msgData[0], this.playerData[uid].curProfitSegment[2], uid, this.playerData[uid].state);
          }
-         if (msg.msgData[3] != 0 && this.offers[msg.msgData[3]].curBuyOffer !== null) this.storeBuyOffer(msg.msgData[0], msg.msgData[3]);
-         if (msg.msgData[4] != 0 && this.offers[msg.msgData[4]].curSellOffer !== null) this.storeSellOffer(msg.msgData[0], msg.msgData[4]);
+         if (msg.msgData[4] != 0) {
+            if (this.playerData[msg.msgData[4]].curSellOffer !== null) this.storeSellOffer(msg.msgData[0], msg.msgData[4]);
+
+            var uid = msg.msgData[4];
+            var curProfit = this.playerData[uid].curProfitSegment[1] - ((msg.msgData[0] - this.playerData[uid].curProfitSegment[0]) * this.playerData[uid].curProfitSegment[2] / 1000);
+            this.recordProfitSegment(curProfit + msg.msgData[1] - msg.msgData[2], msg.msgData[0], this.playerData[uid].curProfitSegment[2], uid, this.playerData[uid].state);
+         }
          this.transactions.push(msg.msgData);
       };
 
       dataHistory.storeSpeedChange = function (msg) {
-         this.recordProfitSegment(this.profit, msg.msgData[2], msg.msgData[1] ? this.speedCost : 0);
+         var uid = msg.msgData[0];
+         var curProfit = this.playerData[uid].curProfitSegment[1] - ((msg.msgData[2] - this.playerData[uid].curProfitSegment[0]) * this.playerData[uid].curProfitSegment[2] / 1000);
+         this.recordProfitSegment(curProfit, msg.msgData[2], msg.msgData[1] ? this.speedCost : 0, uid, this.playerData[uid].state);
       };
 
-      dataHistory.recordProfitSegment = function (price, startTime, slope) {
-         if (this.curProfitSegment != null) {
-            this.storeProfitSegment(startTime);
+      dataHistory.recordProfitSegment = function (price, startTime, slope, uid, state) {
+         if (this.playerData[uid].curProfitSegment != null) {
+            this.storeProfitSegment(startTime, uid);
          }
-         this.curProfitSegment = [startTime, price, slope];
+         this.playerData[uid].curProfitSegment = [startTime, price, slope, state];
       };
 
-      dataHistory.storeProfitSegment = function (endTime) {
-         //find end price by subtracting how far graph has descended from start price
-         var endPrice = this.curProfitSegment[1] - ((endTime - this.curProfitSegment[0]) * this.curProfitSegment[2] / 1000);
-         if (this.curProfitSegment == null) {
+      dataHistory.storeProfitSegment = function (endTime, uid) {
+         if (this.playerData[uid].curProfitSegment == null) {
             throw "Cannot store current profit segment because it is null";
          }
-         this.pastProfitSegments.push([this.curProfitSegment[0], endTime, this.curProfitSegment[1], endPrice]);
-         this.curProfitSegment = null;
+         //find end price by subtracting how far graph has descended from start price
+         var endPrice = this.playerData[uid].curProfitSegment[1] - ((endTime - this.playerData[uid].curProfitSegment[0]) * this.playerData[uid].curProfitSegment[2] / 1000);
+         this.playerData[uid].pastProfitSegments.push([this.playerData[uid].curProfitSegment[0], endTime, this.playerData[uid].curProfitSegment[1], endPrice, this.playerData[uid].curProfitSegment[3]]);
+         this.playerData[uid].curProfitSegment = null;
       };
 
       return dataHistory;

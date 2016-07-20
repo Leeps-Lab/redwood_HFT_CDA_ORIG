@@ -89,9 +89,34 @@
     stroke-width: 1;
 }
 
-.profit-line {
-    stroke: rgb(0, 100, 0);
+.my-profit-out {
+    stroke: rgb(110, 110, 110);
     stroke-width: 3;
+}
+
+.my-profit-snipe {
+    stroke: rgb(0, 200, 0);
+    stroke-width: 3;
+}
+
+.my-profit-maker {
+    stroke: rgb(0, 0, 255);
+    stroke-width: 3;
+}
+
+.others-profit-out {
+    stroke: rgba(110, 110, 110, 0.5);
+    stroke-width: 2;
+}
+
+.others-profit-snipe {
+    stroke: rgba(0, 200, 0, 0.5);
+    stroke-width: 2;
+}
+
+.others-profit-maker {
+    stroke: rgba(0, 0, 255, 0.5);
+    stroke-width: 2;
 }
 
 .my-positive-transactions {

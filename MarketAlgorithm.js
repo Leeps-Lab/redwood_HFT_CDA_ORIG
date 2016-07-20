@@ -140,7 +140,7 @@ Redwood.factory("MarketAlgorithm", function () {
          if (msg.msgType === "USPEED") {
             this.using_speed = msg.msgData[1];
             var nMsg = new Message("DATA", "C_USPEED", msg.msgData);
-            this.sendToDataHistory(nMsg);
+            this.sendToAllDataHistories(nMsg);
          }
 
          //User updated their spread
