@@ -1,6 +1,6 @@
 body {
-  padding-top: 73px;
-  /*background-color: red;*/
+    padding-top: 73px;
+    /*background-color: red;*/
 }
 
 #slider {
@@ -23,11 +23,11 @@ body {
 }
 
 #buttons-container {
-  text-align: center;
-  float: left;
-  width: 70%;
-  height: 100%;
-  padding: 10px;
+    text-align: center;
+    float: left;
+    width: 70%;
+    height: 100%;
+    padding: 10px;
 }
 
 #graph-controls {
@@ -69,92 +69,104 @@ body {
 }
 
 .speed-label {
-  color:orange;
-  font-size: 24px;
+    color: orange;
+    font-size: 24px;
 }
 
 .state-label {
-  color:blue;
-  font-size: 24px;
+    color: blue;
+    font-size: 24px;
 }
 
 .spread-label {
-  color:red;
-  font-size: 24px;
+    color: red;
+    font-size: 24px;
 }
 
-.ui-container{
-    margin-bottom:60px;
+.ui-container {
+    margin-bottom: 60px;
 }
 
-.top-left-screen{
-  background-color: rgb(230, 230, 230);
+.top-left-screen {
+    background-color: rgb(230, 230, 230);
 }
 
-.top-right-screen{
-  background-color: rgb(230, 230, 230);
+.top-right-screen {
+    background-color: rgb(230, 230, 230);
 }
 
-.bottom-left-screen{
-  background-color: rgb(230, 230, 230);
+.bottom-left-screen {
+    background-color: rgb(230, 230, 230);
 }
 
-.bottom-right-screen{
-  background-color: rgb(230, 230, 230);
+.bottom-right-screen {
+    background-color: rgb(230, 230, 230);
 }
 
-.screen-wrapper{
-  height:320px;
+.screen-wrapper {
+    height: 320px;
 }
 
-.screen{
-  box-shadow:0px 0px 10px rgba(0,0,0,.5);
-  border-radius: 10px;
-  width:100%;
-  height:100%;
+.screen {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, .5);
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
 }
 
-.button-container-state{
-  margin-top:20px;
-  border-radius: 10px;
-  border:1px solid blue;
-  padding:10px;
-  display: inline-block;
+.button-container-state {
+    margin-top: 20px;
+    border-radius: 10px;
+    border: 1px solid blue;
+    padding: 10px;
+    display: inline-block;
 }
 
-.button-container-speed{
-  margin-top:50px;
-  border-radius: 10px;
-  border:1px solid orange;
-  padding:10px;
-  display: inline-block;
+.button-container-speed {
+    margin-top: 50px;
+    border-radius: 10px;
+    border: 1px solid orange;
+    padding: 10px;
+    display: inline-block;
 }
 
-.button-container-spread{
-  border-radius: 10px;
-  border:1px solid red;
-  padding:10px;
-  display: inline-block;
+.button-container-spread {
+    border-radius: 10px;
+    border: 1px solid red;
+    padding: 10px;
+    display: inline-block;
 }
 
-.state-selected{
-  color:white;
-  border: 2px solid black;
-  background-color: blue;
+#state_out.state-selected {
+    color: white;
+    border: 2px solid black;
+    background-color: rgb(110, 110, 110);
 }
 
-.state-not-selected{
-  color:white;
-  border: 2px solid gray;
-  background-color: gray;
+#state_snipe.state-selected {
+    color: white;
+    border: 2px solid black;
+    background-color: rgb(39, 196, 60);
 }
 
-.row{
-   padding:0px;
-   margin:0px;
+#state_maker.state-selected {
+    color: white;
+    border: 2px solid black;
+    background-color: rgb(26, 73, 232);
 }
 
-[class*="col-"]{
-  padding: 0px;
-  margin: 0px;
+.state-not-selected {
+    color: white;
+    border: 2px solid gray;
+    background-color: gray;
+}
+
+.row {
+    padding: 0px;
+    margin: 0px;
+}
+
+[class*="col-"] {
+    padding: 0px;
+    margin: 0px;
 }
