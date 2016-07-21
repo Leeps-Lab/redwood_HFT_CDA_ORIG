@@ -92,7 +92,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             $scope.dHistory = dataHistory.createDataHistory(data.startTime, data.startFP, rs.user_id, $scope.group, $scope.isDebug, data.speedCost, data.startingWealth, data.maxSpread);
             $scope.dHistory.init();
             $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2", data.startTime, data.playerTimeOffsets[rs.user_id]);
-            $scope.tradingGraph.init();
+            $scope.tradingGraph.init(data.startFP, data.maxSpread, data.startingWealth);
 
             // start looping the update function
             $interval($scope.update, CLOCK_FREQUENCY);
@@ -254,10 +254,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
                case "FAST":
                   $scope.setSpeed(true);
+                  $("#speed-on").attr("checked", true);
                   break;
 
                case "SLOW":
                   $scope.setSpeed(false);
+                  $("#speed-off").attr("checked", true);
                   break;
 
                case "SPREAD":

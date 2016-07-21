@@ -29,8 +29,9 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <h4 class="status-display">Best Spread: {{dHistory.lowestSpread}}</h4>
-                            <h4 class="status-display">Your Profit: ${{dHistory.profit | number : 2}}</h4>
+                            <h5 class="status-display">Best Spread: {{dHistory.lowestSpread}}</h5>
+                            <h5 class="status-display">Your Profit: ${{dHistory.profit | number : 2}}</h5>
+                            <h5 class="status-display">Speed Cost: ${{dHistory.speedCost}} / Second</h5>
                         </div>
                     </div>
                 </div>
@@ -57,11 +58,11 @@
                                     Speed
                                 </div>
                                 <label class="radio-inline" ng-click="setSpeed(true);">
-                                    <input type="radio" name="speed-status">
+                                    <input type="radio" id="speed-on" name="speed-status">
                                     On
                                 </label>
                                 <label class="radio-inline" ng-click="setSpeed(false);">
-                                    <input type="radio" name="speed-status" checked>
+                                    <input type="radio" id="speed-off" name="speed-status" checked>
                                     Off
                                 </label>
                             </div>

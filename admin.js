@@ -313,7 +313,7 @@ Redwood.controller("AdminCtrl",
                };
 
                if($scope.config.hasOwnProperty("input_addresses")) {
-                  console.log("RUNNING IN TEST MODE");
+                  console.log("%cRUNNING IN TEST MODE", 'font-family: "Comic Sans MS"');
                   beginData.input_addresses = $scope.config.input_addresses.split(',');
                }
 
@@ -354,7 +354,6 @@ Redwood.controller("AdminCtrl",
                var msg = new Message("OUCH", "EBUY", [0, 214748.3647, true]);
                msg.delay = false;
                for (var group in $scope.groupManagers) {
-                  console.log(group);
                   $scope.groupManagers[group].dataStore.investorArrivals.push([Date.now() - this.startTime, "BUY"]);
                   $scope.groupManagers[group].sendToMarket(msg);
                }

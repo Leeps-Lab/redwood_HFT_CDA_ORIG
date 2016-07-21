@@ -19,16 +19,16 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.axisLabelWidth = 40;       //Width of area where price axis labels are drawn
       graph.marketSVG = d3.select('#' + graph.marketElementId); //market svg element
       graph.profitSVG = d3.select('#' + graph.profitElementId); //profit svg element
-      graph.minPriceMarket = 85;              //min price on price axis for market graph
-      graph.maxPriceMarket = 115;             //max price on price axis for market graph
-      graph.centerPriceMarket = (graph.maxPriceMarket + graph.minPriceMarket) / 2; //desired price for center of graph
-      graph.minPriceProfit = 20;               //min price on price axis for profit graph
-      graph.maxPriceProfit = 200;             //max price on price axis for profit graph
-      graph.centerPriceProfit = (graph.maxPriceProfit + graph.minPriceProfit) / 2;
+      graph.minPriceMarket = 0;             //min price on price axis for market graph
+      graph.maxPriceMarket = 0;             //max price on price axis for market graph
+      graph.centerPriceMarket = 0;          //desired price for center of graph
+      graph.minPriceProfit = 0;             //min price on price axis for profit graph
+      graph.maxPriceProfit = 0;             //max price on price axis for profit graph
+      graph.centerPriceProfit = 0;
       graph.graphAdjustSpeedMarket = .1;      //speed that market price axis adjusts in pixels per frame
-      graph.graphAdjustSpeedProfit = .75;      //speed that market price axis adjusts in pixels per frame
+      graph.graphAdjustSpeedProfit = .1;      //speed that market price axis adjusts in pixels per frame
       graph.marketPriceGridIncriment = 5;     //amount between each line on market price axis
-      graph.profitPriceGridIncriment = 15;    //amount between each line on profit price axis
+      graph.profitPriceGridIncriment = 5;    //amount between each line on profit price axis
       graph.contractedTimeInterval = 30;      //amount of time displayed on time axis when graph is contracted
       graph.timeInterval = graph.contractedTimeInterval; //current amount in seconds displayed at once on full time axis
       graph.timeIncriment = 5;         //Amount in seconds between lines on time axis
@@ -401,7 +401,14 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.drawAllProfit(graphRefr, dataHistory);
       };
 
-      graph.init = function () {
+      graph.init = function (startFP, maxSpread, startingWealth) {
+         this.maxPriceMarket = startFP + 1.5 * maxSpread;
+         this.minPriceMarket = startFP - 1.5 * maxSpread;
+         this.centerPriceMarket = (this.maxPriceMarket + this.minPriceMarket) / 2;
+         this.maxPriceProfit = startingWealth + 1.5 * maxSpread;
+         this.minPriceProfit = startingWealth - 1.5 * maxSpread;
+         this.centerPriceProfit = (graph.maxPriceProfit + graph.minPriceProfit) / 2;
+
          this.calculateSize();
          this.marketPriceLines = this.calcPriceGridLines(this.maxPriceMarket, this.minPriceMarket, this.marketPriceGridIncriment);
          this.profitPriceLines = this.calcPriceGridLines(this.maxPriceProfit, this.minPriceProfit, this.profitPriceGridIncriment);
