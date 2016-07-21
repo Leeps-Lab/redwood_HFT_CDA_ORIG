@@ -95,27 +95,27 @@
 }
 
 .my-profit-snipe {
-    stroke: rgb(0, 200, 0);
+    stroke: rgb(27, 245, 102);
     stroke-width: 3;
 }
 
 .my-profit-maker {
-    stroke: rgb(0, 0, 255);
+    stroke: rgb(26, 73, 232);
     stroke-width: 3;
 }
 
 .others-profit-out {
-    stroke: rgba(110, 110, 110, 0.5);
+    stroke: rgba(110, 110, 110, 0.4);
     stroke-width: 1;
 }
 
 .others-profit-snipe {
-    stroke: rgba(0, 200, 0, 0.5);
+    stroke: rgba(27, 245, 102, 0.4);
     stroke-width: 1;
 }
 
 .others-profit-maker {
-    stroke: rgba(0, 0, 255, 0.5);
+    stroke: rgba(26, 73, 232, 0.4);
     stroke-width: 1;
 }
 
