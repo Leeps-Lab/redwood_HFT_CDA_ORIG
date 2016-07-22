@@ -81,6 +81,12 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                   max: $scope.maxSpread
                });
 
+            // create associative array to go from uid to local group id for display purposes
+            $scope.displayId = {};
+            for (var index = 0; index < data.group.length; index++) {
+               $scope.displayId[data.group[index]] = index + 1;
+            }
+
             //Create the logger for this start.js page
             $scope.isDebug = data.isDebug;
             if ($scope.isDebug) {

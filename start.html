@@ -28,7 +28,7 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="(player, data) in dHistory.playerData">
-                                            <td>{{player == dHistory.myId ? "You" : player}}</td>
+                                            <td>{{player == dHistory.myId ? "You" : displayId[player]}}</td>
                                             <td>{{data.state}}</td>
                                             <td>{{data.state == "Maker" ? data.spread : ""}}</td>
                                         </tr>
