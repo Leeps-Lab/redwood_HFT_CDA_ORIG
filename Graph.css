@@ -2,6 +2,11 @@
     display: none;
 }
 
+/*sets the color for the lighter boxes on the time axis*/
+svg {
+    background-color: white;
+}
+
 /*Style for the lines that visualize incremental levels of the price axis*/
 .price-grid-line {
     stroke: rgb(200, 200, 200);
@@ -24,6 +29,7 @@
 }
 
 .time-grid-box-light {
+    display: none;
     fill: rgb(255, 255, 255);
 }
 

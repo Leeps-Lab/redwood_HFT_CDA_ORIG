@@ -128,7 +128,15 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
 
          $("#slider-val")
             .change( function () {
-               var newVal = $("#slider-val").val();
+               var newVal = $(this).val();
+               console.log(newVal);
+
+               // if someone tries to enter an empty value
+               if (newVal == "") {
+                  $(this).val($scope.sliderVal);
+                  return;
+               }
+
                if (newVal != $scope.sliderVal) {
                   $scope.sliderVal = newVal;
                   $("#slider").slider({value: newVal});

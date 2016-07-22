@@ -92,6 +92,7 @@ body {
 
 .top-right-screen {
     margin-left: 25px;
+    border: rgb(200, 200, 200) 2px solid;
     background-color: rgb(230, 230, 230);
 }
 
@@ -102,6 +103,7 @@ body {
 
 .bottom-right-screen {
     margin-left: 25px;
+    border: rgb(200, 200, 200) 2px solid;
     background-color: rgb(230, 230, 230);
 }
 
@@ -135,21 +137,20 @@ body {
     display: inline-block;
 }
 
-#state_out.state-selected {
+.state-selected {
     color: white;
     border: 2px solid black;
+}
+
+#state_out.state-selected {
     background-color: rgb(110, 110, 110);
 }
 
 #state_snipe.state-selected {
-    color: white;
-    border: 2px solid black;
     background-color: rgb(39, 196, 60);
 }
 
 #state_maker.state-selected {
-    color: white;
-    border: 2px solid black;
     background-color: rgb(26, 73, 232);
 }
 
