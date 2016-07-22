@@ -1,10 +1,12 @@
 /* Angular service used for creating svg elements that graphically represent a market
  *  Created by Zachary Petersen - zacharypetersen1@gmail.com
+ *  And Morgan! - gramorgan@gmail.com
  *
  *  To use this service, inject it and call makeTradingGraph(svgElementID)
  *     This will return a new graph object. Call graph.init(timeStamp) to
  *     initialize the graph, call graph.draw(timeStamp) to update the graph.
  */
+
 RedwoodHighFrequencyTrading.factory("Graphing", function () {
    var api = {};
 
@@ -87,7 +89,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          var secs = (timeStamp - this.adminStartTime) / 1000;
          var mins = Math.trunc(secs / 60);
          secs %= 60;
-         return mins > 0 ? mins + ":" + secs : secs
+         return mins + ":" + ("00" + secs).substr(-2, 2);
       };
 
       graph.calcPriceGridLines = function (maxPrice, minPrice, increment) {
@@ -136,7 +138,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .attr("height", this.elementHeight)
             .attr("class", "time-grid-box-dark");
 
-         //Draw labels for time gridlines
+         //Draw labels for time grid lines
          svgToUpdate.selectAll("text.time-grid-line-text")
             .data(this.timeLines)
             .enter()
@@ -156,7 +158,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          //hack to fix problem with this not being set correctly for map function
          priceMapFunction = priceMapFunction.bind(graphRefr);
 
-         //Draw the lines for the price gridlines
+         //Draw the lines for the price grid lines
          svgToUpdate.selectAll("line.price-grid-line")
             .data(priceLines)
             .enter()

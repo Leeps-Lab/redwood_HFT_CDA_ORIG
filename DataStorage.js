@@ -212,7 +212,7 @@ Redwood.factory("DataStorage", function () {
 
                for (let marketCol of entry[2].reverse()) {
                   for (let marketRow of marketCol.reverse()) {
-                     ids.push(marketRow.id);
+                     ids.push(playerToIndex[marketRow.id] + 1);
                      times.push(marketRow.timestamp - this.startTime);
                      prices.push(marketRow.price);
                      origTimes.push(marketRow.originTimestamp - this.startTime);
@@ -233,7 +233,7 @@ Redwood.factory("DataStorage", function () {
 
                for (let marketCol of entry[1].reverse()) {
                   for (let marketRow of marketCol.reverse()) {
-                     ids.push(marketRow.id);
+                     ids.push(playerToIndex[marketRow.id] + 1);
                      times.push(marketRow.timestamp - this.startTime);
                      prices.push(marketRow.price);
                      origTimes.push(marketRow.originTimestamp - this.startTime);
@@ -263,7 +263,7 @@ Redwood.factory("DataStorage", function () {
 
                for (let marketCol of entry[2].reverse()) {
                   for (let marketRow of marketCol.reverse()) {
-                     ids.push(marketRow.id);
+                     ids.push(playerToIndex[marketRow.id] + 1);
                      times.push(marketRow.timestamp - this.startTime);
                      prices.push(marketRow.price);
                      origTimes.push(marketRow.originTimestamp - this.startTime);
@@ -283,7 +283,7 @@ Redwood.factory("DataStorage", function () {
 
                for (let marketCol of entry[1].reverse()) {
                   for (let marketRow of marketCol.reverse()) {
-                     ids.push(marketRow.id);
+                     ids.push(playerToIndex[marketRow.id] + 1);
                      times.push(marketRow.timestamp - this.startTime);
                      prices.push(marketRow.price);
                      origTimes.push(marketRow.originTimestamp - this.startTime);
@@ -371,7 +371,7 @@ Redwood.factory("DataStorage", function () {
          // set up headings for each column
          data.unshift(["timestamp"]);
          for (let index = 0; index < this.group.length; index++) {
-            data[0].push("status_p" + this.group[index], "spread_p" + this.group[index], "speed_p" + this.group[index], "dprofit_p" + this.group[index], "cumprofit_p" + this.group[index]);
+            data[0].push("status_p" + (index + 1), "spread_p" + (index + 1), "speed_p" + (index + 1), "dprofit_p" + (index + 1), "cumprofit_p" + (index + 1));
          }
          data[0].push("buy_orders_before", "buy_orders_after", "sell_orders_before", "sell_orders_after", "porder", "dvalue", "cumvalue", "investor_buy_sell");
 

@@ -5,7 +5,8 @@ body {
 
 #slider {
     margin: auto;
-    margin-top: 40px;
+    margin-top: 20px;
+    margin-bottom: 10px;
     height: 180px;
 }
 
@@ -58,12 +59,6 @@ body {
     margin-top: 20px;
     text-align: center;
     background-color: white;
-}
-
-.ui-slider-handle {
-    background-image: url(http://www.irs.gov/image/money_icon.gif);
-    width: 45px;
-    height: 33px;
 }
 
 .speed-label {

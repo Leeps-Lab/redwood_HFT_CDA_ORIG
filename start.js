@@ -129,7 +129,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
          $("#slider-val")
             .change( function () {
                var newVal = $(this).val();
-               console.log(newVal);
 
                // if someone tries to enter an empty value
                if (newVal == "") {
@@ -137,8 +136,9 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                   return;
                }
 
-               if (newVal != $scope.sliderVal) {
+               if (newVal != $scope.spread) {
                   $scope.sliderVal = newVal;
+                  $scope.spread = newVal;
                   $("#slider").slider({value: newVal});
                   var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.sliderVal, $scope.tradingGraph.getCurOffsetTime()]);
                   $scope.sendToGroupManager(msg);
@@ -154,10 +154,14 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             .slider({
                orientation: "vertical",
                step: .01,
-               change: function (event, ui) {
-                  if (ui.value != $scope.sliderVal) {
-                     $scope.sliderVal = ui.value;
-                     var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.sliderVal, $scope.tradingGraph.getCurOffsetTime()]);
+               range: "min",
+               slide: function (event, ui) {
+                  $scope.sliderVal = ui.value;
+               },
+               stop: function (event, ui) {
+                  if ($scope.sliderVal != $scope.spread) {
+                     $scope.spread = $scope.sliderVal;
+                     var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.spread, $scope.tradingGraph.getCurOffsetTime()]);
                      $scope.sendToGroupManager(msg);
                   }
                },
