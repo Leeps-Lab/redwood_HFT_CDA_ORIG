@@ -17,6 +17,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.elementWidth = 0;          //Width and Height of both svg elements
       graph.elementHeight = 0;         //    (use calculateSize to determine)
       graph.axisLabelWidth = 40;       //Width of area where price axis labels are drawn
+      graph.graphPaddingRight = 20;    // how far from the x axis label that the line stops moving
       graph.marketSVG = d3.select('#' + graph.marketElementId); //market svg element
       graph.profitSVG = d3.select('#' + graph.profitElementId); //profit svg element
       graph.minPriceMarket = 0;             //min price on price axis for market graph
@@ -40,8 +41,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.timeOffset = playerTimeOffset;            //offset to adjust for clock difference between lab computers
       graph.expandedGraph = false;
       graph.timeSinceStart = 0;        //the amount of time since the start of the experiment in seconds
+      graph.timePerPixel = (graph.elementWidth)
 
-      graph.getCurOffsetTime = function () {
+         graph.getCurOffsetTime = function () {
          return Date.now() - this.timeOffset;
       };
 
@@ -76,7 +78,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          else {
             percentOffset = (timeStamp - this.adminStartTime) / (this.timeInterval * 1000);
          }
-         return (this.elementWidth - this.axisLabelWidth) * percentOffset;
+         return (this.elementWidth - this.axisLabelWidth - this.graphPaddingRight) * percentOffset;
       };
 
       graph.millisToTime = function (timeStamp) {
@@ -92,7 +94,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
       graph.calcPriceGridLines = function (maxPrice, minPrice, increment) {
          var gridLineVal = minPrice + increment - (minPrice % increment);
-         // adjust for mod of negative numbers being negative
+         // adjust for mod of negative numbers not being negative
          if(minPrice < 0) gridLineVal -= increment;
          var lines = [];
          while (gridLineVal < maxPrice) {
@@ -279,7 +281,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             .enter()
             .append("text")
             .attr("text-anchor", "start")
-            .attr("x", this.elementWidth - this.axisLabelWidth + 5)
+            .attr("x", this.elementWidth - this.axisLabelWidth + 12)
             .attr("y", function (d) {
                return priceMapFunction(d) + 3;
             })

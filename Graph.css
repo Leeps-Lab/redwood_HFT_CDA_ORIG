@@ -1,5 +1,5 @@
 .price-axis-box {
-    fill: rgb(200, 200, 200);
+    display: none;
 }
 
 /*Style for the lines that visualize incremental levels of the price axis*/
@@ -24,11 +24,11 @@
 }
 
 .time-grid-box-light {
-    fill: rgb(230, 230, 230);
+    fill: rgb(255, 255, 255);
 }
 
 .time-grid-box-dark {
-    fill: rgb(215, 215, 215);
+    fill: rgb(250, 250, 250);
 }
 
 .dead-zone {

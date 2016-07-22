@@ -6,25 +6,31 @@
 
             <!--Top two screens-->
             <div class="row" style="margin-bottom:20px;">
-
                 <!--Top left screen-->
-                <div class="col-xs-4 screen-wrapper" style="padding-right:20px;">
+                <div class="col-xs-8 screen-wrapper">
                     <div class="screen top-left-screen">
+                        <svg width="100%" height="100%" id="graph1"></svg>
+                    </div>
+                </div>
+
+                <!--Top right screen-->
+                <div class="col-xs-4 screen-wrapper" style="padding-right:20px;">
+                    <div class="screen top-right-screen">
                         <div id="data-container">
                             <div class="status-table">
                                 <table class="table">
                                     <thead>
                                         <tr>
                                             <th>Player</th>
-                                            <th>State</th>
+                                            <th>Role</th>
                                             <th>Spread</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="(player, data) in dHistory.playerData">
-                                            <td>{{player}}</td>
+                                            <td>{{player == dHistory.myId ? "You" : player}}</td>
                                             <td>{{data.state}}</td>
-                                            <td>{{data.state == "Maker" ? data.spread : "N/A"}}</td>
+                                            <td>{{data.state == "Maker" ? data.spread : ""}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -35,21 +41,20 @@
                         </div>
                     </div>
                 </div>
-
-                <!--Top right screen-->
-                <div class="col-xs-8 screen-wrapper">
-                    <div class="screen top-right-screen">
-                        <svg width="100%" height="100%" style="border-radius: inherit" id="graph1"></svg>
-                    </div>
-                </div>
             </div>
 
             <!--Bottom two screens-->
             <div class="row">
-
                 <!--Bottom left screen-->
-                <div class="col-xs-4 screen-wrapper" style="padding-right:20px">
+                <div class="col-xs-8 screen-wrapper">
                     <div class="screen bottom-left-screen">
+                        <svg width="100%" height="100%" id="graph2"></svg>
+                    </div>
+                </div>
+
+                <!--Bottom right screen-->
+                <div class="col-xs-4 screen-wrapper" style="padding-right:20px">
+                    <div class="screen bottom-right-screen">
 
                         <div id="buttons-container">
 
@@ -69,7 +74,7 @@
 
                             <div class="button-container-state">
                                 <div class="state-label">
-                                    State
+                                    Role
                                 </div>
                                 <button id="state_out" ng-disabled="state=='state_out'" class="btn" type="button">
                                     Out
@@ -102,14 +107,6 @@
                             </div>
                         </div>
 
-                    </div>
-                </div>
-
-
-                <!--Bottom right screen-->
-                <div class="col-xs-8 screen-wrapper">
-                    <div class="screen bottom-right-screen">
-                        <svg width="100%" height="100%" style="border-radius: inherit" id="graph2"></svg>
                     </div>
                 </div>
             </div>
