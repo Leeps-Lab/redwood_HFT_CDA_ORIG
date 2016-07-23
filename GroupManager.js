@@ -180,7 +180,6 @@ Redwood.factory("GroupManager", function () {
       groupManager.sendNextPriceChange = function () {
          // if current price is -1, end the game
          if (this.priceChanges[this.priceIndex][1] == -1) {
-            this.dataStore.exportDataCsv();
             this.rssend("end_game", this.groupNumber);
             return;
          }
