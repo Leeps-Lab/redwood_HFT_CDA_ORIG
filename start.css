@@ -10,6 +10,30 @@ body {
     height: 180px;
 }
 
+.ui-slider {
+    border-radius: 0;
+}
+
+.ui-slider .ui-slider-handle {
+    display: none;
+}
+
+.ui-slider .ui-slider-range {
+    position: absolute;
+    z-index: 0;
+    border-radius: 0;
+    background: none;
+    background-color: rgb(26, 73, 232);
+}
+
+.slider-spread-indicators {
+    position: absolute;
+    z-index: 1;
+    right: -5px;
+    border-bottom: 2px solid black;
+    width: 10px;
+}
+
 #slider-container {
     float: right;
     width: 30%;

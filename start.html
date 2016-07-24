@@ -103,7 +103,9 @@
                                     Spread
                                 </div>
                                 <input id="slider-val" type="number" min="0" max="{{maxSpread}}" step=".01" value="{{sliderVal}}">
-                                <div id="slider"></div>
+                                <div id="slider">
+                                    <div ng-repeat="(player, data) in dHistory.playerData" ng-show="player != dHistory.myId && data.state == 'Maker'" class="slider-spread-indicators" style="height: {{((1 - (data.spread / dHistory.maxSpread)) * 100) + '%'}}"></div>
+                                </div>
                             </div>
                         </div>
 
