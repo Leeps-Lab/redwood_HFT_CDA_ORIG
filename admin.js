@@ -336,10 +336,6 @@ Redwood.controller("AdminCtrl",
             $scope.groupManagers[groupNum].recvFromSubject(msg);
          });
 
-         ra.on("end_game", function (msg) {
-            $interval.cancel($scope.groupManagers[msg].intervalPromise);
-         });
-
          ra.on("pause", function () {
             ra.pause();
          });
@@ -379,6 +375,38 @@ Redwood.controller("AdminCtrl",
                   $scope.groupManagers[group].dataStore.storeMsg(msg);
                   $scope.groupManagers[group].sendToMarketAlgorithms(msg);
                }
-            })
+            });
+
+         $("#export-profits")
+            .button()
+            .click(function () {
+               // export final profit values to csv
+               var data = [];
+               for (var group in $scope.groupManagers) {
+                  for (var player in $scope.groupManagers[group].dataStore.playerFinalProfits) {
+                     data.push([player, $scope.groupManagers[group].dataStore.playerFinalProfits[player]]);
+                  }
+               }
+
+               data.sort(function (a, b) {
+                  return a[0] - b[0];
+               });
+
+               data.unshift(["player", "final_profit"]);
+
+               var csvRows = [];
+               for (let index = 0; index < data.length; index++) {
+                  csvRows.push(data[index].join(','));
+               }
+               var csvString = csvRows.join("\n");
+               var a = document.createElement('a');
+               a.href = 'data:attachment/csv,' + encodeURIComponent(csvString);
+               a.target = '_blank';
+               a.download = 'final_profits.csv';
+
+               document.body.appendChild(a);
+               a.click();
+               a.remove();
+            });
 
       }]);
