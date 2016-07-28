@@ -205,6 +205,9 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             .addClass("state-selected")
             .button()
             .click(function (event) {
+               $scope.setSpeed(false);
+               $("#speed-off").attr("checked", true);
+
                var msg = new Message("USER", "UOUT", [rs.user_id, $scope.tradingGraph.getCurOffsetTime()]);
                $scope.sendToGroupManager(msg);
                $scope.setState("state_out");
