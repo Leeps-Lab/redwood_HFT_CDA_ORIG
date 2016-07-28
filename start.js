@@ -164,7 +164,7 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
                slide: function (event, ui) {
                   $scope.sliderVal = ui.value;
                },
-               stop: function (event, ui) {
+               stop: function () {
                   if ($scope.sliderVal != $scope.spread) {
                      $scope.spread = $scope.sliderVal;
                      var msg = new Message("USER", "UUSPR", [rs.user_id, $scope.spread, $scope.tradingGraph.getCurOffsetTime()]);

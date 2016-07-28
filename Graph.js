@@ -184,6 +184,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             })
             .enter()
             .append("line")
+            .filter(function (d) {
+               return d[1] >= (graphRefr.currentTime - graphRefr.timeInterval * 1000);
+            })
             .attr("x1", function (d) {
                return graphRefr.mapTimeToXAxis(d[0]);
             })
@@ -216,6 +219,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             })
             .enter()
             .append("line")
+            .filter(function (d) {
+               return d[1] >= (graphRefr.currentTime - graphRefr.timeInterval * 1000);
+            })
             .attr("x1", function (d) {
                return graphRefr.mapTimeToXAxis(d[0]);
             })
