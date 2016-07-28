@@ -9,7 +9,7 @@ svg {
 
 /*Style for the lines that visualize incremental levels of the price axis*/
 .price-grid-line {
-    stroke: rgb(200, 200, 200);
+    stroke: rgb(230, 230, 230);
     stroke-width: 1;
 }
 

@@ -14,14 +14,17 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
          $scope.using_speed = false;
          $scope.spread = 0;
          $scope.maxSpread = 1;
+         $scope.lastTime = 0;          // the last time that the update loop ran. used for calculating profit decreases.
 
          //Loops at speed CLOCK_FREQUENCY in Hz, updates the graph
          $scope.update = function () {
             $scope.tradingGraph.draw($scope.dHistory);
 
             if ($scope.using_speed) {
-               $scope.dHistory.profit -= CLOCK_FREQUENCY * $scope.dHistory.speedCost / 1000
+               $scope.dHistory.profit -= (Date.now() - $scope.lastTime) * $scope.dHistory.speedCost / 1000
             }
+
+            $scope.lastTime = Date.now();
          };
 
          // Sorts a message list with the lowest actionTime first
@@ -100,7 +103,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             $scope.tradingGraph = graphing.makeTradingGraph("graph1", "graph2", data.startTime, data.playerTimeOffsets[rs.user_id]);
             $scope.tradingGraph.init(data.startFP, data.maxSpread, data.startingWealth);
 
-            // start looping the update function
+            // set last time and start looping the update function
+            $scope.lastTime = Date.now();
             $interval($scope.update, CLOCK_FREQUENCY);
 
             // if input data was provided, setup automatic input system
@@ -248,7 +252,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
          });
 
          rs.recv("end_game", function (uid, msg) {
-            console.log(msg);
             rs.finish();
          });
 

@@ -30,8 +30,8 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.centerPriceProfit = 0;
       graph.graphAdjustSpeedMarket = .1;      //speed that market price axis adjusts in pixels per frame
       graph.graphAdjustSpeedProfit = .1;      //speed that market price axis adjusts in pixels per frame
-      graph.marketPriceGridIncrement = 5;     //amount between each line on market price axis
-      graph.profitPriceGridIncrement = 5;    //amount between each line on profit price axis
+      graph.marketPriceGridIncrement = 1;     //amount between each line on market price axis
+      graph.profitPriceGridIncrement = 1;    //amount between each line on profit price axis
       graph.contractedTimeInterval = 30;      //amount of time displayed on time axis when graph is contracted
       graph.timeInterval = graph.contractedTimeInterval; //current amount in seconds displayed at once on full time axis
       graph.timeIncrement = 5;         //Amount in seconds between lines on time axis
