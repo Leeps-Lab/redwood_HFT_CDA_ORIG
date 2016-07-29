@@ -27,36 +27,6 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             $scope.lastTime = Date.now();
          };
 
-         // Sorts a message list with the lowest actionTime first
-         $scope.sortMsgList = function (msgList) {
-            msgList.sort(function (a, b) {
-               if (a.actionTime < b.actionTime)
-                  return -1;
-               if (a.actionTime > b.actionTime)
-                  return 1;
-               return 0;
-            });
-         };
-
-         // Sends a message to the Market Algorithm
-         $scope.sendToMarketAlg = function (msg, delay) {
-            if (delay == 0) {
-               if ($scope.isDebug) {
-                  $scope.logger.logSend(msg, "Market Algorithm");
-               }
-               $scope.mAlgorithm.recvMessage(msg);
-               //$scope.dHistory.recvMessage(msg);
-            }
-            else {
-               var packedMsg = packMsg(msg, delay);
-               if ($scope.isDebug) {
-                  $scope.logger.logSendWait(packedMsg.msg);
-               }
-               $scope.sendWaitListToMarketAlg.push(packedMsg);
-               $scope.sortMsgList($scope.sendWaitListToMarketAlg);
-            }
-         };
-
          // Sends a message to the Group Manager
          $scope.sendToGroupManager = function (msg, delay) {
             if ($scope.isDebug) {
@@ -140,8 +110,8 @@ RedwoodHighFrequencyTrading.controller("HFTStartController",
             .change( function () {
                var newVal = $(this).val();
 
-               // if someone tries to enter an empty value
-               if (newVal == "") {
+               // if someone tries to enter an empty value or a spread larger than the max spread
+               if (newVal == "" || newVal > $scope.maxSpread) {
                   $(this).val($scope.sliderVal);
                   return;
                }

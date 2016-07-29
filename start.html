@@ -24,6 +24,7 @@
                                             <th>Player</th>
                                             <th>Role</th>
                                             <th>Spread</th>
+                                            <th>Speed?</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -31,6 +32,7 @@
                                             <td>{{player == dHistory.myId ? "You" : displayId[player]}}</td>
                                             <td>{{data.state}}</td>
                                             <td>{{data.state == "Maker" ? data.spread : ""}}</td>
+                                            <td>{{data.speed ? "On" : "Off"}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -107,7 +109,7 @@
                                     <div class="slider-spread-indicators"
                                          ng-repeat="(player, data) in dHistory.playerData"
                                          ng-show="player != dHistory.myId && data.state == 'Maker'"
-                                         style="height: {{((data.spread / dHistory.maxSpread) * 100) + '%'}}">
+                                         style="height: {{data.spread / dHistory.maxSpread * 100}}%">
                                     </div>
                                 </div>
                             </div>
