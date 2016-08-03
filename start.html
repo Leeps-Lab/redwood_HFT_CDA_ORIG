@@ -39,7 +39,7 @@
                             </div>
                             <h5 class="status-display">Best Spread: {{dHistory.lowestSpread}}</h5>
                             <h5 class="status-display">Your Profit: ${{dHistory.profit | number : 2}}</h5>
-                            <h5 class="status-display">Speed Cost: ${{dHistory.speedCost}} / Second</h5>
+                            <h5 class="status-display">Speed Cost: ${{dHistory.speedCost.toFixed(2)}} / Second</h5>
                         </div>
                     </div>
                 </div>
@@ -64,14 +64,10 @@
                                 <div class="speed-label">
                                     Speed
                                 </div>
-                                <label class="radio-inline" ng-click="setSpeed(true);" ng-disabled="state=='state_out'">
-                                    <input type="radio" id="speed-on" name="speed-status" ng-disabled="state=='state_out'">
-                                    On
-                                </label>
-                                <label class="radio-inline" ng-click="setSpeed(false);" ng-disabled="state=='state_out'">
-                                    <input type="radio" id="speed-off" name="speed-status" ng-disabled="state=='state_out'" checked>
-                                    Off
-                                </label>
+                                <div class="material-switch" ng-disabled="state=='state_out'">
+                                    <input id="speed-switch" type="checkbox" ng-disabled="state=='state_out'"/>
+                                    <label for="speed-switch"></label>
+                                </div>
                             </div>
 
                             <div class="button-container-state">
