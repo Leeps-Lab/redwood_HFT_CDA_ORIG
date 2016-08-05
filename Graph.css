@@ -42,7 +42,7 @@ svg {
 }
 
 .price-line {
-    stroke: rgb(50, 50, 150);
+    stroke: rgb(105, 103, 147);
     stroke-width: 3;
 }
 
@@ -56,22 +56,22 @@ svg {
 }
 
 .others-buy-offer {
-    stroke: rgb(140, 140, 140);
+    stroke: rgba(26, 73, 232, .5);;
     stroke-width: 1;
 }
 
 .others-sell-offer {
-    stroke: rgb(140, 140, 140);
+    stroke: rgba(26, 73, 232, .5);;
     stroke-width: 1;
 }
 
 .my-buy-offer {
-    stroke: black;
+    stroke: rgb(26, 73, 232);
     stroke-width: 1.5;
 }
 
 .my-sell-offer {
-    stroke: black;
+    stroke: rgb(26, 73, 232);
     stroke-width: 1.5;
 }
 

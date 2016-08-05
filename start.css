@@ -73,7 +73,21 @@ body {
     height: 60%;
     background-color: white;
     /*overflow: auto;*/
-    border: 1px solid green;
+    border: 1px solid rgb(200, 200, 200);
+}
+
+/*styles for table state indication entries
+  capital is to make it work better with ng-style*/
+.state-label-Snipe {
+    background-color: rgba(200, 79, 34, .5);
+}
+
+.state-label-Maker {
+    background-color: rgba(26, 73, 232, .5);
+}
+
+.state-label-Out {
+    background-color: rgba(110, 110, 110, .5);
 }
 
 .status-display {
@@ -87,18 +101,15 @@ body {
 }
 
 .speed-label {
-    color: orange;
     font-size: 24px;
     margin-bottom: 5px;
 }
 
 .state-label {
-    color: blue;
     font-size: 24px;
 }
 
 .spread-label {
-    color: red;
     font-size: 24px;
 }
 
@@ -140,20 +151,20 @@ body {
 
 .button-container-state {
     margin-top: 20px;
-    border: 1px solid blue;
+    border: 1px solid rgb(200, 200, 200);
     padding: 10px;
     display: inline-block;
 }
 
 .button-container-speed {
     margin-top: 50px;
-    border: 1px solid orange;
+    border: 1px solid rgb(200, 200, 200);
     padding: 10px;
     display: inline-block;
 }
 
 .button-container-spread {
-    border: 1px solid red;
+    border: 1px solid rgb(200, 200, 200);
     padding: 10px;
     display: inline-block;
 }
@@ -168,7 +179,7 @@ body {
 }
 
 #state_snipe.state-selected {
-    background-color: rgb(39, 196, 60);
+    background-color: rgb(200, 79, 34);
 }
 
 #state_maker.state-selected {
@@ -205,7 +216,7 @@ body {
     width: 40px;
     text-align: left;
     /*switch color*/
-    background-color: orange;
+    background-color: green;
 }
 
 .material-switch > label::before {
