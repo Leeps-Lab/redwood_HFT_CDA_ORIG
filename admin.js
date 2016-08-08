@@ -319,7 +319,7 @@ Redwood.controller("AdminCtrl",
 
                ra.sendCustom("Experiment_Begin", beginData, "admin", 1, groupNum);
                $scope.groupManagers[groupNum].startTime = $scope.startTime;
-               $scope.groupManagers[groupNum].dataStore.init(startFP, $scope.startTime);
+               $scope.groupManagers[groupNum].dataStore.init(startFP, $scope.startTime, $scope.config.maxSpread);
                for (var user of group) {
                   $scope.groupManagers[groupNum].marketAlgorithms[user].fundamentalPrice = startFP;
                }
