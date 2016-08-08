@@ -29,9 +29,9 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.maxPriceProfit = 0;             //max price on price axis for profit graph
       graph.centerPriceProfit = 0;
       graph.graphAdjustSpeedMarket = .1;      //speed that market price axis adjusts in pixels per frame
-      graph.graphAdjustSpeedProfit = .1;      //speed that market price axis adjusts in pixels per frame
+      graph.graphAdjustSpeedProfit = .1;      //speed that profit price axis adjusts in pixels per frame
       graph.marketPriceGridIncrement = 1;     //amount between each line on market price axis
-      graph.profitPriceGridIncrement = 1;    //amount between each line on profit price axis
+      graph.profitPriceGridIncrement = 1;     //amount between each line on profit price axis
       graph.contractedTimeInterval = 30;      //amount of time displayed on time axis when graph is contracted
       graph.timeInterval = graph.contractedTimeInterval; //current amount in seconds displayed at once on full time axis
       graph.timeIncrement = 5;         //Amount in seconds between lines on time axis
@@ -57,6 +57,8 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.setContractedGraph = function () {
          this.expandedGraph = false;
          this.timeInterval = this.contractedTimeInterval;
+         this.timePerPixel = graph.timeInterval * 1000 / (graph.elementWidth - graph.axisLabelWidth - graph.graphPaddingRight);
+         this.advanceTimeShown = graph.timePerPixel * (graph.axisLabelWidth + graph.graphPaddingRight);
       };
 
       graph.calculateSize = function () {
@@ -328,7 +330,7 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
 
          var curCenterMarket = (this.maxPriceMarket + this.minPriceMarket) / 2;
 
-            if (Math.abs(this.centerPriceMarket - curCenterMarket) > 1) {
+         if (Math.abs(this.centerPriceMarket - curCenterMarket) > 1) {
             this.marketPriceLines = this.calcPriceGridLines(this.maxPriceMarket, this.minPriceMarket, this.marketPriceGridIncrement);
             if (this.centerPriceMarket > curCenterMarket) {
                this.maxPriceMarket += this.graphAdjustSpeedMarket;
@@ -373,11 +375,13 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.timeSinceStart = (this.currentTime - dataHistory.startTime) / 1000;
          if (this.expandedGraph) {
             this.timeInterval = this.timeSinceStart;
+            this.timePerPixel = this.timeInterval * 1000 / (this.elementWidth - this.axisLabelWidth - this.graphPaddingRight);
+            this.advanceTimeShown = this.timePerPixel * (this.axisLabelWidth + this.graphPaddingRight);
          }
 
          this.curTimeX = this.mapTimeToXAxis(this.currentTime);
 
-         // recalculate market price bounds if necessary
+         // recalculate market price bounds
          this.calcPriceBounds(dataHistory);
 
          //Check if it is necessary to recalculate timeLines
