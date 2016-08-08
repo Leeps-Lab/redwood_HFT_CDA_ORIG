@@ -295,13 +295,13 @@ Redwood.controller("AdminCtrl",
 
             // start experiment if all subjects are marked ready
             if ($scope.startSyncArrays[groupNum].allReady()) {
-               var startTime = Date.now();
+               $scope.startTime = Date.now();
                var group = $scope.getGroup(groupNum);
                var startFP = $scope.priceChanges[0][1];
 
                //send out start message with start time and information about group then start groupManager
                var beginData = {
-                  startTime: startTime,
+                  startTime: $scope.startTime,
                   startFP: startFP,
                   groupNumber: groupNum,
                   group: group,
@@ -318,16 +318,17 @@ Redwood.controller("AdminCtrl",
                }
 
                ra.sendCustom("Experiment_Begin", beginData, "admin", 1, groupNum);
-               $scope.groupManagers[groupNum].startTime = startTime;
-               $scope.groupManagers[groupNum].dataStore.init(startFP, startTime);
+               $scope.groupManagers[groupNum].startTime = $scope.startTime;
+               $scope.groupManagers[groupNum].dataStore.init(startFP, $scope.startTime);
                for (var user of group) {
                   $scope.groupManagers[groupNum].marketAlgorithms[user].fundamentalPrice = startFP;
                }
 
-               // start price change sending recursive function
-               window.setTimeout($scope.groupManagers[groupNum].sendNextPriceChange, startTime + $scope.priceChanges[$scope.groupManagers[groupNum].priceIndex][0] - Date.now());
-               window.setTimeout($scope.groupManagers[groupNum].sendNextInvestorArrival, startTime + $scope.investorArrivals[$scope.groupManagers[groupNum].investorIndex][0] - Date.now());
-               //$scope.groupManagers[groupNum].intervalPromise = $interval($scope.groupManagers[groupNum].update.bind($scope.groupManagers[groupNum]), CLOCK_FREQUENCY);
+               // if there are any price changes to send, start price change sending recursive function
+               if ($scope.priceChanges.length > 2) {
+                  window.setTimeout($scope.groupManagers[groupNum].sendNextPriceChange, $scope.startTime + $scope.priceChanges[$scope.groupManagers[groupNum].priceIndex][0] - Date.now());
+               }
+               window.setTimeout($scope.groupManagers[groupNum].sendNextInvestorArrival, $scope.startTime + $scope.investorArrivals[$scope.groupManagers[groupNum].investorIndex][0] - Date.now());
             }
          });
 
@@ -394,6 +395,10 @@ Redwood.controller("AdminCtrl",
 
                data.unshift(["player", "final_profit"]);
 
+               // get file name by formatting start time as readable string
+               var d = new Date($scope.startTime);
+               var filename = d.getHours() + '_' + d.getMinutes() + '_' + d.getSeconds() + '_final_profits.csv';
+
                var csvRows = [];
                for (let index = 0; index < data.length; index++) {
                   csvRows.push(data[index].join(','));
@@ -402,7 +407,7 @@ Redwood.controller("AdminCtrl",
                var a = document.createElement('a');
                a.href = 'data:attachment/csv,' + encodeURIComponent(csvString);
                a.target = '_blank';
-               a.download = 'final_profits.csv';
+               a.download = filename;
 
                document.body.appendChild(a);
                a.click();
