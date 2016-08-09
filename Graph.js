@@ -385,7 +385,11 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
          this.calcPriceBounds(dataHistory);
 
          //Check if it is necessary to recalculate timeLines
-         if (this.currentTime + this.advanceTimeShown > this.timeLines[this.timeLines.length - 1] + this.timeIncrement) {
+         // recalculate if right edge of graph is more than a batch length past last batch line
+         // or if left edge is more than a batch length past first batch line
+         // Math.max expression finds time at left edge of screen
+         if (this.currentTime + this.advanceTimeShown > this.timeLines[this.timeLines.length - 1] + this.timeIncrement ||
+             Math.max(this.adminStartTime, this.currentTime - this.timeInterval * 1000) < this.timeLines[0] - this.timeIncrement) {
             this.timeLines = this.calcTimeGridLines(this.currentTime - this.timeInterval * 1000, this.currentTime + this.advanceTimeShown, this.timeIncrement * 1000);
          }
 
