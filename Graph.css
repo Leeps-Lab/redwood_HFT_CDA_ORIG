@@ -42,8 +42,8 @@ svg {
 }
 
 .price-line {
-    stroke: rgb(105, 103, 147);
-    stroke-width: 3;
+    stroke: #5c5c5c;
+    stroke-width: 1;
 }
 
 .spread {
