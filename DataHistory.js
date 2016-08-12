@@ -18,6 +18,11 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       dataHistory.playerData = {};     //holds state, offer and profit data for each player in the group
       dataHistory.lowestSpread = "N/A";
 
+      dataHistory.highestMarketPrice = startFP;
+      dataHistory.lowestMarketPrice = startFP;
+      dataHistory.highestProfitPrice = startingWealth;
+      dataHistory.lowestProfitPrice = startingWealth;
+
       dataHistory.debugMode = debugMode;
       if (debugMode) {
          dataHistory.logger = new MessageLogger("Data History " + String(myId), "orange", "subject-log");
@@ -106,6 +111,9 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
 
       // Adds fundamental price change to history
       dataHistory.recordFPCchange = function (fpcMsg) {
+         if (fpcMsg.msgData[1] > this.highestMarketPrice) this.highestMarketPrice = fpcMsg.msgData[1];
+         if (fpcMsg.msgData[1] < this.lowestMarketPrice) this.lowestMarketPrice = fpcMsg.msgData[1];
+
          this.storeFundPrice(fpcMsg.msgData[0]);
          this.curFundPrice = [fpcMsg.msgData[0], fpcMsg.msgData[1], 0];
       };
@@ -123,6 +131,9 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          }
          //Push on new buy offer
          this.playerData[buyMsg.msgData[0]].curBuyOffer = [buyMsg.msgData[2], buyMsg.msgData[1]];   // [timestamp, price]
+
+         // check to see if new buy price is lowest price so far
+         if (buyMsg.msgData[1] < this.lowestMarketPrice) this.lowestMarketPrice = buyMsg.msgData[1];
       };
 
       // Records a new Sell offer
@@ -133,6 +144,9 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
          }
          //Push on new sell offer
          this.playerData[sellMsg.msgData[0]].curSellOffer = [sellMsg.msgData[2], sellMsg.msgData[1]];   // [timestamp, price]
+
+         // check to see if new sell price is highest price so far
+         if (sellMsg.msgData[1] > this.highestMarketPrice) this.highestMarketPrice = sellMsg.msgData[1];
       };
 
       // Shifts buy offer from currently being active into the history
@@ -188,6 +202,9 @@ RedwoodHighFrequencyTrading.factory("DataHistory", function () {
       };
 
       dataHistory.recordProfitSegment = function (price, startTime, slope, uid, state) {
+         if (price > this.highestProfitPrice) this.highestProfitPrice = price;
+         if (price < this.lowestProfitPrice) this.lowestProfitPrice = price;
+
          if (this.playerData[uid].curProfitSegment != null) {
             this.storeProfitSegment(startTime, uid);
          }

@@ -21,11 +21,15 @@ svg {
 .price-grid-line-text {
     fill: rgb(150, 150, 150);
     font-size: 10px;
+    -webkit-user-select: none;
+    cursor: default;
 }
 
 .time-grid-line-text {
     fill: rgb(150, 150, 150);
     font-size: 10px;
+    -webkit-user-select: none;
+    cursor: default;
 }
 
 .time-grid-box-light {

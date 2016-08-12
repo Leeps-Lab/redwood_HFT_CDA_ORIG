@@ -41,7 +41,6 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.pricesArray = [];
       graph.adminStartTime = adminStartTime;
       graph.timeOffset = playerTimeOffset;            //offset to adjust for clock difference between lab computers
-      graph.expandedGraph = false;
       graph.timeSinceStart = 0;        //the amount of time since the start of the experiment in seconds
       graph.timePerPixel = 0;          // number of ms represented by one pixel
       graph.advanceTimeShown = 0;      // the amount of time shown to the right of the current time on the graph
@@ -51,15 +50,31 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
       graph.maxZoomLevel = 4;          // maximum allowed zoom level
       graph.zoomAmount = 0;            // amount zoomed per click
 
+      graph.expandedGraph = false;
+      graph.prevMaxPriceMarket = 0;    // storage for previous max and min values for when graph is in expanded mode
+      graph.prevMinPriceMarket = 0;
+      graph.prevMaxPriceProfit = 0;
+      graph.prevMinPriceProfit = 0;
+
          graph.getCurOffsetTime = function () {
          return Date.now() - this.timeOffset;
       };
 
       graph.setExpandedGraph = function () {
+         this.prevMaxPriceMarket = this.maxPriceMarket;
+         this.prevMinPriceMarket = this.minPriceMarket;
+         this.prevMaxPriceProfit = this.maxPriceProfit;
+         this.prevMinPriceProfit = this.minPriceProfit;
+
          this.expandedGraph = true;
       };
 
       graph.setContractedGraph = function () {
+         this.maxPriceMarket = this.prevMaxPriceMarket;
+         this.minPriceMarket = this.prevMinPriceMarket;
+         this.maxPriceProfit = this.prevMaxPriceProfit;
+         this.minPriceProfit = this.prevMinPriceProfit;
+
          this.expandedGraph = false;
          this.timeInterval = this.contractedTimeInterval;
          this.timePerPixel = graph.timeInterval * 1000 / (graph.elementWidth - graph.axisLabelWidth - graph.graphPaddingRight);
@@ -412,6 +427,11 @@ RedwoodHighFrequencyTrading.factory("Graphing", function () {
             this.timeInterval = this.timeSinceStart;
             this.timePerPixel = this.timeInterval * 1000 / (this.elementWidth - this.axisLabelWidth - this.graphPaddingRight);
             this.advanceTimeShown = this.timePerPixel * (this.axisLabelWidth + this.graphPaddingRight);
+
+            this.maxPriceMarket = Math.max(dataHistory.highestMarketPrice + 1, this.prevMaxPriceMarket);
+            this.minPriceMarket = Math.min(dataHistory.lowestMarketPrice - 1, this.prevMinPriceMarket);
+            this.maxPriceProfit = Math.max(dataHistory.highestProfitPrice + 1, this.prevMaxPriceProfit);
+            this.minPriceProfit = Math.min(dataHistory.lowestProfitPrice - 1, this.prevMinPriceProfit);
          }
 
          this.curTimeX = this.mapTimeToXAxis(this.currentTime);
